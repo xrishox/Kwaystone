@@ -17,6 +17,7 @@ body:
       description: "`pacman -Qi waystone | grep Version`. List is maintained by the release workflow."
       options:
         # versions-start
+        - 0.1.1
         - 0.1.0
         # versions-end
         - older or dev build
