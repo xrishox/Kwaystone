@@ -82,3 +82,19 @@ it("granted skills get their own card bucket, not explicit mods", async () => {
   expect(card.mods.skill[0].text).toContain("Spirit Vessel");
   expect(card.mods.explicit.some((l) => l.text.includes("Spirit Vessel"))).toBe(false);
 });
+
+it("corruption enhancement mods get their own card bucket", async () => {
+  const { parseClipboard } = await import("@/parser");
+  const { buildItemCard } = await import("../src/item-card");
+  const text = readFileSync(
+    new URL("./fixtures/unique-armour.txt", import.meta.url),
+    "utf8",
+  );
+  const item = parseClipboard(text)._unsafeUnwrap();
+  const card = buildItemCard(item);
+
+  expect(card.mods.corruption.length).toBe(1);
+  expect(card.mods.corruption[0].text).toContain("39 to maximum Life");
+  // "Companions have 35% increased maximum Life" legitimately stays explicit.
+  expect(card.mods.explicit.some((l) => l.text.includes("39 to maximum Life"))).toBe(false);
+});

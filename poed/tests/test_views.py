@@ -717,3 +717,20 @@ def test_explicit_without_generation_stays_mods():
          "enabled": True, "value": 1, "min": None, "max": None},
     ]}
     assert [label for label, _ in stat_groups(result)] == ["Mods"]
+
+
+def test_corrupted_generation_gets_corruption_group():
+    """Corruption Enhancement mods are corrupted implicits — not intrinsic
+    unique/rare mods; own group between Implicits and Prefixes."""
+    from poed.views import stat_groups
+
+    result = {"stats": [
+        {"id": 0, "text": "+# to maximum Life", "tag": "explicit",
+         "generation": "corrupted", "enabled": True, "value": 39,
+         "min": None, "max": None},
+        {"id": 1, "text": "+# to Dexterity", "tag": "explicit",
+         "generation": None, "enabled": True, "value": 25,
+         "min": None, "max": None},
+    ]}
+    labels = [label for label, _ in stat_groups(result)]
+    assert labels.index("Corruption") < labels.index("Mods")

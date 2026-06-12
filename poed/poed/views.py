@@ -38,6 +38,7 @@ _GROUPS = [  # render order; label shown only when group non-empty
     ("skill", "Skill"),  # granted skills lead — they define the item
     ("rune", "Runes"),
     ("implicit", "Implicits"),
+    ("corruption", "Corruption"),
     ("prefix", "Prefixes"),
     ("suffix", "Suffixes"),
     ("explicit", "Mods"),  # plain (non-advanced) copy lands here untyped
@@ -192,7 +193,7 @@ _STAT_TAG_LABEL: dict[str, str] = {
 
 # Canonical render order for stat groups; buckets absent in result are dropped.
 _STAT_GROUP_ORDER = [
-    "Skill", "Pseudo", "Implicits",
+    "Skill", "Pseudo", "Implicits", "Corruption",
     "Prefixes", "Suffixes",  # explicit rows with generation info (advanced copy)
     "Mods", "Enchants", "Runes",
 ]
@@ -245,6 +246,8 @@ def stat_groups(result: dict) -> list[tuple[str, list[dict]]]:
                 label = "Prefixes"
             elif gen == "suffix":
                 label = "Suffixes"
+            elif gen == "corrupted":
+                label = "Corruption"  # Corruption Enhancement = corrupted implicit
         buckets.setdefault(label, []).append(row)
 
     # Build ordered result: canonical order first, then any extra labels.
