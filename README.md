@@ -8,7 +8,7 @@ Exists because existing tools (Exiled Exchange 2, Sidekick) are broken on Waylan
 
 This project was built with the help of AI (Claude). Side projects like this wouldn't be possible for me without it.
 
-If that's a concern for you, the source is right here — read through it, and issues and PRs are welcome.
+If that's a concern for you, the source is right here — read through it, issues and PRs are welcome.
 
 ## Features
 

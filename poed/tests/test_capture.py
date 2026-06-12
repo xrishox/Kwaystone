@@ -52,6 +52,21 @@ def test_inject_copy_returns_false_on_os_error(monkeypatch):
     assert _inject_copy() is False
 
 
+def test_read_clipboard_survives_binary_content(monkeypatch):
+    """Screenshot-to-clipboard puts PNG bytes there; must not raise (found live:
+    UnicodeDecodeError crashed the price worker when clipboard held an image)."""
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *a, **kw: SimpleNamespace(
+            returncode=0, stdout=b"\x89PNG\r\n\x1a\n\x00binary", stderr=b""
+        ),
+    )
+    text = capture._read_clipboard()
+    assert isinstance(text, str)
+    assert not capture._looks_like_item(text)
+
+
 # ---------------------------------------------------------------------------
 # grab_item_text retry logic
 # ---------------------------------------------------------------------------

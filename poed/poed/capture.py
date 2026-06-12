@@ -30,14 +30,17 @@ def is_game_focused(game_class: str, _raw: str | None = None) -> bool:
 
 
 def _read_clipboard() -> str:
+    # Bytes + lossy decode, NOT text=True: the clipboard can hold arbitrary
+    # binary (e.g. a screenshot PNG), and a strict decode raises
+    # UnicodeDecodeError out of the price worker. Garbage decodes to garbage
+    # and fails the item pre-filter instead.
     try:
         r = subprocess.run(
             ["wl-paste", "--no-newline"],
             capture_output=True,
-            text=True,
             timeout=1.0,
         )
-        return r.stdout
+        return r.stdout.decode("utf-8", errors="replace")
     except (OSError, subprocess.SubprocessError):
         return ""
 
