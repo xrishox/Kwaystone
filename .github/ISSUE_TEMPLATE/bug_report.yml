@@ -1,0 +1,58 @@
+name: Bug report
+description: Something broken — crash, wrong prices, hotkeys dead, panel weirdness
+labels: [bug]
+body:
+  - type: dropdown
+    id: install
+    attributes:
+      label: Install method
+      options:
+        - AUR (waystone)
+        - Built from source / dev checkout
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Waystone version
+      description: "`pacman -Qi waystone | grep Version` or the git commit for dev checkouts"
+      placeholder: "0.1.0-1"
+    validations:
+      required: true
+
+  - type: input
+    id: system
+    attributes:
+      label: Compositor and system
+      description: "`hyprctl version | head -1` plus distro. Not on Hyprland? Say what you run — hotkeys and window tracking are Hyprland-only today."
+      placeholder: "Hyprland 0.45.0, Arch"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Log output
+      description: |
+        Paste the relevant tail of `~/.local/state/waystone/waystone.log` (brain stack traces land there too).
+        Reproduce with debug logging if you can: run `WAYSTONE_DEBUG=1 waystone`.
+        The log never contains your session cookie, but skim before posting anyway.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: item
+    attributes:
+      label: Item text (for parse/price bugs)
+      description: Hover the item in game, press Ctrl+C, paste here. Skip if not item-related.
+      render: text

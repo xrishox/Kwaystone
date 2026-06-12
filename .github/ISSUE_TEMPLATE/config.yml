@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Item parsing or game data problems
+    url: https://github.com/Kvan7/Exiled-Exchange-2/issues
+    about: The parser and game data are vendored from Exiled Exchange 2 — parser bugs reproducible there belong upstream. Unsure? File here, we'll sort it.

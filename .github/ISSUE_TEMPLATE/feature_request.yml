@@ -1,0 +1,17 @@
+name: Feature request
+description: Something Waystone should do but doesn't
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should it do?
+      description: The problem you're trying to solve, not just the solution you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: How other tools handle it, mockups, constraints — optional.
