@@ -484,3 +484,28 @@ it("waystone explicit mods are visible, enabled and reach the query body (issue 
   expect(statFilters.length).toBeGreaterThanOrEqual(4);
   expect(statFilters.some((f: any) => f.disabled === true)).toBe(false);
 });
+
+it("waystone properties (revives, pack size, rarity, drop chance) surface as toggleable stats (issue #1 follow-up)", async () => {
+  // Vendor parseWaystone only fires when the section starts with a
+  // "Waystone Tier: " line; PoE2 encodes the tier in the base-type name and
+  // opens the property section with "Revives Available:", so the whole block
+  // was skipped — item.map* stayed unset and vendor mapProps() emitted no
+  // property filters. The card/panel showed no Item Rarity / Pack Size /
+  // Waystone Drop Chance / Revives at all.
+  const { buildQueryAndStats } = await import("../src/price");
+  const text = readFileSync(
+    new URL("./fixtures/waystone.txt", import.meta.url),
+    "utf8",
+  );
+  const { stats } = await buildQueryAndStats(text, "L");
+
+  const texts = stats.map((s: any) => s.text).join("\n");
+  for (const expected of [
+    "Revives Available",
+    "Pack Size",
+    "Item Rarity",
+    "Waystone Drop Chance",
+  ]) {
+    expect(texts).toContain(expected);
+  }
+});

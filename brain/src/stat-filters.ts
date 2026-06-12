@@ -107,6 +107,12 @@ export function initExplicitModFilters(
       filter.hidden = undefined;
       filter.disabled = false;
     }
+    // Same reasoning for the waystone Revives property (vendor hides it as
+    // rarely-traded-on): show it as a toggleable, default-off property stat
+    // alongside Pack Size / Item Rarity / Drop Chance.
+    if (filter.hidden === "filters.hide_revives") {
+      filter.hidden = undefined;
+    }
   }
 
   if (opts.defaultAllSelected) {

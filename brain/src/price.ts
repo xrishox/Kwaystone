@@ -39,7 +39,10 @@ async function parseItem(clipboard: string) {
   // Vendor parseArmour discards armour/evasion/ES for uniques (issue #3);
   // recover them from rawText so the card + defence stat filters match rares.
   const { restoreUniqueDefences } = await import("./unique-defences");
-  return restoreUniqueDefences(r.value);
+  // Vendor parseWaystone misses PoE2's property section entirely (issue #1
+  // follow-up); recover tier/revives/pack-size/rarity/drop-chance the same way.
+  const { restoreMapProps } = await import("./map-props");
+  return restoreMapProps(await restoreUniqueDefences(r.value));
 }
 
 /** clipboard -> just the trade2 query (thin wrapper; existing callers/tests). */
