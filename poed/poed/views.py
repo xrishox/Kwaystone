@@ -186,12 +186,12 @@ _STAT_TAG_LABEL: dict[str, str] = {
     "variant": "Mods",
     "property": "Mods",
     "desecrated": "Mods",
-    "skill": "Mods",
+    "skill": "Skill",  # granted skills lead, mirroring the card group order
     "mutated": "Mods",
 }
 
 # Canonical render order for stat groups; buckets absent in result are dropped.
-_STAT_GROUP_ORDER = ["Pseudo", "Implicits", "Mods", "Enchants", "Runes"]
+_STAT_GROUP_ORDER = ["Skill", "Pseudo", "Implicits", "Mods", "Enchants", "Runes"]
 
 
 def stat_rows(result: dict) -> list[dict]:

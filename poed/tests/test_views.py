@@ -675,3 +675,18 @@ def test_skill_group_renders_first():
         },
     })
     assert [label for label, _ in card["groups"]][0] == "Skill"
+
+
+def test_skill_filters_get_own_group_first():
+    from poed.views import stat_groups
+
+    result = {"stats": [
+        {"id": 0, "text": "+1 to maximum Life", "tag": "explicit", "enabled": True,
+         "value": 1, "min": None, "max": None},
+        {"id": 1, "text": "Grants Skill: Level # Spirit Vessel", "tag": "skill",
+         "enabled": True, "value": 18, "min": None, "max": None},
+    ]}
+    groups = stat_groups(result)
+    labels = [label for label, _ in groups]
+    assert labels[0] == "Skill"
+    assert "Mods" in labels
