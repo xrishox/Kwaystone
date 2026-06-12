@@ -191,7 +191,11 @@ _STAT_TAG_LABEL: dict[str, str] = {
 }
 
 # Canonical render order for stat groups; buckets absent in result are dropped.
-_STAT_GROUP_ORDER = ["Skill", "Pseudo", "Implicits", "Mods", "Enchants", "Runes"]
+_STAT_GROUP_ORDER = [
+    "Skill", "Pseudo", "Implicits",
+    "Prefixes", "Suffixes",  # explicit rows with generation info (advanced copy)
+    "Mods", "Enchants", "Runes",
+]
 
 
 def stat_rows(result: dict) -> list[dict]:
@@ -213,6 +217,7 @@ def stat_rows(result: dict) -> list[dict]:
             "min": _num(s.get("min")),
             "enabled": bool(s.get("enabled")),
             "tag": s.get("tag", ""),
+            "generation": s.get("generation"),
         })
     return rows
 
@@ -232,6 +237,14 @@ def stat_groups(result: dict) -> list[tuple[str, list[dict]]]:
         if row["tag"] == "property":
             continue  # property stats live in prop_rows, not here
         label = _STAT_TAG_LABEL.get(row["tag"], "Mods")
+        if label == "Mods":
+            # Advanced-copy parses know each mod's generation; split the flat
+            # Mods bucket. Plain copies (generation absent) stay one group.
+            gen = row.get("generation")
+            if gen == "prefix":
+                label = "Prefixes"
+            elif gen == "suffix":
+                label = "Suffixes"
         buckets.setdefault(label, []).append(row)
 
     # Build ordered result: canonical order first, then any extra labels.

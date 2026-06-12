@@ -282,6 +282,9 @@ async function buildQueryAndStatsFromItem(
     max: typeof s.roll?.max === "number" ? s.roll.max : null,
     enabled: !s.disabled,
     tag: s.tag,
+    // Source mod's generation (prefix/suffix) for panel grouping — only when
+    // all sources agree (a merged hybrid filter spanning both reports null).
+    generation: generationOf(s),
   }));
 
   return { query, preset, stats, props };
@@ -292,6 +295,16 @@ async function cardFromItem(
 ): Promise<Omit<ItemCard, "iconUrl"> & { iconPath: string | null }> {
   const { iconUrl, ...rest } = buildItemCard(item);
   return { ...rest, iconPath: await resolveIcon(iconUrl) };
+}
+
+function generationOf(s: {
+  sources?: Array<{ modifier?: { info?: { generation?: string } } }>;
+}): string | null {
+  const gens = (s.sources ?? [])
+    .map((src) => src.modifier?.info?.generation ?? null)
+    .filter((g): g is string => g != null);
+  if (!gens.length) return null;
+  return gens.every((g) => g === gens[0]) ? gens[0] : null;
 }
 
 /** clipboard -> card with iconUrl swapped for a local iconPath. */

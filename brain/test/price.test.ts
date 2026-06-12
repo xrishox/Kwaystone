@@ -528,3 +528,22 @@ it("granted skills on uniques surface as toggleable stats", async () => {
   expect(skill!.text).toContain("Spirit Vessel");
   expect(skill!.value).toBe(18);
 });
+
+it("stat rows carry their source mod's generation (prefix/suffix)", async () => {
+  // The trade API has no prefix/suffix dimension, but the advanced-copy parse
+  // knows each mod's generation — pass it through so the panel can group
+  // filter rows into Prefixes/Suffixes instead of one flat Mods list.
+  const { buildQueryAndStats } = await import("../src/price");
+  const text = readFileSync(
+    new URL("./fixtures/rare-gloves-advanced.txt", import.meta.url),
+    "utf8",
+  );
+  const { stats } = await buildQueryAndStats(text, "L");
+
+  const gens = stats
+    .filter((s: any) => s.tag === "explicit")
+    .map((s: any) => s.generation);
+  expect(gens).toContain("prefix");
+  expect(gens).toContain("suffix");
+  expect(gens.every((g: any) => g === "prefix" || g === "suffix")).toBe(true);
+});

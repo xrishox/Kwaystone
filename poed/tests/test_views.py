@@ -690,3 +690,29 @@ def test_skill_filters_get_own_group_first():
     labels = [label for label, _ in groups]
     assert labels[0] == "Skill"
     assert "Mods" in labels
+
+
+def test_explicit_filters_split_by_generation():
+    from poed.views import stat_groups
+
+    result = {"stats": [
+        {"id": 0, "text": "p1", "tag": "explicit", "generation": "prefix",
+         "enabled": True, "value": 1, "min": None, "max": None},
+        {"id": 1, "text": "s1", "tag": "explicit", "generation": "suffix",
+         "enabled": True, "value": 1, "min": None, "max": None},
+        {"id": 2, "text": "plain", "tag": "explicit", "generation": None,
+         "enabled": True, "value": 1, "min": None, "max": None},
+    ]}
+    labels = [label for label, _ in stat_groups(result)]
+    assert labels.index("Prefixes") < labels.index("Suffixes") < labels.index("Mods")
+
+
+def test_explicit_without_generation_stays_mods():
+    """Plain-copy items (no generation info) keep the single Mods group."""
+    from poed.views import stat_groups
+
+    result = {"stats": [
+        {"id": 0, "text": "a", "tag": "explicit",
+         "enabled": True, "value": 1, "min": None, "max": None},
+    ]}
+    assert [label for label, _ in stat_groups(result)] == ["Mods"]
