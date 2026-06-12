@@ -16,6 +16,20 @@ If that's a concern for you, the source is right here — read through it, issue
 - **Unique scan** (`Alt+X`): scans the screen for unique items and shows click-through price badges, highlighting anything worth more than a configurable exalted threshold.
 - Currency and material prices come from [poe2scout](https://poe2scout.com), with the official trade2 bulk exchange as fallback. Gear listings use trade2 search/fetch, rate-limited.
 
+## Screenshots
+
+**Item price check** — hover + `Alt+Z`: parsed mods on the left, live listings on the right; league selector and login sit on top.
+
+![Item price check](screenshots/Item_lookup.png)
+
+**Currency lookup** — exchange rates against exalted/divine, stack value, and price trend from poe2scout.
+
+![Currency lookup](screenshots/Currency_lookup.png)
+
+**Unique scan** — `Alt+X` scans the screen (here a Ritual window) and prices every unique it recognizes.
+
+![Unique scan](screenshots/auto_Scan.png)
+
 ## Architecture
 
 Two processes connected by a Unix socket (JSON-lines protocol):
