@@ -67,3 +67,18 @@ describe("buildItemCard", () => {
     expect(card.mods).toBeDefined(); // grouping must not throw on untyped mods
   });
 });
+
+it("granted skills get their own card bucket, not explicit mods", async () => {
+  const { parseClipboard } = await import("@/parser");
+  const { buildItemCard } = await import("../src/item-card");
+  const text = readFileSync(
+    new URL("./fixtures/unique-armour.txt", import.meta.url),
+    "utf8",
+  );
+  const item = parseClipboard(text)._unsafeUnwrap();
+  const card = buildItemCard(item);
+
+  expect(card.mods.skill.length).toBe(1);
+  expect(card.mods.skill[0].text).toContain("Spirit Vessel");
+  expect(card.mods.explicit.some((l) => l.text.includes("Spirit Vessel"))).toBe(false);
+});

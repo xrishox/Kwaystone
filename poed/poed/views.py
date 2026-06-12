@@ -36,6 +36,7 @@ def _prop_label(text: str, value: str | None) -> str:
 
 _GROUPS = [  # render order; label shown only when group non-empty
     ("rune", "Runes"),
+    ("skill", "Skill"),  # granted skills read oddly buried in Mods
     ("implicit", "Implicits"),
     ("prefix", "Prefixes"),
     ("suffix", "Suffixes"),

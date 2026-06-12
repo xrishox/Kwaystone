@@ -647,3 +647,19 @@ def test_unique_rows_trend_arrows():
     assert unique_rows([m(-0.3)], 1.0)[0]["trend"] == "↘"
     assert unique_rows([m(0.05)], 1.0)[0]["trend"] == ""
     assert unique_rows([m(None)], 1.0)[0]["trend"] == ""
+
+
+def test_skill_group_renders_above_implicits():
+    """Granted skills feel odd buried in Mods; they render right after Runes."""
+    from poed.views import item_card
+
+    card = item_card({
+        "name": "X", "mods": {
+            "skill": [{"text": "Grants Skill: Level 18 Spirit Vessel"}],
+            "implicit": [{"text": "imp"}],
+            "explicit": [{"text": "mod"}],
+        },
+    })
+    labels = [label for label, _ in card["groups"]]
+    assert "Skill" in labels
+    assert labels.index("Skill") < labels.index("Implicits")

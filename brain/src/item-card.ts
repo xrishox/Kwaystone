@@ -13,7 +13,7 @@ export interface ItemCard {
   rarity?: string;
   iconUrl?: string;
   props: Array<{ text: string; value: string }>;
-  mods: Record<"rune" | "implicit" | "prefix" | "suffix" | "explicit", CardLine[]>;
+  mods: Record<"rune" | "skill" | "implicit" | "prefix" | "suffix" | "explicit", CardLine[]>;
 }
 
 const trim = (n: number) =>
@@ -81,7 +81,7 @@ export function buildItemCard(item: ParsedItem): ItemCard {
   if (item.armourRW != null) props.push({ text: "Runic Ward", value: trim(item.armourRW) });
   if (item.itemLevel != null) props.push({ text: "Item Level", value: String(item.itemLevel) });
 
-  const mods: ItemCard["mods"] = { rune: [], implicit: [], prefix: [], suffix: [], explicit: [] };
+  const mods: ItemCard["mods"] = { rune: [], skill: [], implicit: [], prefix: [], suffix: [], explicit: [] };
   for (const m of item.newMods) {
     const g = m.info.generation;
     const key =
@@ -94,7 +94,9 @@ export function buildItemCard(item: ParsedItem): ItemCard {
             m.info.type === ModifierType.Augment ||
               m.info.type === ModifierType.AddedAugment
             ? "rune"
-            : "explicit";
+            : m.info.type === ModifierType.Skill
+              ? "skill"
+              : "explicit";
     for (const s of m.stats) {
       mods[key].push({ text: renderStat(s, rawText), tier: m.info.tier });
     }
