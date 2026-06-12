@@ -5683,6 +5683,1970 @@ her motionless dance the pulse of bliss
 }
 `;
 
+exports[`parseClipboard golden fixtures > parses unique-armour.txt 1`] = `
+{
+  "armourAR": undefined,
+  "armourBLOCK": undefined,
+  "armourES": undefined,
+  "armourEV": undefined,
+  "armourRW": undefined,
+  "augmentSockets": {
+    "current": 2,
+    "empty": 0,
+    "normal": 2,
+  },
+  "baseType": "Primal Markings",
+  "category": "Body Armour",
+  "influences": [],
+  "info": {
+    "h": 3,
+    "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb2R5QXJtb3Vycy9VbmlxdWVzL1RoZUFuY2llbnRPcmRlciIsInciOjIsImgiOjMsInNjYWxlIjoxLCJyZWFsbSI6InBvZTIifV0/5b296b11b7/TheAncientOrder.png",
+    "name": "Forgotten Warden",
+    "namespace": "UNIQUE",
+    "refName": "Forgotten Warden",
+    "tags": [
+      "dex_int_armour",
+    ],
+    "unique": {
+      "base": "Primal Markings",
+    },
+    "w": 2,
+  },
+  "infoVariants": [
+    {
+      "h": 3,
+      "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb2R5QXJtb3Vycy9VbmlxdWVzL1RoZUFuY2llbnRPcmRlciIsInciOjIsImgiOjMsInNjYWxlIjoxLCJyZWFsbSI6InBvZTIifV0/5b296b11b7/TheAncientOrder.png",
+      "name": "Forgotten Warden",
+      "namespace": "UNIQUE",
+      "refName": "Forgotten Warden",
+      "tags": [
+        "dex_int_armour",
+      ],
+      "unique": {
+        "base": "Primal Markings",
+      },
+      "w": 2,
+    },
+  ],
+  "isCorrupted": true,
+  "isUnidentified": false,
+  "itemLevel": 81,
+  "name": "Forgotten Warden",
+  "newMods": [
+    {
+      "info": {
+        "generation": "corrupted",
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Life",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 40,
+            "min": 30,
+            "option": undefined,
+            "unscalable": false,
+            "value": 39,
+          },
+          "stat": {
+            "better": 1,
+            "id": "base_maximum_life",
+            "matchers": [
+              {
+                "string": "# to maximum Life",
+              },
+            ],
+            "ref": "# to maximum Life",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_3299347043",
+                ],
+                "desecrated": [
+                  "desecrated.stat_3299347043",
+                ],
+                "enchant": [
+                  "enchant.stat_3299347043",
+                ],
+                "explicit": [
+                  "explicit.stat_3299347043",
+                ],
+                "fractured": [
+                  "fractured.stat_3299347043",
+                ],
+                "implicit": [
+                  "implicit.stat_3299347043",
+                ],
+                "rune": [
+                  "rune.stat_3299347043",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to maximum Life",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "tags": [],
+        "type": "rune",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 12,
+            "min": 12,
+            "option": undefined,
+            "unscalable": false,
+            "value": 12,
+          },
+          "stat": {
+            "better": 1,
+            "id": "base_item_found_rarity_+%",
+            "matchers": [
+              {
+                "string": "#% increased Rarity of Items found",
+              },
+              {
+                "string": "#% increased Rarity of Items found in Map",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Rarity of Items found",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Rarity of Items found in Map",
+              },
+            ],
+            "ref": "#% increased Rarity of Items found",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_3917489142",
+                ],
+                "desecrated": [
+                  "desecrated.stat_3917489142",
+                ],
+                "enchant": [
+                  "enchant.stat_3917489142",
+                  "enchant.stat_2306002879",
+                ],
+                "explicit": [
+                  "explicit.stat_3917489142",
+                  "explicit.stat_2306002879",
+                ],
+                "fractured": [
+                  "fractured.stat_3917489142",
+                ],
+                "implicit": [
+                  "implicit.stat_3917489142",
+                ],
+                "rune": [
+                  "rune.stat_3917489142",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Rarity of Items found",
+          },
+        },
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 10,
+            "min": 10,
+            "option": undefined,
+            "unscalable": false,
+            "value": 10,
+          },
+          "stat": {
+            "better": 1,
+            "id": "deflection_rating_+%",
+            "matchers": [
+              {
+                "string": "#% increased Deflection Rating",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Deflection Rating",
+              },
+            ],
+            "ref": "#% increased Deflection Rating",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_3040571529",
+                ],
+                "explicit": [
+                  "explicit.stat_3040571529",
+                ],
+                "rune": [
+                  "rune.stat_3040571529",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Deflection Rating",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "tags": [],
+        "type": "skill",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 18,
+            "min": 18,
+            "option": undefined,
+            "unscalable": false,
+            "value": 18,
+          },
+          "stat": {
+            "better": 1,
+            "matchers": [
+              {
+                "string": "Grants Skill: Level # Spirit Vessel",
+              },
+            ],
+            "ref": "Grants Skill: Level # Spirit Vessel",
+            "trade": {
+              "ids": {
+                "skill": [
+                  "skill.spirit_vessel_companion",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "Grants Skill: Level # Spirit Vessel",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Evasion",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 100,
+            "min": 70,
+            "option": undefined,
+            "unscalable": false,
+            "value": 97,
+          },
+          "stat": {
+            "better": 1,
+            "id": "+_deflection_rating_per_50_missing_maximum_energy_shield",
+            "matchers": [
+              {
+                "string": "# to Deflection Rating per 50 missing Energy Shield",
+              },
+            ],
+            "ref": "# to Deflection Rating per 50 missing Energy Shield",
+            "trade": {
+              "ids": {
+                "explicit": [
+                  "explicit.stat_1207006772",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to Deflection Rating per 50 missing Energy Shield",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Evasion",
+          "Energy Shield",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 300,
+            "min": 200,
+            "option": undefined,
+            "unscalable": false,
+            "value": 269,
+          },
+          "stat": {
+            "better": 1,
+            "id": "local_evasion_and_energy_shield_+%",
+            "matchers": [
+              {
+                "string": "#% increased Evasion and Energy Shield",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Evasion and Energy Shield",
+              },
+            ],
+            "ref": "#% increased Evasion and Energy Shield",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_1999113824",
+                ],
+                "desecrated": [
+                  "desecrated.stat_1999113824",
+                ],
+                "enchant": [
+                  "enchant.stat_1999113824",
+                ],
+                "explicit": [
+                  "explicit.stat_1999113824",
+                ],
+                "fractured": [
+                  "fractured.stat_1999113824",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Evasion and Energy Shield",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Attribute",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 30,
+            "min": 20,
+            "option": undefined,
+            "unscalable": false,
+            "value": 25,
+          },
+          "stat": {
+            "better": 1,
+            "id": "additional_dexterity",
+            "matchers": [
+              {
+                "string": "# to Dexterity",
+              },
+            ],
+            "ref": "# to Dexterity",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_3261801346",
+                ],
+                "desecrated": [
+                  "desecrated.stat_3261801346",
+                ],
+                "enchant": [
+                  "enchant.stat_3261801346",
+                ],
+                "explicit": [
+                  "explicit.stat_3261801346",
+                ],
+                "fractured": [
+                  "fractured.stat_3261801346",
+                ],
+                "implicit": [
+                  "implicit.stat_3261801346",
+                ],
+                "rune": [
+                  "rune.stat_3261801346",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to Dexterity",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Life",
+          "Minion",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 50,
+            "min": 30,
+            "option": undefined,
+            "unscalable": false,
+            "value": 35,
+          },
+          "stat": {
+            "better": 1,
+            "id": "companion_maximum_life_+%",
+            "matchers": [
+              {
+                "string": "Companions have #% increased maximum Life",
+              },
+              {
+                "negate": true,
+                "string": "Companions have #% reduced maximum Life",
+              },
+            ],
+            "ref": "Companions have #% increased maximum Life",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_1805182458",
+                ],
+                "explicit": [
+                  "explicit.stat_1805182458",
+                ],
+                "fractured": [
+                  "fractured.stat_1805182458",
+                ],
+                "rune": [
+                  "rune.stat_1805182458",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "Companions have #% increased maximum Life",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 15,
+            "min": 10,
+            "option": undefined,
+            "unscalable": false,
+            "value": 15,
+          },
+          "stat": {
+            "better": 1,
+            "id": "companion_takes_%_damage_from_deflected_hits_before_you",
+            "matchers": [
+              {
+                "string": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+              },
+            ],
+            "ref": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+            "trade": {
+              "ids": {
+                "explicit": [
+                  "explicit.stat_3918757604",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+          },
+        },
+      ],
+    },
+  ],
+  "quality": 20,
+  "rarity": "Unique",
+  "rawText": "Item Class: Body Armours
+Rarity: Unique
+Forgotten Warden
+Primal Markings
+--------
+Quality: +20% (augmented)
+Evasion Rating: 1187 (augmented)
+Energy Shield: 363 (augmented)
+--------
+Requires: Level 78, 67 Dex, 67 Int
+--------
+Sockets: S S
+--------
+Item Level: 81
+--------
+{ Corruption Enhancement — Life }
++39(30-40) to maximum Life
+--------
+12% increased Rarity of Items found (rune)
+10% increased Deflection Rating (rune)
+--------
+Grants Skill: Level 18 Spirit Vessel
+--------
+{ Unique Modifier — Evasion }
++97(70-100) to Deflection Rating per 50 missing Energy Shield
+{ Unique Modifier — Evasion, Energy Shield }
+269(200-300)% increased Evasion and Energy Shield
+{ Unique Modifier — Attribute }
++25(20-30) to Dexterity
+{ Unique Modifier — Life, Minion }
+Companions have 35(30-50)% increased maximum Life
+{ Unique Modifier }
+15(10-15)% of Damage from Deflected Hits is taken from Damageable Companion's Life before you
+--------
+A gift from the Draíocht, lost in Darkness.
+The bronze hums. The cloth sighs.
+Living pieces of her, yearning to exist.
+--------
+Corrupted
+",
+  "requires": {
+    "dex": 67,
+    "int": 67,
+    "level": 78,
+    "str": 0,
+  },
+  "statsByType": [
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 40,
+            "min": 30,
+            "option": undefined,
+            "value": 39,
+          },
+          "modifier": {
+            "info": {
+              "generation": "corrupted",
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Life",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 40,
+                  "min": 30,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 39,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_maximum_life",
+                  "matchers": [
+                    {
+                      "string": "# to maximum Life",
+                    },
+                  ],
+                  "ref": "# to maximum Life",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_3299347043",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_3299347043",
+                      ],
+                      "enchant": [
+                        "enchant.stat_3299347043",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3299347043",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3299347043",
+                      ],
+                      "implicit": [
+                        "implicit.stat_3299347043",
+                      ],
+                      "rune": [
+                        "rune.stat_3299347043",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to maximum Life",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 40,
+              "min": 30,
+              "option": undefined,
+              "unscalable": false,
+              "value": 39,
+            },
+            "stat": {
+              "better": 1,
+              "id": "base_maximum_life",
+              "matchers": [
+                {
+                  "string": "# to maximum Life",
+                },
+              ],
+              "ref": "# to maximum Life",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_3299347043",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_3299347043",
+                  ],
+                  "enchant": [
+                    "enchant.stat_3299347043",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3299347043",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3299347043",
+                  ],
+                  "implicit": [
+                    "implicit.stat_3299347043",
+                  ],
+                  "rune": [
+                    "rune.stat_3299347043",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to maximum Life",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "base_maximum_life",
+        "matchers": [
+          {
+            "string": "# to maximum Life",
+          },
+        ],
+        "ref": "# to maximum Life",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_3299347043",
+            ],
+            "desecrated": [
+              "desecrated.stat_3299347043",
+            ],
+            "enchant": [
+              "enchant.stat_3299347043",
+            ],
+            "explicit": [
+              "explicit.stat_3299347043",
+            ],
+            "fractured": [
+              "fractured.stat_3299347043",
+            ],
+            "implicit": [
+              "implicit.stat_3299347043",
+            ],
+            "rune": [
+              "rune.stat_3299347043",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 12,
+            "min": 12,
+            "option": undefined,
+            "value": 12,
+          },
+          "modifier": {
+            "info": {
+              "tags": [],
+              "type": "rune",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 12,
+                  "min": 12,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 12,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_item_found_rarity_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Rarity of Items found",
+                    },
+                    {
+                      "string": "#% increased Rarity of Items found in Map",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Rarity of Items found",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Rarity of Items found in Map",
+                    },
+                  ],
+                  "ref": "#% increased Rarity of Items found",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_3917489142",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_3917489142",
+                      ],
+                      "enchant": [
+                        "enchant.stat_3917489142",
+                        "enchant.stat_2306002879",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3917489142",
+                        "explicit.stat_2306002879",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3917489142",
+                      ],
+                      "implicit": [
+                        "implicit.stat_3917489142",
+                      ],
+                      "rune": [
+                        "rune.stat_3917489142",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Rarity of Items found",
+                },
+              },
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 10,
+                  "min": 10,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 10,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "deflection_rating_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Deflection Rating",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Deflection Rating",
+                    },
+                  ],
+                  "ref": "#% increased Deflection Rating",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_3040571529",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3040571529",
+                      ],
+                      "rune": [
+                        "rune.stat_3040571529",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Deflection Rating",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 12,
+              "min": 12,
+              "option": undefined,
+              "unscalable": false,
+              "value": 12,
+            },
+            "stat": {
+              "better": 1,
+              "id": "base_item_found_rarity_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Rarity of Items found",
+                },
+                {
+                  "string": "#% increased Rarity of Items found in Map",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Rarity of Items found",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Rarity of Items found in Map",
+                },
+              ],
+              "ref": "#% increased Rarity of Items found",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_3917489142",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_3917489142",
+                  ],
+                  "enchant": [
+                    "enchant.stat_3917489142",
+                    "enchant.stat_2306002879",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3917489142",
+                    "explicit.stat_2306002879",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3917489142",
+                  ],
+                  "implicit": [
+                    "implicit.stat_3917489142",
+                  ],
+                  "rune": [
+                    "rune.stat_3917489142",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Rarity of Items found",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "base_item_found_rarity_+%",
+        "matchers": [
+          {
+            "string": "#% increased Rarity of Items found",
+          },
+          {
+            "string": "#% increased Rarity of Items found in Map",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Rarity of Items found",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Rarity of Items found in Map",
+          },
+        ],
+        "ref": "#% increased Rarity of Items found",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_3917489142",
+            ],
+            "desecrated": [
+              "desecrated.stat_3917489142",
+            ],
+            "enchant": [
+              "enchant.stat_3917489142",
+              "enchant.stat_2306002879",
+            ],
+            "explicit": [
+              "explicit.stat_3917489142",
+              "explicit.stat_2306002879",
+            ],
+            "fractured": [
+              "fractured.stat_3917489142",
+            ],
+            "implicit": [
+              "implicit.stat_3917489142",
+            ],
+            "rune": [
+              "rune.stat_3917489142",
+            ],
+          },
+        },
+      },
+      "type": "rune",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 10,
+            "min": 10,
+            "option": undefined,
+            "value": 10,
+          },
+          "modifier": {
+            "info": {
+              "tags": [],
+              "type": "rune",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 12,
+                  "min": 12,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 12,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_item_found_rarity_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Rarity of Items found",
+                    },
+                    {
+                      "string": "#% increased Rarity of Items found in Map",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Rarity of Items found",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Rarity of Items found in Map",
+                    },
+                  ],
+                  "ref": "#% increased Rarity of Items found",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_3917489142",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_3917489142",
+                      ],
+                      "enchant": [
+                        "enchant.stat_3917489142",
+                        "enchant.stat_2306002879",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3917489142",
+                        "explicit.stat_2306002879",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3917489142",
+                      ],
+                      "implicit": [
+                        "implicit.stat_3917489142",
+                      ],
+                      "rune": [
+                        "rune.stat_3917489142",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Rarity of Items found",
+                },
+              },
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 10,
+                  "min": 10,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 10,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "deflection_rating_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Deflection Rating",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Deflection Rating",
+                    },
+                  ],
+                  "ref": "#% increased Deflection Rating",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_3040571529",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3040571529",
+                      ],
+                      "rune": [
+                        "rune.stat_3040571529",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Deflection Rating",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 10,
+              "min": 10,
+              "option": undefined,
+              "unscalable": false,
+              "value": 10,
+            },
+            "stat": {
+              "better": 1,
+              "id": "deflection_rating_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Deflection Rating",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Deflection Rating",
+                },
+              ],
+              "ref": "#% increased Deflection Rating",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_3040571529",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3040571529",
+                  ],
+                  "rune": [
+                    "rune.stat_3040571529",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Deflection Rating",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "deflection_rating_+%",
+        "matchers": [
+          {
+            "string": "#% increased Deflection Rating",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Deflection Rating",
+          },
+        ],
+        "ref": "#% increased Deflection Rating",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_3040571529",
+            ],
+            "explicit": [
+              "explicit.stat_3040571529",
+            ],
+            "rune": [
+              "rune.stat_3040571529",
+            ],
+          },
+        },
+      },
+      "type": "rune",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 18,
+            "min": 18,
+            "option": undefined,
+            "value": 18,
+          },
+          "modifier": {
+            "info": {
+              "tags": [],
+              "type": "skill",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 18,
+                  "min": 18,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 18,
+                },
+                "stat": {
+                  "better": 1,
+                  "matchers": [
+                    {
+                      "string": "Grants Skill: Level # Spirit Vessel",
+                    },
+                  ],
+                  "ref": "Grants Skill: Level # Spirit Vessel",
+                  "trade": {
+                    "ids": {
+                      "skill": [
+                        "skill.spirit_vessel_companion",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "Grants Skill: Level # Spirit Vessel",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 18,
+              "min": 18,
+              "option": undefined,
+              "unscalable": false,
+              "value": 18,
+            },
+            "stat": {
+              "better": 1,
+              "matchers": [
+                {
+                  "string": "Grants Skill: Level # Spirit Vessel",
+                },
+              ],
+              "ref": "Grants Skill: Level # Spirit Vessel",
+              "trade": {
+                "ids": {
+                  "skill": [
+                    "skill.spirit_vessel_companion",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "Grants Skill: Level # Spirit Vessel",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "matchers": [
+          {
+            "string": "Grants Skill: Level # Spirit Vessel",
+          },
+        ],
+        "ref": "Grants Skill: Level # Spirit Vessel",
+        "trade": {
+          "ids": {
+            "skill": [
+              "skill.spirit_vessel_companion",
+            ],
+          },
+        },
+      },
+      "type": "skill",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 100,
+            "min": 70,
+            "option": undefined,
+            "value": 97,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Evasion",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 100,
+                  "min": 70,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 97,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "+_deflection_rating_per_50_missing_maximum_energy_shield",
+                  "matchers": [
+                    {
+                      "string": "# to Deflection Rating per 50 missing Energy Shield",
+                    },
+                  ],
+                  "ref": "# to Deflection Rating per 50 missing Energy Shield",
+                  "trade": {
+                    "ids": {
+                      "explicit": [
+                        "explicit.stat_1207006772",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to Deflection Rating per 50 missing Energy Shield",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 100,
+              "min": 70,
+              "option": undefined,
+              "unscalable": false,
+              "value": 97,
+            },
+            "stat": {
+              "better": 1,
+              "id": "+_deflection_rating_per_50_missing_maximum_energy_shield",
+              "matchers": [
+                {
+                  "string": "# to Deflection Rating per 50 missing Energy Shield",
+                },
+              ],
+              "ref": "# to Deflection Rating per 50 missing Energy Shield",
+              "trade": {
+                "ids": {
+                  "explicit": [
+                    "explicit.stat_1207006772",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to Deflection Rating per 50 missing Energy Shield",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "+_deflection_rating_per_50_missing_maximum_energy_shield",
+        "matchers": [
+          {
+            "string": "# to Deflection Rating per 50 missing Energy Shield",
+          },
+        ],
+        "ref": "# to Deflection Rating per 50 missing Energy Shield",
+        "trade": {
+          "ids": {
+            "explicit": [
+              "explicit.stat_1207006772",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 300,
+            "min": 200,
+            "option": undefined,
+            "value": 269,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Evasion",
+                "Energy Shield",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 300,
+                  "min": 200,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 269,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_evasion_and_energy_shield_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Evasion and Energy Shield",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Evasion and Energy Shield",
+                    },
+                  ],
+                  "ref": "#% increased Evasion and Energy Shield",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_1999113824",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_1999113824",
+                      ],
+                      "enchant": [
+                        "enchant.stat_1999113824",
+                      ],
+                      "explicit": [
+                        "explicit.stat_1999113824",
+                      ],
+                      "fractured": [
+                        "fractured.stat_1999113824",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Evasion and Energy Shield",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 300,
+              "min": 200,
+              "option": undefined,
+              "unscalable": false,
+              "value": 269,
+            },
+            "stat": {
+              "better": 1,
+              "id": "local_evasion_and_energy_shield_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Evasion and Energy Shield",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Evasion and Energy Shield",
+                },
+              ],
+              "ref": "#% increased Evasion and Energy Shield",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_1999113824",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_1999113824",
+                  ],
+                  "enchant": [
+                    "enchant.stat_1999113824",
+                  ],
+                  "explicit": [
+                    "explicit.stat_1999113824",
+                  ],
+                  "fractured": [
+                    "fractured.stat_1999113824",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Evasion and Energy Shield",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "local_evasion_and_energy_shield_+%",
+        "matchers": [
+          {
+            "string": "#% increased Evasion and Energy Shield",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Evasion and Energy Shield",
+          },
+        ],
+        "ref": "#% increased Evasion and Energy Shield",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_1999113824",
+            ],
+            "desecrated": [
+              "desecrated.stat_1999113824",
+            ],
+            "enchant": [
+              "enchant.stat_1999113824",
+            ],
+            "explicit": [
+              "explicit.stat_1999113824",
+            ],
+            "fractured": [
+              "fractured.stat_1999113824",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 30,
+            "min": 20,
+            "option": undefined,
+            "value": 25,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Attribute",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 30,
+                  "min": 20,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 25,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "additional_dexterity",
+                  "matchers": [
+                    {
+                      "string": "# to Dexterity",
+                    },
+                  ],
+                  "ref": "# to Dexterity",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_3261801346",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_3261801346",
+                      ],
+                      "enchant": [
+                        "enchant.stat_3261801346",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3261801346",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3261801346",
+                      ],
+                      "implicit": [
+                        "implicit.stat_3261801346",
+                      ],
+                      "rune": [
+                        "rune.stat_3261801346",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to Dexterity",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 30,
+              "min": 20,
+              "option": undefined,
+              "unscalable": false,
+              "value": 25,
+            },
+            "stat": {
+              "better": 1,
+              "id": "additional_dexterity",
+              "matchers": [
+                {
+                  "string": "# to Dexterity",
+                },
+              ],
+              "ref": "# to Dexterity",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_3261801346",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_3261801346",
+                  ],
+                  "enchant": [
+                    "enchant.stat_3261801346",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3261801346",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3261801346",
+                  ],
+                  "implicit": [
+                    "implicit.stat_3261801346",
+                  ],
+                  "rune": [
+                    "rune.stat_3261801346",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to Dexterity",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "additional_dexterity",
+        "matchers": [
+          {
+            "string": "# to Dexterity",
+          },
+        ],
+        "ref": "# to Dexterity",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_3261801346",
+            ],
+            "desecrated": [
+              "desecrated.stat_3261801346",
+            ],
+            "enchant": [
+              "enchant.stat_3261801346",
+            ],
+            "explicit": [
+              "explicit.stat_3261801346",
+            ],
+            "fractured": [
+              "fractured.stat_3261801346",
+            ],
+            "implicit": [
+              "implicit.stat_3261801346",
+            ],
+            "rune": [
+              "rune.stat_3261801346",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 50,
+            "min": 30,
+            "option": undefined,
+            "value": 35,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Life",
+                "Minion",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 50,
+                  "min": 30,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 35,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "companion_maximum_life_+%",
+                  "matchers": [
+                    {
+                      "string": "Companions have #% increased maximum Life",
+                    },
+                    {
+                      "negate": true,
+                      "string": "Companions have #% reduced maximum Life",
+                    },
+                  ],
+                  "ref": "Companions have #% increased maximum Life",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_1805182458",
+                      ],
+                      "explicit": [
+                        "explicit.stat_1805182458",
+                      ],
+                      "fractured": [
+                        "fractured.stat_1805182458",
+                      ],
+                      "rune": [
+                        "rune.stat_1805182458",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "Companions have #% increased maximum Life",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 50,
+              "min": 30,
+              "option": undefined,
+              "unscalable": false,
+              "value": 35,
+            },
+            "stat": {
+              "better": 1,
+              "id": "companion_maximum_life_+%",
+              "matchers": [
+                {
+                  "string": "Companions have #% increased maximum Life",
+                },
+                {
+                  "negate": true,
+                  "string": "Companions have #% reduced maximum Life",
+                },
+              ],
+              "ref": "Companions have #% increased maximum Life",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_1805182458",
+                  ],
+                  "explicit": [
+                    "explicit.stat_1805182458",
+                  ],
+                  "fractured": [
+                    "fractured.stat_1805182458",
+                  ],
+                  "rune": [
+                    "rune.stat_1805182458",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "Companions have #% increased maximum Life",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "companion_maximum_life_+%",
+        "matchers": [
+          {
+            "string": "Companions have #% increased maximum Life",
+          },
+          {
+            "negate": true,
+            "string": "Companions have #% reduced maximum Life",
+          },
+        ],
+        "ref": "Companions have #% increased maximum Life",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_1805182458",
+            ],
+            "explicit": [
+              "explicit.stat_1805182458",
+            ],
+            "fractured": [
+              "fractured.stat_1805182458",
+            ],
+            "rune": [
+              "rune.stat_1805182458",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 15,
+            "min": 10,
+            "option": undefined,
+            "value": 15,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 15,
+                  "min": 10,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 15,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "companion_takes_%_damage_from_deflected_hits_before_you",
+                  "matchers": [
+                    {
+                      "string": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+                    },
+                  ],
+                  "ref": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+                  "trade": {
+                    "ids": {
+                      "explicit": [
+                        "explicit.stat_3918757604",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 15,
+              "min": 10,
+              "option": undefined,
+              "unscalable": false,
+              "value": 15,
+            },
+            "stat": {
+              "better": 1,
+              "id": "companion_takes_%_damage_from_deflected_hits_before_you",
+              "matchers": [
+                {
+                  "string": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+                },
+              ],
+              "ref": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+              "trade": {
+                "ids": {
+                  "explicit": [
+                    "explicit.stat_3918757604",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "companion_takes_%_damage_from_deflected_hits_before_you",
+        "matchers": [
+          {
+            "string": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+          },
+        ],
+        "ref": "#% of Damage from Deflected Hits is taken from Damageable Companion's Life before you",
+        "trade": {
+          "ids": {
+            "explicit": [
+              "explicit.stat_3918757604",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+  ],
+  "unknownModifiers": [],
+  "weaponAS": undefined,
+  "weaponCOLD": undefined,
+  "weaponCRIT": undefined,
+  "weaponELEMENTAL": undefined,
+  "weaponFIRE": undefined,
+  "weaponLIGHTNING": undefined,
+  "weaponPHYSICAL": undefined,
+  "weaponRELOAD": undefined,
+  "weaponSPIRIT": undefined,
+}
+`;
+
 exports[`parseClipboard golden fixtures > parses waystone.txt 1`] = `
 {
   "baseType": "Waystone (Tier 15)",

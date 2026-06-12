@@ -36,7 +36,10 @@ async function parseItem(clipboard: string) {
   const { parseClipboard } = await import("@/parser");
   const r = parseClipboard(clipboard);
   if (r.isErr()) throw new Error(`not an item: ${r.error}`);
-  return r.value;
+  // Vendor parseArmour discards armour/evasion/ES for uniques (issue #3);
+  // recover them from rawText so the card + defence stat filters match rares.
+  const { restoreUniqueDefences } = await import("./unique-defences");
+  return restoreUniqueDefences(r.value);
 }
 
 /** clipboard -> just the trade2 query (thin wrapper; existing callers/tests). */
