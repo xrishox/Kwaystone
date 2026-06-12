@@ -30,6 +30,7 @@ from poed.brain import Brain
 from poed import hyprbind
 from poed import uniquescan
 from poed.hyprbind import EscBind, MultiBindManager
+from poed.leaguebox import LeagueBox
 from poed.loginbox import LoginBox
 from poed.overlay import OverlayPanel
 from poed.portal import GlobalShortcuts
@@ -45,6 +46,7 @@ class App:
         self.esc_bind = esc_bind
         self.panel = None
         self.loginbox = None
+        self.leaguebox = None
         self.badges = None
         self.bind_mgr = None
         self.in_flight = False
@@ -174,6 +176,26 @@ class App:
 
         threading.Thread(target=run_logout, daemon=True).start()
 
+    def on_league_changed(self, league):
+        if league == self.cfg["league"]:
+            return
+        self.cfg["league"] = league
+        _LOG.info("league changed to %s", league)
+        try:
+            config.save_league(None, league)
+        except OSError as e:
+            _LOG.warning("could not persist league: %s", e)
+        # Old-league badges are wrong now; next Alt+X scans the new league.
+        if self.badges is not None:
+            self.badges.hide()
+        # Re-price the visible item in the new league (fresh query, no overrides).
+        if self.panel is not None and self.panel.is_visible() and self.last_clipboard:
+            self.on_requery([])
+        # Re-warm poe2scout snapshot + unique corpus for the new league.
+        threading.Thread(
+            target=uniquescan.warm, args=(self.brain, self.cfg), daemon=True
+        ).start()
+
     def on_visibility(self, visible):
         # Bind/unbind the consuming Esc only while the panel is shown.
         if visible:
@@ -266,7 +288,26 @@ class App:
         )
         self.loginbox = loginbox
         self.panel.attach_loginbox(loginbox)
+        leaguebox = LeagueBox(
+            application, self.cfg["league"], self.on_league_changed,
+            positions=self.positions,
+        )
+        self.leaguebox = leaguebox
+        self.panel.attach_leaguebox(leaguebox)
         self.badges = BadgeLayer(application)
+
+        def fetch_leagues():
+            # Roster is cosmetic until it arrives; failure leaves the
+            # configured league as the only entry.
+            try:
+                entries = self.brain.request({"cmd": "leagues"})
+                names = [e["id"] for e in entries]
+            except (RuntimeError, OSError, TimeoutError) as e:
+                _LOG.warning("league roster unavailable: %s", e)
+                return
+            GLib.idle_add(leaguebox.set_leagues, names, self.cfg["league"])
+
+        threading.Thread(target=fetch_leagues, daemon=True).start()
 
         def on_shortcuts_bound():
             if self.bind_mgr is not None:
@@ -365,7 +406,12 @@ def main():
     brain = Brain(
         brain_dir=brain_module.resolve_brain_dir(),
         socket_path=sock,
-        env_extra={"POE2_SESSID": sessid} if sessid else None,
+        # POE2_LEAGUE steers the brain's startup warm (it otherwise warms
+        # "Standard" regardless of config); per-request league still wins.
+        env_extra={
+            "POE2_LEAGUE": cfg["league"],
+            **({"POE2_SESSID": sessid} if sessid else {}),
+        },
     )
     brain.start()
     esc_bind = EscBind("panel-close")

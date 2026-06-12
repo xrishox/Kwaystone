@@ -60,6 +60,42 @@ def test_default_path_migrates_old_dir(tmp_path, monkeypatch):
     assert (tmp_path / ".config/waystone/config.toml").read_text() == 'league = "Standard"\n'
 
 
+def test_save_league_replaces_line_keeps_comments(tmp_path):
+    p = tmp_path / "config.toml"
+    p.write_text(
+        "# my settings\n"
+        'league = "Standard"  # current league\n'
+        'account_name = "kris"\n'
+    )
+
+    config.save_league(p, "Runes of Aldur")
+
+    assert p.read_text() == (
+        "# my settings\n"
+        'league = "Runes of Aldur"  # current league\n'
+        'account_name = "kris"\n'
+    )
+
+
+def test_save_league_appends_when_missing(tmp_path):
+    p = tmp_path / "config.toml"
+    p.write_text('account_name = "kris"\n')
+
+    config.save_league(p, "Standard")
+
+    assert config.load(p)["league"] == "Standard"
+    assert 'account_name = "kris"' in p.read_text()
+
+
+def test_save_league_creates_template_when_no_file(tmp_path):
+    p = tmp_path / "config.toml"
+
+    config.save_league(p, "Hardcore")
+
+    assert config.load(p)["league"] == "Hardcore"
+    assert p.stat().st_mode & 0o777 == 0o600
+
+
 def test_load_invalid_toml_exits(tmp_path):
     p = tmp_path / "config.toml"
     p.write_text("league = [unclosed\n")

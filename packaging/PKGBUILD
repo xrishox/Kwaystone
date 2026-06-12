@@ -1,6 +1,6 @@
 # Maintainer: Kris Kruse <kriskruse@users.noreply.github.com>
 pkgname=waystone-git
-pkgver=r4.04066bf
+pkgver=r5.332eeae
 pkgrel=1
 pkgdesc="Path of Exile 2 price-check overlay for Wayland (Hyprland)"
 arch=('any')

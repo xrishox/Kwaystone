@@ -212,6 +212,7 @@ class OverlayPanel:
         self._overrides: dict[int, dict] = {}        # stat overrides, keyed by id -> {"i": id, ...}
         self._prop_overrides: dict[str, dict] = {}   # prop overrides, keyed by key -> {"p": key, ...}
         self._loginbox = None
+        self._leaguebox = None
         self._requery_id = 0
         self._popovers: list = []
         self._active_pop = None
@@ -385,6 +386,10 @@ class OverlayPanel:
     def attach_loginbox(self, box) -> None:
         """Bind a LoginBox so it shows/hides with the panel."""
         self._loginbox = box
+
+    def attach_leaguebox(self, box) -> None:
+        """Bind a LeagueBox so it shows/hides with the panel."""
+        self._leaguebox = box
 
     def show_loading(self) -> None:
         # New lookup: drop any pending user intent from the previous item.
@@ -679,6 +684,8 @@ class OverlayPanel:
         self._win.set_default_size(1, 1)
         if self._loginbox is not None:
             self._loginbox.set_visible(False)
+        if self._leaguebox is not None:
+            self._leaguebox.set_visible(False)
         # Release keyboard so the game regains input the moment the panel hides.
         LayerShell.set_keyboard_mode(self._win, LayerShell.KeyboardMode.NONE)
         if self._on_visibility is not None:
@@ -699,6 +706,8 @@ class OverlayPanel:
         draggable.set_position(self._win, *self._pos)
         if self._loginbox is not None:
             self._loginbox.set_visible(True)
+        if self._leaguebox is not None:
+            self._leaguebox.set_visible(True)
         if self._on_visibility is not None:
             self._on_visibility(True)
         # The content was just rebuilt; its natural size isn't known until the

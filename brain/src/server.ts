@@ -48,6 +48,7 @@ const handlers: Record<string, Handler> = {
     const { scanCorpus } = await import("./uniques");
     return scanCorpus(req.league ?? process.env.POE2_LEAGUE ?? "Standard");
   },
+  leagues: async () => (await import("./leagues")).leagues(),
   login: async (req) => (await import("./session")).login(String(req.sessionId ?? "")),
   logout: async () => (await import("./session")).logout(),
 };

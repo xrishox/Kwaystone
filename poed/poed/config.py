@@ -1,5 +1,6 @@
-import tomllib
 import pathlib
+import re
+import tomllib
 
 DEFAULTS = {
     "league": "Runes of Aldur",  # verified current league
@@ -65,6 +66,25 @@ def default_path() -> pathlib.Path:
     base = pathlib.Path.home() / ".config"
     migrate_dir(base / "poe2-overlay", base / "waystone")
     return base / "waystone/config.toml"
+
+
+def save_league(p: pathlib.Path | None, league: str) -> None:
+    """Persist the league dropdown choice: surgical line replace so user
+    comments and the rest of the file survive."""
+    if p is None:
+        p = default_path()
+    if not p.exists():
+        load(p)  # writes the template
+    lines = p.read_text().splitlines(keepends=True)
+    league_toml = 'league = "%s"' % league.replace("\\", "\\\\").replace('"', '\\"')
+    for i, line in enumerate(lines):
+        m = re.match(r'(\s*league\s*=\s*"[^"]*")(.*\n?)', line)
+        if m:
+            lines[i] = league_toml + m.group(2)
+            break
+    else:
+        lines.append(league_toml + "\n")
+    p.write_text("".join(lines))
 
 
 def load(p: pathlib.Path | None = None) -> dict:
