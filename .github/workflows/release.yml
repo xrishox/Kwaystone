@@ -14,6 +14,9 @@ jobs:
   release:
     needs: tests
     runs-on: ubuntu-latest
+    # 'aur' environment carries the AUR secrets behind a required-reviewer
+    # gate: each release waits for a manual approve before publishing.
+    environment: aur
     steps:
       - uses: actions/checkout@v5
 
