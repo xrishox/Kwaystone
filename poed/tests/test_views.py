@@ -663,3 +663,15 @@ def test_skill_group_renders_above_implicits():
     labels = [label for label, _ in card["groups"]]
     assert "Skill" in labels
     assert labels.index("Skill") < labels.index("Implicits")
+
+
+def test_skill_group_renders_first():
+    from poed.views import item_card
+
+    card = item_card({
+        "name": "X", "mods": {
+            "skill": [{"text": "s"}], "rune": [{"text": "r"}],
+            "implicit": [{"text": "i"}], "explicit": [{"text": "m"}],
+        },
+    })
+    assert [label for label, _ in card["groups"]][0] == "Skill"
