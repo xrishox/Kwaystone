@@ -1,8 +1,14 @@
 # Waystone
 
-Path of Exile 2 price-checking overlay, built Wayland-first for Arch Linux + Hyprland. The name: a [Waystone](https://www.poe2wiki.net/wiki/Waystone) opens PoE2's endgame maps — and this one runs on Wayland.
+Path of Exile 2 price-checking overlay, built Wayland-first for Arch Linux + Hyprland.
 
 Exists because existing tools (Exiled Exchange 2, Sidekick) are broken on Wayland — Electron refuses the portal GlobalShortcuts API, so this project goes around Electron entirely.
+
+## AI disclosure
+
+This project was built with the help of AI (Claude). Side projects like this wouldn't be possible for me without it.
+
+If that's a concern for you, the source is right here — read through it, and issues and PRs are welcome.
 
 ## Features
 
