@@ -1,0 +1,30 @@
+Item Class: Gloves
+Rarity: Rare
+Storm Caress
+Runeforged Stalking Bracers
+--------
+Quality: +20% (augmented)
+Evasion Rating: 769 (augmented)
+Runic Ward: 34 (augmented)
+--------
+Requires: Level 65, 80 Dex
+--------
+Sockets: S 
+--------
+Item Level: 80
+--------
++11% to Chaos Resistance (rune)
+--------
+{ Prefix Modifier "Nightmare's" (Tier: 2) — Evasion }
+86(80-91)% increased Evasion Rating
+{ Prefix Modifier "Ibex's" (Tier: 2) — Life, Evasion }
+35(33-38)% increased Evasion Rating
++37(33-41) to maximum Life
+{ Prefix Modifier "Vaporous" (Tier: 1) — Evasion }
++157(147-176) to Evasion Rating
+{ Suffix Modifier "of the Lamprey" (Tier: 2) — Life, Physical, Attack }
+Leech 8.41(8-8.9)% of Physical Attack Damage as Life
+{ Suffix Modifier "of the Jaguar" (Tier: 3) — Attribute }
++30(28-30) to Dexterity
+{ Suffix Modifier "of the Ice" (Tier: 2) — Elemental, Cold, Resistance }
++37(36-40)% to Cold Resistance

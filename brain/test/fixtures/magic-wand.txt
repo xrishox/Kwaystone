@@ -1,0 +1,9 @@
+Item Class: Wands
+Rarity: Magic
+Volatile Wand of the Apt
+--------
+Wand
+--------
+Item Level: 60
+--------
+15% reduced Attribute Requirements

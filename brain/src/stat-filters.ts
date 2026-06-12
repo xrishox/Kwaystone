@@ -1,0 +1,109 @@
+import { ParsedItem, ItemRarity, itemIsModifiable } from "@/parser";
+import { ModifierType, StatCalculated } from "@/parser/modifiers";
+import {
+  FiltersCreationContext,
+  calculatedStatToFilter,
+  finalFilterTweaks,
+} from "@/web/price-check/filters/create-stat-filters";
+import { StatFilter } from "@/web/price-check/filters/interfaces";
+import {
+  filterItemProp,
+  filterBasePercentile,
+} from "@/web/price-check/filters/pseudo/item-property";
+
+// Mirrors vendor initUiModFilters (create-stat-filters.ts:211) MINUS the
+// filterPseudo(ctx) call. The pseudo pass irreversibly absorbs the source
+// resist/attr/life explicit lines into pseudo.* totals (pseudo/index.ts) and
+// drops the originals, but this project wants those lines displayed and queried
+// as explicit mods. No explicit-only preset exists for finished items, and
+// createExactStatFilters is unsuitable (≤2% clamp drops explicits on 5-mod
+// rares), so we replicate the UI builder here instead of touching vendor.
+//
+// Keep this in lock-step with vendor create-stat-filters.ts:211 on upstream
+// pulls: the ONLY intentional deviation is the removed filterPseudo line.
+// enableAllFilters is inlined (vendor's copy is module-private at :865).
+export function initExplicitModFilters(
+  item: ParsedItem,
+  opts: {
+    searchStatRange: number;
+    defaultAllSelected: boolean;
+  },
+): StatFilter[] {
+  const ctx: FiltersCreationContext = {
+    item,
+    filters: [],
+    searchInRange:
+      item.rarity === ItemRarity.Normal ? 100 : opts.searchStatRange,
+    statsByType: item.statsByType.map((calc) => {
+      if (
+        (calc.type === ModifierType.Fractured ||
+          calc.type === ModifierType.Desecrated) &&
+        calc.stat.trade.ids[ModifierType.Explicit]
+      ) {
+        return { ...calc, type: ModifierType.Explicit };
+      } else {
+        return calc;
+      }
+    }),
+  };
+
+  if (item.info.refName !== "Split Personality") {
+    filterItemProp(ctx);
+    // DEVIATION FROM VENDOR: filterPseudo(ctx) is intentionally omitted here.
+    // (Vendor: `if (item.rarity !== ItemRarity.Unique || !getMaxSockets(item))
+    // filterPseudo(ctx)`.) See header comment.
+    if (item.info.refName === "Emperor's Vigilance") {
+      filterBasePercentile(ctx);
+    }
+  }
+
+  if (itemIsModifiable(item)) {
+    ctx.statsByType = ctx.statsByType.filter(
+      (mod) =>
+        mod.type !== ModifierType.Fractured &&
+        mod.type !== ModifierType.Desecrated,
+    );
+    ctx.statsByType.push(
+      ...item.statsByType.filter(
+        (mod) =>
+          mod.type === ModifierType.Fractured ||
+          mod.type === ModifierType.Desecrated,
+      ),
+    );
+  }
+
+  if (item.isVeiled) {
+    ctx.statsByType = ctx.statsByType.filter(
+      (mod) => mod.type !== ModifierType.Veiled,
+    );
+  }
+
+  ctx.filters.push(
+    ...ctx.statsByType.map((mod) =>
+      calculatedStatToFilter(mod, ctx.searchInRange, item),
+    ),
+  );
+
+  if (item.isVeiled) {
+    ctx.filters.forEach((filter) => {
+      filter.disabled = true;
+    });
+  }
+
+  finalFilterTweaks(ctx);
+
+  if (opts.defaultAllSelected) {
+    enableAllFilters(ctx.filters);
+  }
+
+  return ctx.filters;
+}
+
+// Inlined from vendor create-stat-filters.ts:865 (module-private there).
+function enableAllFilters(filters: StatFilter[]) {
+  for (const filter of filters) {
+    if (!filter.hidden) {
+      filter.disabled = false;
+    }
+  }
+}

@@ -1,0 +1,5684 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`parseClipboard golden fixtures > parses gem.txt 1`] = `
+{
+  "baseType": undefined,
+  "category": "Currency",
+  "influences": [],
+  "info": {
+    "craftable": {
+      "category": "UncutSkillGem",
+    },
+    "h": 1,
+    "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9VbmN1dFNraWxsR2VtIiwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/97f0ceba15/UncutSkillGem.png",
+    "name": "Uncut Skill Gem (Level 19)",
+    "namespace": "ITEM",
+    "refName": "Uncut Skill Gem (Level 19)",
+    "tags": [],
+    "tradeTag": "uncut-skill-gem-19",
+    "w": 1,
+  },
+  "infoVariants": [
+    {
+      "craftable": {
+        "category": "UncutSkillGem",
+      },
+      "h": 1,
+      "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9VbmN1dFNraWxsR2VtIiwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/97f0ceba15/UncutSkillGem.png",
+      "name": "Uncut Skill Gem (Level 19)",
+      "namespace": "ITEM",
+      "refName": "Uncut Skill Gem (Level 19)",
+      "tags": [],
+      "tradeTag": "uncut-skill-gem-19",
+      "w": 1,
+    },
+  ],
+  "isCorrupted": false,
+  "isUnidentified": false,
+  "name": "Uncut Skill Gem (Level 19)",
+  "newMods": [],
+  "rarity": undefined,
+  "rawText": "Item Class: Uncut Skill Gems
+Rarity: Currency
+Uncut Skill Gem (Level 19)
+--------
+Creates a Skill Gem or Level an existing gem to level 19
+--------
+Right Click to engrave a Skill Gem.
+",
+  "statsByType": [],
+  "unknownModifiers": [],
+}
+`;
+
+exports[`parseClipboard golden fixtures > parses magic-mace.txt 1`] = `
+{
+  "augmentSockets": {
+    "current": 0,
+    "empty": 2,
+    "normal": 2,
+  },
+  "baseType": undefined,
+  "category": "Two Hand Mace",
+  "influences": [],
+  "info": {
+    "craftable": {
+      "category": "Two Hand Mace",
+    },
+    "h": 4,
+    "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvV2VhcG9ucy9Ud29IYW5kV2VhcG9ucy9Ud29IYW5kTWFjZXMvQmFzZXR5cGVzLzJITWFjZTA2IiwidyI6MiwiaCI6NCwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/cde79f403c/2HMace06.png",
+    "name": "Temple Maul",
+    "namespace": "ITEM",
+    "refName": "Temple Maul",
+    "tags": [
+      "maraketh_basetype",
+    ],
+    "w": 2,
+  },
+  "infoVariants": [
+    {
+      "craftable": {
+        "category": "Two Hand Mace",
+      },
+      "h": 4,
+      "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvV2VhcG9ucy9Ud29IYW5kV2VhcG9ucy9Ud29IYW5kTWFjZXMvQmFzZXR5cGVzLzJITWFjZTA2IiwidyI6MiwiaCI6NCwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/cde79f403c/2HMace06.png",
+      "name": "Temple Maul",
+      "namespace": "ITEM",
+      "refName": "Temple Maul",
+      "tags": [
+        "maraketh_basetype",
+      ],
+      "w": 2,
+    },
+  ],
+  "isCorrupted": false,
+  "isUnidentified": false,
+  "itemLevel": 32,
+  "name": "Temple Maul",
+  "newMods": [
+    {
+      "info": {
+        "generation": "prefix",
+        "name": "Crackling",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Damage",
+          "Elemental",
+          "Lightning",
+          "Attack",
+        ],
+        "tier": 7,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 35,
+            "min": 23.5,
+            "option": undefined,
+            "unscalable": false,
+            "value": 25.5,
+          },
+          "stat": {
+            "better": 1,
+            "id": "local_minimum_added_lightning_damage",
+            "matchers": [
+              {
+                "string": "Adds # to # Lightning Damage",
+              },
+            ],
+            "ref": "Adds # to # Lightning Damage",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_3336890334",
+                ],
+                "desecrated": [
+                  "desecrated.stat_3336890334",
+                ],
+                "enchant": [
+                  "enchant.stat_3336890334",
+                ],
+                "explicit": [
+                  "explicit.stat_3336890334",
+                ],
+                "fractured": [
+                  "fractured.stat_3336890334",
+                ],
+                "rune": [
+                  "rune.stat_3336890334",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "Adds # to # Lightning Damage",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of the Brute",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Attribute",
+        ],
+        "tier": 8,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 8,
+            "min": 5,
+            "option": undefined,
+            "unscalable": false,
+            "value": 8,
+          },
+          "stat": {
+            "better": 1,
+            "id": "additional_strength",
+            "matchers": [
+              {
+                "string": "# to Strength",
+              },
+            ],
+            "ref": "# to Strength",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_4080418644",
+                ],
+                "desecrated": [
+                  "desecrated.stat_4080418644",
+                ],
+                "enchant": [
+                  "enchant.stat_4080418644",
+                ],
+                "explicit": [
+                  "explicit.stat_4080418644",
+                ],
+                "fractured": [
+                  "fractured.stat_4080418644",
+                ],
+                "implicit": [
+                  "implicit.stat_4080418644",
+                ],
+                "rune": [
+                  "rune.stat_4080418644",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to Strength",
+          },
+        },
+      ],
+    },
+  ],
+  "rarity": "Magic",
+  "rawText": "Item Class: Two Hand Maces
+Rarity: Magic
+Crackling Temple Maul of the Brute
+--------
+Physical Damage: 35-72
+Lightning Damage: 1-50 (lightning)
+Critical Hit Chance: 5.00%
+Attacks per Second: 1.20
+--------
+Requires: Level 28, 57 (augmented) Str
+--------
+Item Level: 32
+--------
+{ Prefix Modifier "Crackling" (Tier: 7) — Damage, Elemental, Lightning, Attack }
+Adds 1(1-4) to 50(46-66) Lightning Damage
+{ Suffix Modifier "of the Brute" (Tier: 8) — Attribute }
++8(5-8) to Strength
+",
+  "requires": {
+    "dex": 0,
+    "int": 0,
+    "level": 28,
+    "str": 57,
+  },
+  "statsByType": [
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 35,
+            "min": 23.5,
+            "option": undefined,
+            "value": 25.5,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Crackling",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Damage",
+                "Elemental",
+                "Lightning",
+                "Attack",
+              ],
+              "tier": 7,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 35,
+                  "min": 23.5,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 25.5,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_minimum_added_lightning_damage",
+                  "matchers": [
+                    {
+                      "string": "Adds # to # Lightning Damage",
+                    },
+                  ],
+                  "ref": "Adds # to # Lightning Damage",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_3336890334",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_3336890334",
+                      ],
+                      "enchant": [
+                        "enchant.stat_3336890334",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3336890334",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3336890334",
+                      ],
+                      "rune": [
+                        "rune.stat_3336890334",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "Adds # to # Lightning Damage",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 35,
+              "min": 23.5,
+              "option": undefined,
+              "unscalable": false,
+              "value": 25.5,
+            },
+            "stat": {
+              "better": 1,
+              "id": "local_minimum_added_lightning_damage",
+              "matchers": [
+                {
+                  "string": "Adds # to # Lightning Damage",
+                },
+              ],
+              "ref": "Adds # to # Lightning Damage",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_3336890334",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_3336890334",
+                  ],
+                  "enchant": [
+                    "enchant.stat_3336890334",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3336890334",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3336890334",
+                  ],
+                  "rune": [
+                    "rune.stat_3336890334",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "Adds # to # Lightning Damage",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "local_minimum_added_lightning_damage",
+        "matchers": [
+          {
+            "string": "Adds # to # Lightning Damage",
+          },
+        ],
+        "ref": "Adds # to # Lightning Damage",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_3336890334",
+            ],
+            "desecrated": [
+              "desecrated.stat_3336890334",
+            ],
+            "enchant": [
+              "enchant.stat_3336890334",
+            ],
+            "explicit": [
+              "explicit.stat_3336890334",
+            ],
+            "fractured": [
+              "fractured.stat_3336890334",
+            ],
+            "rune": [
+              "rune.stat_3336890334",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 8,
+            "min": 5,
+            "option": undefined,
+            "value": 8,
+          },
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of the Brute",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Attribute",
+              ],
+              "tier": 8,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 8,
+                  "min": 5,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 8,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "additional_strength",
+                  "matchers": [
+                    {
+                      "string": "# to Strength",
+                    },
+                  ],
+                  "ref": "# to Strength",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_4080418644",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_4080418644",
+                      ],
+                      "enchant": [
+                        "enchant.stat_4080418644",
+                      ],
+                      "explicit": [
+                        "explicit.stat_4080418644",
+                      ],
+                      "fractured": [
+                        "fractured.stat_4080418644",
+                      ],
+                      "implicit": [
+                        "implicit.stat_4080418644",
+                      ],
+                      "rune": [
+                        "rune.stat_4080418644",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to Strength",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 8,
+              "min": 5,
+              "option": undefined,
+              "unscalable": false,
+              "value": 8,
+            },
+            "stat": {
+              "better": 1,
+              "id": "additional_strength",
+              "matchers": [
+                {
+                  "string": "# to Strength",
+                },
+              ],
+              "ref": "# to Strength",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_4080418644",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_4080418644",
+                  ],
+                  "enchant": [
+                    "enchant.stat_4080418644",
+                  ],
+                  "explicit": [
+                    "explicit.stat_4080418644",
+                  ],
+                  "fractured": [
+                    "fractured.stat_4080418644",
+                  ],
+                  "implicit": [
+                    "implicit.stat_4080418644",
+                  ],
+                  "rune": [
+                    "rune.stat_4080418644",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to Strength",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "additional_strength",
+        "matchers": [
+          {
+            "string": "# to Strength",
+          },
+        ],
+        "ref": "# to Strength",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_4080418644",
+            ],
+            "desecrated": [
+              "desecrated.stat_4080418644",
+            ],
+            "enchant": [
+              "enchant.stat_4080418644",
+            ],
+            "explicit": [
+              "explicit.stat_4080418644",
+            ],
+            "fractured": [
+              "fractured.stat_4080418644",
+            ],
+            "implicit": [
+              "implicit.stat_4080418644",
+            ],
+            "rune": [
+              "rune.stat_4080418644",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+  ],
+  "unknownModifiers": [],
+  "weaponAS": 1.2,
+  "weaponCRIT": 5,
+  "weaponELEMENTAL": 25.5,
+  "weaponLIGHTNING": 25.5,
+  "weaponPHYSICAL": 53.5,
+}
+`;
+
+exports[`parseClipboard golden fixtures > parses magic-wand.txt 1`] = `
+{
+  "augmentSockets": {
+    "current": 0,
+    "empty": 1,
+    "normal": 1,
+  },
+  "baseType": undefined,
+  "category": "Wand",
+  "influences": [],
+  "info": {
+    "craftable": {
+      "category": "Wand",
+    },
+    "h": 3,
+    "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvV2VhcG9ucy9PbmVIYW5kV2VhcG9ucy9XYW5kcy9CYXNldHlwZXMvV2FuZDA1IiwidyI6MSwiaCI6Mywic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/5682626ab6/Wand05.png",
+    "name": "Volatile Wand",
+    "namespace": "ITEM",
+    "refName": "Volatile Wand",
+    "tags": [
+      "no_cold_spell_mods",
+      "no_lightning_spell_mods",
+      "no_chaos_spell_mods",
+      "no_physical_spell_mods",
+    ],
+    "w": 1,
+  },
+  "infoVariants": [
+    {
+      "craftable": {
+        "category": "Wand",
+      },
+      "h": 3,
+      "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvV2VhcG9ucy9PbmVIYW5kV2VhcG9ucy9XYW5kcy9CYXNldHlwZXMvV2FuZDA1IiwidyI6MSwiaCI6Mywic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/5682626ab6/Wand05.png",
+      "name": "Volatile Wand",
+      "namespace": "ITEM",
+      "refName": "Volatile Wand",
+      "tags": [
+        "no_cold_spell_mods",
+        "no_lightning_spell_mods",
+        "no_chaos_spell_mods",
+        "no_physical_spell_mods",
+      ],
+      "w": 1,
+    },
+  ],
+  "isCorrupted": false,
+  "isUnidentified": false,
+  "itemLevel": 60,
+  "name": "Volatile Wand",
+  "newMods": [],
+  "rarity": "Magic",
+  "rawText": "Item Class: Wands
+Rarity: Magic
+Volatile Wand of the Apt
+--------
+Wand
+--------
+Item Level: 60
+--------
+15% reduced Attribute Requirements
+",
+  "statsByType": [],
+  "unknownModifiers": [],
+}
+`;
+
+exports[`parseClipboard golden fixtures > parses rare-armour.txt 1`] = `
+{
+  "armourAR": 3075,
+  "augmentSockets": {
+    "current": 3,
+    "empty": 0,
+    "normal": 2,
+  },
+  "basePercentile": 0,
+  "baseType": "Soldier Cuirass",
+  "category": "Body Armour",
+  "influences": [],
+  "info": {
+    "armour": {
+      "ar": [
+        570,
+        570,
+      ],
+    },
+    "craftable": {
+      "category": "Body Armour",
+    },
+    "h": 3,
+    "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb2R5QXJtb3Vycy9CYXNldHlwZXMvQm9keVN0cjAzIiwidyI6MiwiaCI6Mywic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/d5346c8ff4/BodyStr03.png",
+    "name": "Soldier Cuirass",
+    "namespace": "ITEM",
+    "refName": "Soldier Cuirass",
+    "tags": [
+      "str_armour",
+    ],
+    "w": 2,
+  },
+  "infoVariants": [
+    {
+      "armour": {
+        "ar": [
+          570,
+          570,
+        ],
+      },
+      "craftable": {
+        "category": "Body Armour",
+      },
+      "h": 3,
+      "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb2R5QXJtb3Vycy9CYXNldHlwZXMvQm9keVN0cjAzIiwidyI6MiwiaCI6Mywic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/d5346c8ff4/BodyStr03.png",
+      "name": "Soldier Cuirass",
+      "namespace": "ITEM",
+      "refName": "Soldier Cuirass",
+      "tags": [
+        "str_armour",
+      ],
+      "w": 2,
+    },
+  ],
+  "isCorrupted": false,
+  "isUnidentified": false,
+  "itemLevel": 80,
+  "name": "Hate Pelt",
+  "newMods": [
+    {
+      "info": {
+        "tags": [],
+        "type": "rune",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 54,
+            "min": 54,
+            "option": undefined,
+            "unscalable": false,
+            "value": 54,
+          },
+          "stat": {
+            "better": 1,
+            "id": "map_player_armour_evasion_energy_shield_+%",
+            "matchers": [
+              {
+                "string": "#% increased Armour, Evasion and Energy Shield",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Armour, Evasion and Energy Shield",
+              },
+            ],
+            "ref": "#% increased Armour, Evasion and Energy Shield",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_3523867985",
+                ],
+                "explicit": [
+                  "explicit.stat_3523867985",
+                ],
+                "fractured": [
+                  "fractured.stat_3523867985",
+                ],
+                "rune": [
+                  "rune.stat_3523867985",
+                ],
+                "sanctum": [
+                  "sanctum.stat_1016362888",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Armour, Evasion and Energy Shield",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "prefix",
+        "name": "Impenetrable",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Defences",
+        ],
+        "tier": 1,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 110,
+            "min": 101,
+            "option": undefined,
+            "unscalable": false,
+            "value": 103,
+          },
+          "stat": {
+            "better": 1,
+            "id": "local_physical_damage_reduction_rating_+%",
+            "matchers": [
+              {
+                "string": "#% increased Armour",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Armour",
+              },
+            ],
+            "ref": "#% increased Armour",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_1062208444",
+                  "crafted.stat_2866361420",
+                ],
+                "desecrated": [
+                  "desecrated.stat_1062208444",
+                  "desecrated.stat_2866361420",
+                ],
+                "enchant": [
+                  "enchant.stat_1062208444",
+                  "enchant.stat_2866361420",
+                ],
+                "explicit": [
+                  "explicit.stat_1062208444",
+                  "explicit.stat_2866361420",
+                ],
+                "fractured": [
+                  "fractured.stat_1062208444",
+                  "fractured.stat_2866361420",
+                ],
+                "sanctum": [
+                  "sanctum.stat_1737465970",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Armour",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "prefix",
+        "name": "Hardened",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Defences",
+        ],
+        "tier": 1,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 86,
+            "min": 70,
+            "option": undefined,
+            "unscalable": false,
+            "value": 70,
+          },
+          "stat": {
+            "better": 1,
+            "id": "base_physical_damage_reduction_rating",
+            "matchers": [
+              {
+                "string": "# to Armour",
+              },
+            ],
+            "ref": "# to Armour",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_3484657501",
+                  "desecrated.stat_809229260",
+                ],
+                "explicit": [
+                  "explicit.stat_3484657501",
+                  "explicit.stat_809229260",
+                ],
+                "fractured": [
+                  "fractured.stat_3484657501",
+                  "fractured.stat_809229260",
+                ],
+                "implicit": [
+                  "implicit.stat_809229260",
+                ],
+                "rune": [
+                  "rune.stat_3484657501",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to Armour",
+          },
+        },
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 42,
+            "min": 39,
+            "option": undefined,
+            "unscalable": false,
+            "value": 41,
+          },
+          "stat": {
+            "better": 1,
+            "id": "local_physical_damage_reduction_rating_+%",
+            "matchers": [
+              {
+                "string": "#% increased Armour",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Armour",
+              },
+            ],
+            "ref": "#% increased Armour",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_1062208444",
+                  "crafted.stat_2866361420",
+                ],
+                "desecrated": [
+                  "desecrated.stat_1062208444",
+                  "desecrated.stat_2866361420",
+                ],
+                "enchant": [
+                  "enchant.stat_1062208444",
+                  "enchant.stat_2866361420",
+                ],
+                "explicit": [
+                  "explicit.stat_1062208444",
+                  "explicit.stat_2866361420",
+                ],
+                "fractured": [
+                  "fractured.stat_1062208444",
+                  "fractured.stat_2866361420",
+                ],
+                "sanctum": [
+                  "sanctum.stat_1737465970",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Armour",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "prefix",
+        "name": "Unmoving",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Defences",
+        ],
+        "tier": 2,
+        "type": "desecrated",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 256,
+            "min": 226,
+            "option": undefined,
+            "unscalable": false,
+            "value": 256,
+          },
+          "stat": {
+            "better": 1,
+            "id": "base_physical_damage_reduction_rating",
+            "matchers": [
+              {
+                "string": "# to Armour",
+              },
+            ],
+            "ref": "# to Armour",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_3484657501",
+                  "desecrated.stat_809229260",
+                ],
+                "explicit": [
+                  "explicit.stat_3484657501",
+                  "explicit.stat_809229260",
+                ],
+                "fractured": [
+                  "fractured.stat_3484657501",
+                  "fractured.stat_809229260",
+                ],
+                "implicit": [
+                  "implicit.stat_809229260",
+                ],
+                "rune": [
+                  "rune.stat_3484657501",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to Armour",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of the Titan",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Attribute",
+        ],
+        "tier": 1,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 33,
+            "min": 31,
+            "option": undefined,
+            "unscalable": false,
+            "value": 32,
+          },
+          "stat": {
+            "better": 1,
+            "id": "additional_strength",
+            "matchers": [
+              {
+                "string": "# to Strength",
+              },
+            ],
+            "ref": "# to Strength",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_4080418644",
+                ],
+                "desecrated": [
+                  "desecrated.stat_4080418644",
+                ],
+                "enchant": [
+                  "enchant.stat_4080418644",
+                ],
+                "explicit": [
+                  "explicit.stat_4080418644",
+                ],
+                "fractured": [
+                  "fractured.stat_4080418644",
+                ],
+                "implicit": [
+                  "implicit.stat_4080418644",
+                ],
+                "rune": [
+                  "rune.stat_4080418644",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to Strength",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of Allaying",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Physical",
+          "Ailment",
+        ],
+        "tier": 3,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": -46,
+            "min": -50,
+            "option": undefined,
+            "unscalable": false,
+            "value": -48,
+          },
+          "stat": {
+            "better": -1,
+            "id": "self_bleed_duration_+%",
+            "matchers": [
+              {
+                "string": "#% increased Duration of Bleeding on You",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Duration of Bleeding on You",
+              },
+            ],
+            "ref": "#% increased Duration of Bleeding on You",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_1692879867",
+                ],
+                "explicit": [
+                  "explicit.stat_1692879867",
+                ],
+                "fractured": [
+                  "fractured.stat_1692879867",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "negate": true,
+            "string": "#% reduced Duration of Bleeding on You",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of the Essence",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [],
+        "tier": 1,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 50,
+            "min": 40,
+            "option": undefined,
+            "unscalable": false,
+            "value": 44,
+          },
+          "stat": {
+            "better": 1,
+            "id": "map_player_base_self_critical_strike_multiplier_-%",
+            "matchers": [
+              {
+                "string": "Hits against you have #% reduced Critical Damage Bonus",
+              },
+              {
+                "negate": true,
+                "string": "Hits against you have #% increased Critical Damage Bonus",
+              },
+            ],
+            "ref": "Hits against you have #% reduced Critical Damage Bonus",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_3855016469",
+                ],
+                "desecrated": [
+                  "desecrated.stat_3855016469",
+                ],
+                "explicit": [
+                  "explicit.stat_3855016469",
+                ],
+                "fractured": [
+                  "fractured.stat_3855016469",
+                ],
+                "implicit": [
+                  "implicit.stat_3855016469",
+                ],
+                "rune": [
+                  "rune.stat_3855016469",
+                ],
+                "sanctum": [
+                  "sanctum.stat_2948404493",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "Hits against you have #% reduced Critical Damage Bonus",
+          },
+        },
+      ],
+    },
+  ],
+  "quality": 20,
+  "rarity": "Rare",
+  "rawText": "Item Class: Body Armours
+Rarity: Rare
+Hate Pelt
+Soldier Cuirass
+--------
+Quality: +20% (augmented)
+Armour: 3075 (augmented)
+--------
+Requires: Level 65, 121 (unmet) Str
+--------
+Sockets: S S S
+--------
+Item Level: 80
+--------
+54% increased Armour, Evasion and Energy Shield (rune)
+--------
+{ Prefix Modifier "Impenetrable" (Tier: 1) — Defences }
+103(101-110)% increased Armour
+{ Prefix Modifier "Hardened" (Tier: 1) — Defences }
++70(70-86) to Armour
+41(39-42)% increased Armour
+{ Prefix Modifier "Unmoving" (Tier: 2) — Defences }
++256(226-256) to Armour (desecrated)
+{ Suffix Modifier "of the Titan" (Tier: 1) — Attribute }
++32(31-33) to Strength
+{ Suffix Modifier "of Allaying" (Tier: 3) — Physical, Ailment }
+48(50-46)% reduced Duration of Bleeding on You
+{ Suffix Modifier "of the Essence" (Tier: 1) }
+Hits against you have 44(40-50)% reduced Critical Damage Bonus
+",
+  "requires": {
+    "dex": 0,
+    "int": 0,
+    "level": 65,
+    "str": 121,
+  },
+  "statsByType": [
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 54,
+            "min": 54,
+            "option": undefined,
+            "value": 54,
+          },
+          "modifier": {
+            "info": {
+              "tags": [],
+              "type": "rune",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 54,
+                  "min": 54,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 54,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "map_player_armour_evasion_energy_shield_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Armour, Evasion and Energy Shield",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Armour, Evasion and Energy Shield",
+                    },
+                  ],
+                  "ref": "#% increased Armour, Evasion and Energy Shield",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_3523867985",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3523867985",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3523867985",
+                      ],
+                      "rune": [
+                        "rune.stat_3523867985",
+                      ],
+                      "sanctum": [
+                        "sanctum.stat_1016362888",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Armour, Evasion and Energy Shield",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 54,
+              "min": 54,
+              "option": undefined,
+              "unscalable": false,
+              "value": 54,
+            },
+            "stat": {
+              "better": 1,
+              "id": "map_player_armour_evasion_energy_shield_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Armour, Evasion and Energy Shield",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Armour, Evasion and Energy Shield",
+                },
+              ],
+              "ref": "#% increased Armour, Evasion and Energy Shield",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_3523867985",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3523867985",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3523867985",
+                  ],
+                  "rune": [
+                    "rune.stat_3523867985",
+                  ],
+                  "sanctum": [
+                    "sanctum.stat_1016362888",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Armour, Evasion and Energy Shield",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "map_player_armour_evasion_energy_shield_+%",
+        "matchers": [
+          {
+            "string": "#% increased Armour, Evasion and Energy Shield",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Armour, Evasion and Energy Shield",
+          },
+        ],
+        "ref": "#% increased Armour, Evasion and Energy Shield",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_3523867985",
+            ],
+            "explicit": [
+              "explicit.stat_3523867985",
+            ],
+            "fractured": [
+              "fractured.stat_3523867985",
+            ],
+            "rune": [
+              "rune.stat_3523867985",
+            ],
+            "sanctum": [
+              "sanctum.stat_1016362888",
+            ],
+          },
+        },
+      },
+      "type": "rune",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 110,
+            "min": 101,
+            "option": undefined,
+            "value": 103,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Impenetrable",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Defences",
+              ],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 110,
+                  "min": 101,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 103,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_physical_damage_reduction_rating_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Armour",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Armour",
+                    },
+                  ],
+                  "ref": "#% increased Armour",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_1062208444",
+                        "crafted.stat_2866361420",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_1062208444",
+                        "desecrated.stat_2866361420",
+                      ],
+                      "enchant": [
+                        "enchant.stat_1062208444",
+                        "enchant.stat_2866361420",
+                      ],
+                      "explicit": [
+                        "explicit.stat_1062208444",
+                        "explicit.stat_2866361420",
+                      ],
+                      "fractured": [
+                        "fractured.stat_1062208444",
+                        "fractured.stat_2866361420",
+                      ],
+                      "sanctum": [
+                        "sanctum.stat_1737465970",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Armour",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 110,
+              "min": 101,
+              "option": undefined,
+              "unscalable": false,
+              "value": 103,
+            },
+            "stat": {
+              "better": 1,
+              "id": "local_physical_damage_reduction_rating_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Armour",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Armour",
+                },
+              ],
+              "ref": "#% increased Armour",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_1062208444",
+                    "crafted.stat_2866361420",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_1062208444",
+                    "desecrated.stat_2866361420",
+                  ],
+                  "enchant": [
+                    "enchant.stat_1062208444",
+                    "enchant.stat_2866361420",
+                  ],
+                  "explicit": [
+                    "explicit.stat_1062208444",
+                    "explicit.stat_2866361420",
+                  ],
+                  "fractured": [
+                    "fractured.stat_1062208444",
+                    "fractured.stat_2866361420",
+                  ],
+                  "sanctum": [
+                    "sanctum.stat_1737465970",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Armour",
+            },
+          },
+        },
+        {
+          "contributes": {
+            "max": 42,
+            "min": 39,
+            "option": undefined,
+            "value": 41,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Hardened",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Defences",
+              ],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 86,
+                  "min": 70,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 70,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_physical_damage_reduction_rating",
+                  "matchers": [
+                    {
+                      "string": "# to Armour",
+                    },
+                  ],
+                  "ref": "# to Armour",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_3484657501",
+                        "desecrated.stat_809229260",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3484657501",
+                        "explicit.stat_809229260",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3484657501",
+                        "fractured.stat_809229260",
+                      ],
+                      "implicit": [
+                        "implicit.stat_809229260",
+                      ],
+                      "rune": [
+                        "rune.stat_3484657501",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to Armour",
+                },
+              },
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 42,
+                  "min": 39,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 41,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_physical_damage_reduction_rating_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Armour",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Armour",
+                    },
+                  ],
+                  "ref": "#% increased Armour",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_1062208444",
+                        "crafted.stat_2866361420",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_1062208444",
+                        "desecrated.stat_2866361420",
+                      ],
+                      "enchant": [
+                        "enchant.stat_1062208444",
+                        "enchant.stat_2866361420",
+                      ],
+                      "explicit": [
+                        "explicit.stat_1062208444",
+                        "explicit.stat_2866361420",
+                      ],
+                      "fractured": [
+                        "fractured.stat_1062208444",
+                        "fractured.stat_2866361420",
+                      ],
+                      "sanctum": [
+                        "sanctum.stat_1737465970",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Armour",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 42,
+              "min": 39,
+              "option": undefined,
+              "unscalable": false,
+              "value": 41,
+            },
+            "stat": {
+              "better": 1,
+              "id": "local_physical_damage_reduction_rating_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Armour",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Armour",
+                },
+              ],
+              "ref": "#% increased Armour",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_1062208444",
+                    "crafted.stat_2866361420",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_1062208444",
+                    "desecrated.stat_2866361420",
+                  ],
+                  "enchant": [
+                    "enchant.stat_1062208444",
+                    "enchant.stat_2866361420",
+                  ],
+                  "explicit": [
+                    "explicit.stat_1062208444",
+                    "explicit.stat_2866361420",
+                  ],
+                  "fractured": [
+                    "fractured.stat_1062208444",
+                    "fractured.stat_2866361420",
+                  ],
+                  "sanctum": [
+                    "sanctum.stat_1737465970",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Armour",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "local_physical_damage_reduction_rating_+%",
+        "matchers": [
+          {
+            "string": "#% increased Armour",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Armour",
+          },
+        ],
+        "ref": "#% increased Armour",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_1062208444",
+              "crafted.stat_2866361420",
+            ],
+            "desecrated": [
+              "desecrated.stat_1062208444",
+              "desecrated.stat_2866361420",
+            ],
+            "enchant": [
+              "enchant.stat_1062208444",
+              "enchant.stat_2866361420",
+            ],
+            "explicit": [
+              "explicit.stat_1062208444",
+              "explicit.stat_2866361420",
+            ],
+            "fractured": [
+              "fractured.stat_1062208444",
+              "fractured.stat_2866361420",
+            ],
+            "sanctum": [
+              "sanctum.stat_1737465970",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 86,
+            "min": 70,
+            "option": undefined,
+            "value": 70,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Hardened",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Defences",
+              ],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 86,
+                  "min": 70,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 70,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_physical_damage_reduction_rating",
+                  "matchers": [
+                    {
+                      "string": "# to Armour",
+                    },
+                  ],
+                  "ref": "# to Armour",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_3484657501",
+                        "desecrated.stat_809229260",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3484657501",
+                        "explicit.stat_809229260",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3484657501",
+                        "fractured.stat_809229260",
+                      ],
+                      "implicit": [
+                        "implicit.stat_809229260",
+                      ],
+                      "rune": [
+                        "rune.stat_3484657501",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to Armour",
+                },
+              },
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 42,
+                  "min": 39,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 41,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_physical_damage_reduction_rating_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Armour",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Armour",
+                    },
+                  ],
+                  "ref": "#% increased Armour",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_1062208444",
+                        "crafted.stat_2866361420",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_1062208444",
+                        "desecrated.stat_2866361420",
+                      ],
+                      "enchant": [
+                        "enchant.stat_1062208444",
+                        "enchant.stat_2866361420",
+                      ],
+                      "explicit": [
+                        "explicit.stat_1062208444",
+                        "explicit.stat_2866361420",
+                      ],
+                      "fractured": [
+                        "fractured.stat_1062208444",
+                        "fractured.stat_2866361420",
+                      ],
+                      "sanctum": [
+                        "sanctum.stat_1737465970",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Armour",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 86,
+              "min": 70,
+              "option": undefined,
+              "unscalable": false,
+              "value": 70,
+            },
+            "stat": {
+              "better": 1,
+              "id": "base_physical_damage_reduction_rating",
+              "matchers": [
+                {
+                  "string": "# to Armour",
+                },
+              ],
+              "ref": "# to Armour",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_3484657501",
+                    "desecrated.stat_809229260",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3484657501",
+                    "explicit.stat_809229260",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3484657501",
+                    "fractured.stat_809229260",
+                  ],
+                  "implicit": [
+                    "implicit.stat_809229260",
+                  ],
+                  "rune": [
+                    "rune.stat_3484657501",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to Armour",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "base_physical_damage_reduction_rating",
+        "matchers": [
+          {
+            "string": "# to Armour",
+          },
+        ],
+        "ref": "# to Armour",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_3484657501",
+              "desecrated.stat_809229260",
+            ],
+            "explicit": [
+              "explicit.stat_3484657501",
+              "explicit.stat_809229260",
+            ],
+            "fractured": [
+              "fractured.stat_3484657501",
+              "fractured.stat_809229260",
+            ],
+            "implicit": [
+              "implicit.stat_809229260",
+            ],
+            "rune": [
+              "rune.stat_3484657501",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 256,
+            "min": 226,
+            "option": undefined,
+            "value": 256,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Unmoving",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Defences",
+              ],
+              "tier": 2,
+              "type": "desecrated",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 256,
+                  "min": 226,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 256,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_physical_damage_reduction_rating",
+                  "matchers": [
+                    {
+                      "string": "# to Armour",
+                    },
+                  ],
+                  "ref": "# to Armour",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_3484657501",
+                        "desecrated.stat_809229260",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3484657501",
+                        "explicit.stat_809229260",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3484657501",
+                        "fractured.stat_809229260",
+                      ],
+                      "implicit": [
+                        "implicit.stat_809229260",
+                      ],
+                      "rune": [
+                        "rune.stat_3484657501",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to Armour",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 256,
+              "min": 226,
+              "option": undefined,
+              "unscalable": false,
+              "value": 256,
+            },
+            "stat": {
+              "better": 1,
+              "id": "base_physical_damage_reduction_rating",
+              "matchers": [
+                {
+                  "string": "# to Armour",
+                },
+              ],
+              "ref": "# to Armour",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_3484657501",
+                    "desecrated.stat_809229260",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3484657501",
+                    "explicit.stat_809229260",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3484657501",
+                    "fractured.stat_809229260",
+                  ],
+                  "implicit": [
+                    "implicit.stat_809229260",
+                  ],
+                  "rune": [
+                    "rune.stat_3484657501",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to Armour",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "base_physical_damage_reduction_rating",
+        "matchers": [
+          {
+            "string": "# to Armour",
+          },
+        ],
+        "ref": "# to Armour",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_3484657501",
+              "desecrated.stat_809229260",
+            ],
+            "explicit": [
+              "explicit.stat_3484657501",
+              "explicit.stat_809229260",
+            ],
+            "fractured": [
+              "fractured.stat_3484657501",
+              "fractured.stat_809229260",
+            ],
+            "implicit": [
+              "implicit.stat_809229260",
+            ],
+            "rune": [
+              "rune.stat_3484657501",
+            ],
+          },
+        },
+      },
+      "type": "desecrated",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 33,
+            "min": 31,
+            "option": undefined,
+            "value": 32,
+          },
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of the Titan",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Attribute",
+              ],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 33,
+                  "min": 31,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 32,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "additional_strength",
+                  "matchers": [
+                    {
+                      "string": "# to Strength",
+                    },
+                  ],
+                  "ref": "# to Strength",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_4080418644",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_4080418644",
+                      ],
+                      "enchant": [
+                        "enchant.stat_4080418644",
+                      ],
+                      "explicit": [
+                        "explicit.stat_4080418644",
+                      ],
+                      "fractured": [
+                        "fractured.stat_4080418644",
+                      ],
+                      "implicit": [
+                        "implicit.stat_4080418644",
+                      ],
+                      "rune": [
+                        "rune.stat_4080418644",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to Strength",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 33,
+              "min": 31,
+              "option": undefined,
+              "unscalable": false,
+              "value": 32,
+            },
+            "stat": {
+              "better": 1,
+              "id": "additional_strength",
+              "matchers": [
+                {
+                  "string": "# to Strength",
+                },
+              ],
+              "ref": "# to Strength",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_4080418644",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_4080418644",
+                  ],
+                  "enchant": [
+                    "enchant.stat_4080418644",
+                  ],
+                  "explicit": [
+                    "explicit.stat_4080418644",
+                  ],
+                  "fractured": [
+                    "fractured.stat_4080418644",
+                  ],
+                  "implicit": [
+                    "implicit.stat_4080418644",
+                  ],
+                  "rune": [
+                    "rune.stat_4080418644",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to Strength",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "additional_strength",
+        "matchers": [
+          {
+            "string": "# to Strength",
+          },
+        ],
+        "ref": "# to Strength",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_4080418644",
+            ],
+            "desecrated": [
+              "desecrated.stat_4080418644",
+            ],
+            "enchant": [
+              "enchant.stat_4080418644",
+            ],
+            "explicit": [
+              "explicit.stat_4080418644",
+            ],
+            "fractured": [
+              "fractured.stat_4080418644",
+            ],
+            "implicit": [
+              "implicit.stat_4080418644",
+            ],
+            "rune": [
+              "rune.stat_4080418644",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": -46,
+            "min": -50,
+            "option": undefined,
+            "value": -48,
+          },
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of Allaying",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Physical",
+                "Ailment",
+              ],
+              "tier": 3,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": -46,
+                  "min": -50,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": -48,
+                },
+                "stat": {
+                  "better": -1,
+                  "id": "self_bleed_duration_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Duration of Bleeding on You",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Duration of Bleeding on You",
+                    },
+                  ],
+                  "ref": "#% increased Duration of Bleeding on You",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_1692879867",
+                      ],
+                      "explicit": [
+                        "explicit.stat_1692879867",
+                      ],
+                      "fractured": [
+                        "fractured.stat_1692879867",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "negate": true,
+                  "string": "#% reduced Duration of Bleeding on You",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": -46,
+              "min": -50,
+              "option": undefined,
+              "unscalable": false,
+              "value": -48,
+            },
+            "stat": {
+              "better": -1,
+              "id": "self_bleed_duration_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Duration of Bleeding on You",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Duration of Bleeding on You",
+                },
+              ],
+              "ref": "#% increased Duration of Bleeding on You",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_1692879867",
+                  ],
+                  "explicit": [
+                    "explicit.stat_1692879867",
+                  ],
+                  "fractured": [
+                    "fractured.stat_1692879867",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "negate": true,
+              "string": "#% reduced Duration of Bleeding on You",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": -1,
+        "id": "self_bleed_duration_+%",
+        "matchers": [
+          {
+            "string": "#% increased Duration of Bleeding on You",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Duration of Bleeding on You",
+          },
+        ],
+        "ref": "#% increased Duration of Bleeding on You",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_1692879867",
+            ],
+            "explicit": [
+              "explicit.stat_1692879867",
+            ],
+            "fractured": [
+              "fractured.stat_1692879867",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 50,
+            "min": 40,
+            "option": undefined,
+            "value": 44,
+          },
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of the Essence",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 50,
+                  "min": 40,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 44,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "map_player_base_self_critical_strike_multiplier_-%",
+                  "matchers": [
+                    {
+                      "string": "Hits against you have #% reduced Critical Damage Bonus",
+                    },
+                    {
+                      "negate": true,
+                      "string": "Hits against you have #% increased Critical Damage Bonus",
+                    },
+                  ],
+                  "ref": "Hits against you have #% reduced Critical Damage Bonus",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_3855016469",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_3855016469",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3855016469",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3855016469",
+                      ],
+                      "implicit": [
+                        "implicit.stat_3855016469",
+                      ],
+                      "rune": [
+                        "rune.stat_3855016469",
+                      ],
+                      "sanctum": [
+                        "sanctum.stat_2948404493",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "Hits against you have #% reduced Critical Damage Bonus",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 50,
+              "min": 40,
+              "option": undefined,
+              "unscalable": false,
+              "value": 44,
+            },
+            "stat": {
+              "better": 1,
+              "id": "map_player_base_self_critical_strike_multiplier_-%",
+              "matchers": [
+                {
+                  "string": "Hits against you have #% reduced Critical Damage Bonus",
+                },
+                {
+                  "negate": true,
+                  "string": "Hits against you have #% increased Critical Damage Bonus",
+                },
+              ],
+              "ref": "Hits against you have #% reduced Critical Damage Bonus",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_3855016469",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_3855016469",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3855016469",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3855016469",
+                  ],
+                  "implicit": [
+                    "implicit.stat_3855016469",
+                  ],
+                  "rune": [
+                    "rune.stat_3855016469",
+                  ],
+                  "sanctum": [
+                    "sanctum.stat_2948404493",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "Hits against you have #% reduced Critical Damage Bonus",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "map_player_base_self_critical_strike_multiplier_-%",
+        "matchers": [
+          {
+            "string": "Hits against you have #% reduced Critical Damage Bonus",
+          },
+          {
+            "negate": true,
+            "string": "Hits against you have #% increased Critical Damage Bonus",
+          },
+        ],
+        "ref": "Hits against you have #% reduced Critical Damage Bonus",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_3855016469",
+            ],
+            "desecrated": [
+              "desecrated.stat_3855016469",
+            ],
+            "explicit": [
+              "explicit.stat_3855016469",
+            ],
+            "fractured": [
+              "fractured.stat_3855016469",
+            ],
+            "implicit": [
+              "implicit.stat_3855016469",
+            ],
+            "rune": [
+              "rune.stat_3855016469",
+            ],
+            "sanctum": [
+              "sanctum.stat_2948404493",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+  ],
+  "unknownModifiers": [],
+}
+`;
+
+exports[`parseClipboard golden fixtures > parses rare-gloves-advanced.txt 1`] = `
+{
+  "armourEV": 769,
+  "armourRW": 34,
+  "augmentSockets": {
+    "current": 1,
+    "empty": 0,
+    "normal": 1,
+  },
+  "basePercentile": 0,
+  "baseType": "Runeforged Stalking Bracers",
+  "category": "Gloves",
+  "influences": [],
+  "info": {
+    "armour": {
+      "ev": [
+        133,
+        133,
+      ],
+    },
+    "craftable": {
+      "category": "Gloves",
+    },
+    "h": 2,
+    "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9HbG92ZXMvQmFzZXR5cGVzL0dsb3Zlc0RleDAyIiwidyI6MiwiaCI6Miwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/7a62d10b16/GlovesDex02.png",
+    "name": "Runeforged Stalking Bracers",
+    "namespace": "ITEM",
+    "refName": "Runeforged Stalking Bracers",
+    "tags": [
+      "dex_armour",
+      "runeforged",
+    ],
+    "w": 2,
+  },
+  "infoVariants": [
+    {
+      "armour": {
+        "ev": [
+          133,
+          133,
+        ],
+      },
+      "craftable": {
+        "category": "Gloves",
+      },
+      "h": 2,
+      "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9HbG92ZXMvQmFzZXR5cGVzL0dsb3Zlc0RleDAyIiwidyI6MiwiaCI6Miwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/7a62d10b16/GlovesDex02.png",
+      "name": "Runeforged Stalking Bracers",
+      "namespace": "ITEM",
+      "refName": "Runeforged Stalking Bracers",
+      "tags": [
+        "dex_armour",
+        "runeforged",
+      ],
+      "w": 2,
+    },
+  ],
+  "isCorrupted": false,
+  "isUnidentified": false,
+  "itemLevel": 80,
+  "name": "Storm Caress",
+  "newMods": [
+    {
+      "info": {
+        "tags": [],
+        "type": "rune",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 11,
+            "min": 11,
+            "option": undefined,
+            "unscalable": false,
+            "value": 11,
+          },
+          "stat": {
+            "better": 1,
+            "id": "base_chaos_damage_resistance_%",
+            "matchers": [
+              {
+                "string": "#% to Chaos Resistance",
+              },
+            ],
+            "ref": "#% to Chaos Resistance",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_2923486259",
+                ],
+                "desecrated": [
+                  "desecrated.stat_2923486259",
+                ],
+                "enchant": [
+                  "enchant.stat_2923486259",
+                ],
+                "explicit": [
+                  "explicit.stat_2923486259",
+                ],
+                "fractured": [
+                  "fractured.stat_2923486259",
+                ],
+                "implicit": [
+                  "implicit.stat_2923486259",
+                ],
+                "rune": [
+                  "rune.stat_2923486259",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% to Chaos Resistance",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "prefix",
+        "name": "Nightmare's",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Evasion",
+        ],
+        "tier": 2,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 91,
+            "min": 80,
+            "option": undefined,
+            "unscalable": false,
+            "value": 86,
+          },
+          "stat": {
+            "better": 1,
+            "id": "local_evasion_rating_+%",
+            "matchers": [
+              {
+                "string": "#% increased Evasion Rating",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Evasion Rating",
+              },
+            ],
+            "ref": "#% increased Evasion Rating",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_124859000",
+                  "crafted.stat_2106365538",
+                ],
+                "desecrated": [
+                  "desecrated.stat_124859000",
+                  "desecrated.stat_2106365538",
+                ],
+                "enchant": [
+                  "enchant.stat_124859000",
+                  "enchant.stat_2106365538",
+                ],
+                "explicit": [
+                  "explicit.stat_124859000",
+                  "explicit.stat_2106365538",
+                ],
+                "fractured": [
+                  "fractured.stat_124859000",
+                  "fractured.stat_2106365538",
+                ],
+                "sanctum": [
+                  "sanctum.stat_3882471944",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Evasion Rating",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "prefix",
+        "name": "Ibex's",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Life",
+          "Evasion",
+        ],
+        "tier": 2,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 38,
+            "min": 33,
+            "option": undefined,
+            "unscalable": false,
+            "value": 35,
+          },
+          "stat": {
+            "better": 1,
+            "id": "local_evasion_rating_+%",
+            "matchers": [
+              {
+                "string": "#% increased Evasion Rating",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Evasion Rating",
+              },
+            ],
+            "ref": "#% increased Evasion Rating",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_124859000",
+                  "crafted.stat_2106365538",
+                ],
+                "desecrated": [
+                  "desecrated.stat_124859000",
+                  "desecrated.stat_2106365538",
+                ],
+                "enchant": [
+                  "enchant.stat_124859000",
+                  "enchant.stat_2106365538",
+                ],
+                "explicit": [
+                  "explicit.stat_124859000",
+                  "explicit.stat_2106365538",
+                ],
+                "fractured": [
+                  "fractured.stat_124859000",
+                  "fractured.stat_2106365538",
+                ],
+                "sanctum": [
+                  "sanctum.stat_3882471944",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Evasion Rating",
+          },
+        },
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 41,
+            "min": 33,
+            "option": undefined,
+            "unscalable": false,
+            "value": 37,
+          },
+          "stat": {
+            "better": 1,
+            "id": "base_maximum_life",
+            "matchers": [
+              {
+                "string": "# to maximum Life",
+              },
+            ],
+            "ref": "# to maximum Life",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_3299347043",
+                ],
+                "desecrated": [
+                  "desecrated.stat_3299347043",
+                ],
+                "enchant": [
+                  "enchant.stat_3299347043",
+                ],
+                "explicit": [
+                  "explicit.stat_3299347043",
+                ],
+                "fractured": [
+                  "fractured.stat_3299347043",
+                ],
+                "implicit": [
+                  "implicit.stat_3299347043",
+                ],
+                "rune": [
+                  "rune.stat_3299347043",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to maximum Life",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "prefix",
+        "name": "Vaporous",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Evasion",
+        ],
+        "tier": 1,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 176,
+            "min": 147,
+            "option": undefined,
+            "unscalable": false,
+            "value": 157,
+          },
+          "stat": {
+            "better": 1,
+            "id": "local_base_evasion_rating",
+            "matchers": [
+              {
+                "string": "# to Evasion Rating",
+              },
+            ],
+            "ref": "# to Evasion Rating",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_2144192055",
+                  "desecrated.stat_53045048",
+                ],
+                "explicit": [
+                  "explicit.stat_2144192055",
+                  "explicit.stat_53045048",
+                ],
+                "fractured": [
+                  "fractured.stat_2144192055",
+                  "fractured.stat_53045048",
+                ],
+                "rune": [
+                  "rune.stat_53045048",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to Evasion Rating",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of the Lamprey",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Life",
+          "Physical",
+          "Attack",
+        ],
+        "tier": 2,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": true,
+            "legacy": undefined,
+            "max": 8.9,
+            "min": 8,
+            "option": undefined,
+            "unscalable": false,
+            "value": 8.41,
+          },
+          "stat": {
+            "better": 1,
+            "dp": true,
+            "id": "base_life_leech_from_physical_attack_damage_permyriad",
+            "matchers": [
+              {
+                "string": "Leech #% of Physical Attack Damage as Life",
+              },
+            ],
+            "ref": "Leech #% of Physical Attack Damage as Life",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_2557965901",
+                ],
+                "enchant": [
+                  "enchant.stat_2557965901",
+                ],
+                "explicit": [
+                  "explicit.stat_2557965901",
+                ],
+                "fractured": [
+                  "fractured.stat_2557965901",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "Leech #% of Physical Attack Damage as Life",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of the Jaguar",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Attribute",
+        ],
+        "tier": 3,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 30,
+            "min": 28,
+            "option": undefined,
+            "unscalable": false,
+            "value": 30,
+          },
+          "stat": {
+            "better": 1,
+            "id": "additional_dexterity",
+            "matchers": [
+              {
+                "string": "# to Dexterity",
+              },
+            ],
+            "ref": "# to Dexterity",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_3261801346",
+                ],
+                "desecrated": [
+                  "desecrated.stat_3261801346",
+                ],
+                "enchant": [
+                  "enchant.stat_3261801346",
+                ],
+                "explicit": [
+                  "explicit.stat_3261801346",
+                ],
+                "fractured": [
+                  "fractured.stat_3261801346",
+                ],
+                "implicit": [
+                  "implicit.stat_3261801346",
+                ],
+                "rune": [
+                  "rune.stat_3261801346",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "# to Dexterity",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of the Ice",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Elemental",
+          "Cold",
+          "Resistance",
+        ],
+        "tier": 2,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 40,
+            "min": 36,
+            "option": undefined,
+            "unscalable": false,
+            "value": 37,
+          },
+          "stat": {
+            "better": 1,
+            "id": "base_cold_damage_resistance_%",
+            "matchers": [
+              {
+                "string": "#% to Cold Resistance",
+              },
+            ],
+            "ref": "#% to Cold Resistance",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_4220027924",
+                ],
+                "desecrated": [
+                  "desecrated.stat_4220027924",
+                ],
+                "enchant": [
+                  "enchant.stat_4220027924",
+                ],
+                "explicit": [
+                  "explicit.stat_4220027924",
+                ],
+                "fractured": [
+                  "fractured.stat_4220027924",
+                ],
+                "implicit": [
+                  "implicit.stat_4220027924",
+                ],
+                "rune": [
+                  "rune.stat_4220027924",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% to Cold Resistance",
+          },
+        },
+      ],
+    },
+  ],
+  "quality": 20,
+  "rarity": "Rare",
+  "rawText": "Item Class: Gloves
+Rarity: Rare
+Storm Caress
+Runeforged Stalking Bracers
+--------
+Quality: +20% (augmented)
+Evasion Rating: 769 (augmented)
+Runic Ward: 34 (augmented)
+--------
+Requires: Level 65, 80 Dex
+--------
+Sockets: S 
+--------
+Item Level: 80
+--------
++11% to Chaos Resistance (rune)
+--------
+{ Prefix Modifier "Nightmare's" (Tier: 2) — Evasion }
+86(80-91)% increased Evasion Rating
+{ Prefix Modifier "Ibex's" (Tier: 2) — Life, Evasion }
+35(33-38)% increased Evasion Rating
++37(33-41) to maximum Life
+{ Prefix Modifier "Vaporous" (Tier: 1) — Evasion }
++157(147-176) to Evasion Rating
+{ Suffix Modifier "of the Lamprey" (Tier: 2) — Life, Physical, Attack }
+Leech 8.41(8-8.9)% of Physical Attack Damage as Life
+{ Suffix Modifier "of the Jaguar" (Tier: 3) — Attribute }
++30(28-30) to Dexterity
+{ Suffix Modifier "of the Ice" (Tier: 2) — Elemental, Cold, Resistance }
++37(36-40)% to Cold Resistance
+",
+  "requires": {
+    "dex": 80,
+    "int": 0,
+    "level": 65,
+    "str": 0,
+  },
+  "statsByType": [
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 11,
+            "min": 11,
+            "option": undefined,
+            "value": 11,
+          },
+          "modifier": {
+            "info": {
+              "tags": [],
+              "type": "rune",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 11,
+                  "min": 11,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 11,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_chaos_damage_resistance_%",
+                  "matchers": [
+                    {
+                      "string": "#% to Chaos Resistance",
+                    },
+                  ],
+                  "ref": "#% to Chaos Resistance",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_2923486259",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_2923486259",
+                      ],
+                      "enchant": [
+                        "enchant.stat_2923486259",
+                      ],
+                      "explicit": [
+                        "explicit.stat_2923486259",
+                      ],
+                      "fractured": [
+                        "fractured.stat_2923486259",
+                      ],
+                      "implicit": [
+                        "implicit.stat_2923486259",
+                      ],
+                      "rune": [
+                        "rune.stat_2923486259",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% to Chaos Resistance",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 11,
+              "min": 11,
+              "option": undefined,
+              "unscalable": false,
+              "value": 11,
+            },
+            "stat": {
+              "better": 1,
+              "id": "base_chaos_damage_resistance_%",
+              "matchers": [
+                {
+                  "string": "#% to Chaos Resistance",
+                },
+              ],
+              "ref": "#% to Chaos Resistance",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_2923486259",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_2923486259",
+                  ],
+                  "enchant": [
+                    "enchant.stat_2923486259",
+                  ],
+                  "explicit": [
+                    "explicit.stat_2923486259",
+                  ],
+                  "fractured": [
+                    "fractured.stat_2923486259",
+                  ],
+                  "implicit": [
+                    "implicit.stat_2923486259",
+                  ],
+                  "rune": [
+                    "rune.stat_2923486259",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% to Chaos Resistance",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "base_chaos_damage_resistance_%",
+        "matchers": [
+          {
+            "string": "#% to Chaos Resistance",
+          },
+        ],
+        "ref": "#% to Chaos Resistance",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_2923486259",
+            ],
+            "desecrated": [
+              "desecrated.stat_2923486259",
+            ],
+            "enchant": [
+              "enchant.stat_2923486259",
+            ],
+            "explicit": [
+              "explicit.stat_2923486259",
+            ],
+            "fractured": [
+              "fractured.stat_2923486259",
+            ],
+            "implicit": [
+              "implicit.stat_2923486259",
+            ],
+            "rune": [
+              "rune.stat_2923486259",
+            ],
+          },
+        },
+      },
+      "type": "rune",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 91,
+            "min": 80,
+            "option": undefined,
+            "value": 86,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Nightmare's",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Evasion",
+              ],
+              "tier": 2,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 91,
+                  "min": 80,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 86,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_evasion_rating_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Evasion Rating",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Evasion Rating",
+                    },
+                  ],
+                  "ref": "#% increased Evasion Rating",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_124859000",
+                        "crafted.stat_2106365538",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_124859000",
+                        "desecrated.stat_2106365538",
+                      ],
+                      "enchant": [
+                        "enchant.stat_124859000",
+                        "enchant.stat_2106365538",
+                      ],
+                      "explicit": [
+                        "explicit.stat_124859000",
+                        "explicit.stat_2106365538",
+                      ],
+                      "fractured": [
+                        "fractured.stat_124859000",
+                        "fractured.stat_2106365538",
+                      ],
+                      "sanctum": [
+                        "sanctum.stat_3882471944",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Evasion Rating",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 91,
+              "min": 80,
+              "option": undefined,
+              "unscalable": false,
+              "value": 86,
+            },
+            "stat": {
+              "better": 1,
+              "id": "local_evasion_rating_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Evasion Rating",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Evasion Rating",
+                },
+              ],
+              "ref": "#% increased Evasion Rating",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_124859000",
+                    "crafted.stat_2106365538",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_124859000",
+                    "desecrated.stat_2106365538",
+                  ],
+                  "enchant": [
+                    "enchant.stat_124859000",
+                    "enchant.stat_2106365538",
+                  ],
+                  "explicit": [
+                    "explicit.stat_124859000",
+                    "explicit.stat_2106365538",
+                  ],
+                  "fractured": [
+                    "fractured.stat_124859000",
+                    "fractured.stat_2106365538",
+                  ],
+                  "sanctum": [
+                    "sanctum.stat_3882471944",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Evasion Rating",
+            },
+          },
+        },
+        {
+          "contributes": {
+            "max": 38,
+            "min": 33,
+            "option": undefined,
+            "value": 35,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Ibex's",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Life",
+                "Evasion",
+              ],
+              "tier": 2,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 38,
+                  "min": 33,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 35,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_evasion_rating_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Evasion Rating",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Evasion Rating",
+                    },
+                  ],
+                  "ref": "#% increased Evasion Rating",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_124859000",
+                        "crafted.stat_2106365538",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_124859000",
+                        "desecrated.stat_2106365538",
+                      ],
+                      "enchant": [
+                        "enchant.stat_124859000",
+                        "enchant.stat_2106365538",
+                      ],
+                      "explicit": [
+                        "explicit.stat_124859000",
+                        "explicit.stat_2106365538",
+                      ],
+                      "fractured": [
+                        "fractured.stat_124859000",
+                        "fractured.stat_2106365538",
+                      ],
+                      "sanctum": [
+                        "sanctum.stat_3882471944",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Evasion Rating",
+                },
+              },
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 41,
+                  "min": 33,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 37,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_maximum_life",
+                  "matchers": [
+                    {
+                      "string": "# to maximum Life",
+                    },
+                  ],
+                  "ref": "# to maximum Life",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_3299347043",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_3299347043",
+                      ],
+                      "enchant": [
+                        "enchant.stat_3299347043",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3299347043",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3299347043",
+                      ],
+                      "implicit": [
+                        "implicit.stat_3299347043",
+                      ],
+                      "rune": [
+                        "rune.stat_3299347043",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to maximum Life",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 38,
+              "min": 33,
+              "option": undefined,
+              "unscalable": false,
+              "value": 35,
+            },
+            "stat": {
+              "better": 1,
+              "id": "local_evasion_rating_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Evasion Rating",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Evasion Rating",
+                },
+              ],
+              "ref": "#% increased Evasion Rating",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_124859000",
+                    "crafted.stat_2106365538",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_124859000",
+                    "desecrated.stat_2106365538",
+                  ],
+                  "enchant": [
+                    "enchant.stat_124859000",
+                    "enchant.stat_2106365538",
+                  ],
+                  "explicit": [
+                    "explicit.stat_124859000",
+                    "explicit.stat_2106365538",
+                  ],
+                  "fractured": [
+                    "fractured.stat_124859000",
+                    "fractured.stat_2106365538",
+                  ],
+                  "sanctum": [
+                    "sanctum.stat_3882471944",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Evasion Rating",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "local_evasion_rating_+%",
+        "matchers": [
+          {
+            "string": "#% increased Evasion Rating",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Evasion Rating",
+          },
+        ],
+        "ref": "#% increased Evasion Rating",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_124859000",
+              "crafted.stat_2106365538",
+            ],
+            "desecrated": [
+              "desecrated.stat_124859000",
+              "desecrated.stat_2106365538",
+            ],
+            "enchant": [
+              "enchant.stat_124859000",
+              "enchant.stat_2106365538",
+            ],
+            "explicit": [
+              "explicit.stat_124859000",
+              "explicit.stat_2106365538",
+            ],
+            "fractured": [
+              "fractured.stat_124859000",
+              "fractured.stat_2106365538",
+            ],
+            "sanctum": [
+              "sanctum.stat_3882471944",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 41,
+            "min": 33,
+            "option": undefined,
+            "value": 37,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Ibex's",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Life",
+                "Evasion",
+              ],
+              "tier": 2,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 38,
+                  "min": 33,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 35,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_evasion_rating_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Evasion Rating",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Evasion Rating",
+                    },
+                  ],
+                  "ref": "#% increased Evasion Rating",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_124859000",
+                        "crafted.stat_2106365538",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_124859000",
+                        "desecrated.stat_2106365538",
+                      ],
+                      "enchant": [
+                        "enchant.stat_124859000",
+                        "enchant.stat_2106365538",
+                      ],
+                      "explicit": [
+                        "explicit.stat_124859000",
+                        "explicit.stat_2106365538",
+                      ],
+                      "fractured": [
+                        "fractured.stat_124859000",
+                        "fractured.stat_2106365538",
+                      ],
+                      "sanctum": [
+                        "sanctum.stat_3882471944",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Evasion Rating",
+                },
+              },
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 41,
+                  "min": 33,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 37,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_maximum_life",
+                  "matchers": [
+                    {
+                      "string": "# to maximum Life",
+                    },
+                  ],
+                  "ref": "# to maximum Life",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_3299347043",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_3299347043",
+                      ],
+                      "enchant": [
+                        "enchant.stat_3299347043",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3299347043",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3299347043",
+                      ],
+                      "implicit": [
+                        "implicit.stat_3299347043",
+                      ],
+                      "rune": [
+                        "rune.stat_3299347043",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to maximum Life",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 41,
+              "min": 33,
+              "option": undefined,
+              "unscalable": false,
+              "value": 37,
+            },
+            "stat": {
+              "better": 1,
+              "id": "base_maximum_life",
+              "matchers": [
+                {
+                  "string": "# to maximum Life",
+                },
+              ],
+              "ref": "# to maximum Life",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_3299347043",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_3299347043",
+                  ],
+                  "enchant": [
+                    "enchant.stat_3299347043",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3299347043",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3299347043",
+                  ],
+                  "implicit": [
+                    "implicit.stat_3299347043",
+                  ],
+                  "rune": [
+                    "rune.stat_3299347043",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to maximum Life",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "base_maximum_life",
+        "matchers": [
+          {
+            "string": "# to maximum Life",
+          },
+        ],
+        "ref": "# to maximum Life",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_3299347043",
+            ],
+            "desecrated": [
+              "desecrated.stat_3299347043",
+            ],
+            "enchant": [
+              "enchant.stat_3299347043",
+            ],
+            "explicit": [
+              "explicit.stat_3299347043",
+            ],
+            "fractured": [
+              "fractured.stat_3299347043",
+            ],
+            "implicit": [
+              "implicit.stat_3299347043",
+            ],
+            "rune": [
+              "rune.stat_3299347043",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 176,
+            "min": 147,
+            "option": undefined,
+            "value": 157,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Vaporous",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Evasion",
+              ],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 176,
+                  "min": 147,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 157,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_base_evasion_rating",
+                  "matchers": [
+                    {
+                      "string": "# to Evasion Rating",
+                    },
+                  ],
+                  "ref": "# to Evasion Rating",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_2144192055",
+                        "desecrated.stat_53045048",
+                      ],
+                      "explicit": [
+                        "explicit.stat_2144192055",
+                        "explicit.stat_53045048",
+                      ],
+                      "fractured": [
+                        "fractured.stat_2144192055",
+                        "fractured.stat_53045048",
+                      ],
+                      "rune": [
+                        "rune.stat_53045048",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to Evasion Rating",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 176,
+              "min": 147,
+              "option": undefined,
+              "unscalable": false,
+              "value": 157,
+            },
+            "stat": {
+              "better": 1,
+              "id": "local_base_evasion_rating",
+              "matchers": [
+                {
+                  "string": "# to Evasion Rating",
+                },
+              ],
+              "ref": "# to Evasion Rating",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_2144192055",
+                    "desecrated.stat_53045048",
+                  ],
+                  "explicit": [
+                    "explicit.stat_2144192055",
+                    "explicit.stat_53045048",
+                  ],
+                  "fractured": [
+                    "fractured.stat_2144192055",
+                    "fractured.stat_53045048",
+                  ],
+                  "rune": [
+                    "rune.stat_53045048",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to Evasion Rating",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "local_base_evasion_rating",
+        "matchers": [
+          {
+            "string": "# to Evasion Rating",
+          },
+        ],
+        "ref": "# to Evasion Rating",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_2144192055",
+              "desecrated.stat_53045048",
+            ],
+            "explicit": [
+              "explicit.stat_2144192055",
+              "explicit.stat_53045048",
+            ],
+            "fractured": [
+              "fractured.stat_2144192055",
+              "fractured.stat_53045048",
+            ],
+            "rune": [
+              "rune.stat_53045048",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 8.9,
+            "min": 8,
+            "option": undefined,
+            "value": 8.41,
+          },
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of the Lamprey",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Life",
+                "Physical",
+                "Attack",
+              ],
+              "tier": 2,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": true,
+                  "legacy": undefined,
+                  "max": 8.9,
+                  "min": 8,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 8.41,
+                },
+                "stat": {
+                  "better": 1,
+                  "dp": true,
+                  "id": "base_life_leech_from_physical_attack_damage_permyriad",
+                  "matchers": [
+                    {
+                      "string": "Leech #% of Physical Attack Damage as Life",
+                    },
+                  ],
+                  "ref": "Leech #% of Physical Attack Damage as Life",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_2557965901",
+                      ],
+                      "enchant": [
+                        "enchant.stat_2557965901",
+                      ],
+                      "explicit": [
+                        "explicit.stat_2557965901",
+                      ],
+                      "fractured": [
+                        "fractured.stat_2557965901",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "Leech #% of Physical Attack Damage as Life",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": true,
+              "legacy": undefined,
+              "max": 8.9,
+              "min": 8,
+              "option": undefined,
+              "unscalable": false,
+              "value": 8.41,
+            },
+            "stat": {
+              "better": 1,
+              "dp": true,
+              "id": "base_life_leech_from_physical_attack_damage_permyriad",
+              "matchers": [
+                {
+                  "string": "Leech #% of Physical Attack Damage as Life",
+                },
+              ],
+              "ref": "Leech #% of Physical Attack Damage as Life",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_2557965901",
+                  ],
+                  "enchant": [
+                    "enchant.stat_2557965901",
+                  ],
+                  "explicit": [
+                    "explicit.stat_2557965901",
+                  ],
+                  "fractured": [
+                    "fractured.stat_2557965901",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "Leech #% of Physical Attack Damage as Life",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "dp": true,
+        "id": "base_life_leech_from_physical_attack_damage_permyriad",
+        "matchers": [
+          {
+            "string": "Leech #% of Physical Attack Damage as Life",
+          },
+        ],
+        "ref": "Leech #% of Physical Attack Damage as Life",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_2557965901",
+            ],
+            "enchant": [
+              "enchant.stat_2557965901",
+            ],
+            "explicit": [
+              "explicit.stat_2557965901",
+            ],
+            "fractured": [
+              "fractured.stat_2557965901",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 30,
+            "min": 28,
+            "option": undefined,
+            "value": 30,
+          },
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of the Jaguar",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Attribute",
+              ],
+              "tier": 3,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 30,
+                  "min": 28,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 30,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "additional_dexterity",
+                  "matchers": [
+                    {
+                      "string": "# to Dexterity",
+                    },
+                  ],
+                  "ref": "# to Dexterity",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_3261801346",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_3261801346",
+                      ],
+                      "enchant": [
+                        "enchant.stat_3261801346",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3261801346",
+                      ],
+                      "fractured": [
+                        "fractured.stat_3261801346",
+                      ],
+                      "implicit": [
+                        "implicit.stat_3261801346",
+                      ],
+                      "rune": [
+                        "rune.stat_3261801346",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "# to Dexterity",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 30,
+              "min": 28,
+              "option": undefined,
+              "unscalable": false,
+              "value": 30,
+            },
+            "stat": {
+              "better": 1,
+              "id": "additional_dexterity",
+              "matchers": [
+                {
+                  "string": "# to Dexterity",
+                },
+              ],
+              "ref": "# to Dexterity",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_3261801346",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_3261801346",
+                  ],
+                  "enchant": [
+                    "enchant.stat_3261801346",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3261801346",
+                  ],
+                  "fractured": [
+                    "fractured.stat_3261801346",
+                  ],
+                  "implicit": [
+                    "implicit.stat_3261801346",
+                  ],
+                  "rune": [
+                    "rune.stat_3261801346",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "# to Dexterity",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "additional_dexterity",
+        "matchers": [
+          {
+            "string": "# to Dexterity",
+          },
+        ],
+        "ref": "# to Dexterity",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_3261801346",
+            ],
+            "desecrated": [
+              "desecrated.stat_3261801346",
+            ],
+            "enchant": [
+              "enchant.stat_3261801346",
+            ],
+            "explicit": [
+              "explicit.stat_3261801346",
+            ],
+            "fractured": [
+              "fractured.stat_3261801346",
+            ],
+            "implicit": [
+              "implicit.stat_3261801346",
+            ],
+            "rune": [
+              "rune.stat_3261801346",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 40,
+            "min": 36,
+            "option": undefined,
+            "value": 37,
+          },
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of the Ice",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Elemental",
+                "Cold",
+                "Resistance",
+              ],
+              "tier": 2,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 40,
+                  "min": 36,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 37,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_cold_damage_resistance_%",
+                  "matchers": [
+                    {
+                      "string": "#% to Cold Resistance",
+                    },
+                  ],
+                  "ref": "#% to Cold Resistance",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_4220027924",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_4220027924",
+                      ],
+                      "enchant": [
+                        "enchant.stat_4220027924",
+                      ],
+                      "explicit": [
+                        "explicit.stat_4220027924",
+                      ],
+                      "fractured": [
+                        "fractured.stat_4220027924",
+                      ],
+                      "implicit": [
+                        "implicit.stat_4220027924",
+                      ],
+                      "rune": [
+                        "rune.stat_4220027924",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% to Cold Resistance",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 40,
+              "min": 36,
+              "option": undefined,
+              "unscalable": false,
+              "value": 37,
+            },
+            "stat": {
+              "better": 1,
+              "id": "base_cold_damage_resistance_%",
+              "matchers": [
+                {
+                  "string": "#% to Cold Resistance",
+                },
+              ],
+              "ref": "#% to Cold Resistance",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_4220027924",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_4220027924",
+                  ],
+                  "enchant": [
+                    "enchant.stat_4220027924",
+                  ],
+                  "explicit": [
+                    "explicit.stat_4220027924",
+                  ],
+                  "fractured": [
+                    "fractured.stat_4220027924",
+                  ],
+                  "implicit": [
+                    "implicit.stat_4220027924",
+                  ],
+                  "rune": [
+                    "rune.stat_4220027924",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% to Cold Resistance",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "base_cold_damage_resistance_%",
+        "matchers": [
+          {
+            "string": "#% to Cold Resistance",
+          },
+        ],
+        "ref": "#% to Cold Resistance",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_4220027924",
+            ],
+            "desecrated": [
+              "desecrated.stat_4220027924",
+            ],
+            "enchant": [
+              "enchant.stat_4220027924",
+            ],
+            "explicit": [
+              "explicit.stat_4220027924",
+            ],
+            "fractured": [
+              "fractured.stat_4220027924",
+            ],
+            "implicit": [
+              "implicit.stat_4220027924",
+            ],
+            "rune": [
+              "rune.stat_4220027924",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+  ],
+  "unknownModifiers": [],
+}
+`;
+
+exports[`parseClipboard golden fixtures > parses unique.txt 1`] = `
+{
+  "armourAR": undefined,
+  "armourBLOCK": undefined,
+  "armourES": undefined,
+  "armourEV": undefined,
+  "armourRW": undefined,
+  "baseType": "Crystal Focus",
+  "category": "Focus",
+  "influences": [],
+  "info": {
+    "h": 3,
+    "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvT2ZmaGFuZC9Gb2NpL1VuaXF1ZXMvRXRlcm5hbFNwYXJrIiwidyI6MiwiaCI6Mywic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/97e8b781ae/EternalSpark.png",
+    "name": "The Eternal Spark",
+    "namespace": "UNIQUE",
+    "refName": "The Eternal Spark",
+    "tags": [
+      "int_armour",
+      "maraketh_basetype",
+    ],
+    "unique": {
+      "base": "Crystal Focus",
+    },
+    "w": 2,
+  },
+  "infoVariants": [
+    {
+      "h": 3,
+      "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvT2ZmaGFuZC9Gb2NpL1VuaXF1ZXMvRXRlcm5hbFNwYXJrIiwidyI6MiwiaCI6Mywic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/97e8b781ae/EternalSpark.png",
+      "name": "The Eternal Spark",
+      "namespace": "UNIQUE",
+      "refName": "The Eternal Spark",
+      "tags": [
+        "int_armour",
+        "maraketh_basetype",
+      ],
+      "unique": {
+        "base": "Crystal Focus",
+      },
+      "w": 2,
+    },
+  ],
+  "isCorrupted": false,
+  "isUnidentified": false,
+  "itemLevel": 81,
+  "name": "The Eternal Spark",
+  "newMods": [
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Defences",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 70,
+            "min": 50,
+            "option": undefined,
+            "unscalable": false,
+            "value": 56,
+          },
+          "stat": {
+            "better": 1,
+            "id": "local_energy_shield_+%",
+            "matchers": [
+              {
+                "string": "#% increased Energy Shield",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Energy Shield",
+              },
+            ],
+            "ref": "#% increased Energy Shield",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_4015621042",
+                ],
+                "desecrated": [
+                  "desecrated.stat_4015621042",
+                ],
+                "enchant": [
+                  "enchant.stat_4015621042",
+                ],
+                "explicit": [
+                  "explicit.stat_4015621042",
+                ],
+                "fractured": [
+                  "fractured.stat_4015621042",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Energy Shield",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Mana",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 40,
+            "min": 40,
+            "option": undefined,
+            "unscalable": false,
+            "value": 40,
+          },
+          "stat": {
+            "better": 1,
+            "id": "mana_regeneration_rate_+%_while_stationary",
+            "matchers": [
+              {
+                "string": "#% increased Mana Regeneration Rate while stationary",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Mana Regeneration Rate while stationary",
+              },
+            ],
+            "ref": "#% increased Mana Regeneration Rate while stationary",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_3308030688",
+                ],
+                "explicit": [
+                  "explicit.stat_3308030688",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Mana Regeneration Rate while stationary",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Elemental",
+          "Lightning",
+          "Resistance",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 30,
+            "min": 20,
+            "option": undefined,
+            "unscalable": false,
+            "value": 26,
+          },
+          "stat": {
+            "better": 1,
+            "id": "base_lightning_damage_resistance_%",
+            "matchers": [
+              {
+                "string": "#% to Lightning Resistance",
+              },
+            ],
+            "ref": "#% to Lightning Resistance",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_1671376347",
+                ],
+                "desecrated": [
+                  "desecrated.stat_1671376347",
+                ],
+                "enchant": [
+                  "enchant.stat_1671376347",
+                ],
+                "explicit": [
+                  "explicit.stat_1671376347",
+                ],
+                "fractured": [
+                  "fractured.stat_1671376347",
+                ],
+                "implicit": [
+                  "implicit.stat_1671376347",
+                ],
+                "rune": [
+                  "rune.stat_1671376347",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% to Lightning Resistance",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Elemental",
+          "Lightning",
+          "Resistance",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 5,
+            "min": 5,
+            "option": undefined,
+            "unscalable": false,
+            "value": 5,
+          },
+          "stat": {
+            "better": 1,
+            "id": "base_maximum_lightning_damage_resistance_%",
+            "matchers": [
+              {
+                "string": "#% to Maximum Lightning Resistance",
+              },
+            ],
+            "ref": "#% to Maximum Lightning Resistance",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_1011760251",
+                ],
+                "enchant": [
+                  "enchant.stat_1011760251",
+                ],
+                "explicit": [
+                  "explicit.stat_1011760251",
+                ],
+                "fractured": [
+                  "fractured.stat_1011760251",
+                ],
+                "rune": [
+                  "rune.stat_1011760251",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% to Maximum Lightning Resistance",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": undefined,
+        "name": undefined,
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [
+          "Mana",
+        ],
+        "tier": undefined,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 40,
+            "min": 40,
+            "option": undefined,
+            "unscalable": false,
+            "value": 40,
+          },
+          "stat": {
+            "better": 1,
+            "id": "mana_regeneration_rate_+%",
+            "matchers": [
+              {
+                "string": "#% increased Mana Regeneration Rate",
+              },
+              {
+                "negate": true,
+                "string": "#% reduced Mana Regeneration Rate",
+              },
+            ],
+            "ref": "#% increased Mana Regeneration Rate",
+            "trade": {
+              "ids": {
+                "crafted": [
+                  "crafted.stat_789117908",
+                ],
+                "desecrated": [
+                  "desecrated.stat_789117908",
+                ],
+                "enchant": [
+                  "enchant.stat_789117908",
+                ],
+                "explicit": [
+                  "explicit.stat_789117908",
+                ],
+                "fractured": [
+                  "fractured.stat_789117908",
+                ],
+                "implicit": [
+                  "implicit.stat_789117908",
+                ],
+                "rune": [
+                  "rune.stat_789117908",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% increased Mana Regeneration Rate",
+          },
+        },
+      ],
+    },
+  ],
+  "rarity": "Unique",
+  "rawText": "Item Class: Foci
+Rarity: Unique
+The Eternal Spark
+Crystal Focus
+--------
+Energy Shield: 44 (augmented)
+--------
+Requires: Level 26, 43 (augmented) Int
+--------
+Item Level: 81
+--------
+{ Unique Modifier — Defences }
+56(50-70)% increased Energy Shield
+{ Unique Modifier — Mana }
+40% increased Mana Regeneration Rate while stationary
+{ Unique Modifier — Elemental, Lightning, Resistance }
++26(20-30)% to Lightning Resistance
+{ Unique Modifier — Elemental, Lightning, Resistance }
++5% to Maximum Lightning Resistance
+{ Unique Modifier — Mana }
+40% increased Mana Regeneration Rate
+--------
+A flash of blue, a stormcloud's kiss,
+her motionless dance the pulse of bliss
+",
+  "requires": {
+    "dex": 0,
+    "int": 43,
+    "level": 26,
+    "str": 0,
+  },
+  "statsByType": [
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 70,
+            "min": 50,
+            "option": undefined,
+            "value": 56,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Defences",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 70,
+                  "min": 50,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 56,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "local_energy_shield_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Energy Shield",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Energy Shield",
+                    },
+                  ],
+                  "ref": "#% increased Energy Shield",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_4015621042",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_4015621042",
+                      ],
+                      "enchant": [
+                        "enchant.stat_4015621042",
+                      ],
+                      "explicit": [
+                        "explicit.stat_4015621042",
+                      ],
+                      "fractured": [
+                        "fractured.stat_4015621042",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Energy Shield",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 70,
+              "min": 50,
+              "option": undefined,
+              "unscalable": false,
+              "value": 56,
+            },
+            "stat": {
+              "better": 1,
+              "id": "local_energy_shield_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Energy Shield",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Energy Shield",
+                },
+              ],
+              "ref": "#% increased Energy Shield",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_4015621042",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_4015621042",
+                  ],
+                  "enchant": [
+                    "enchant.stat_4015621042",
+                  ],
+                  "explicit": [
+                    "explicit.stat_4015621042",
+                  ],
+                  "fractured": [
+                    "fractured.stat_4015621042",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Energy Shield",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "local_energy_shield_+%",
+        "matchers": [
+          {
+            "string": "#% increased Energy Shield",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Energy Shield",
+          },
+        ],
+        "ref": "#% increased Energy Shield",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_4015621042",
+            ],
+            "desecrated": [
+              "desecrated.stat_4015621042",
+            ],
+            "enchant": [
+              "enchant.stat_4015621042",
+            ],
+            "explicit": [
+              "explicit.stat_4015621042",
+            ],
+            "fractured": [
+              "fractured.stat_4015621042",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 40,
+            "min": 40,
+            "option": undefined,
+            "value": 40,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Mana",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 40,
+                  "min": 40,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 40,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "mana_regeneration_rate_+%_while_stationary",
+                  "matchers": [
+                    {
+                      "string": "#% increased Mana Regeneration Rate while stationary",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Mana Regeneration Rate while stationary",
+                    },
+                  ],
+                  "ref": "#% increased Mana Regeneration Rate while stationary",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_3308030688",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3308030688",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Mana Regeneration Rate while stationary",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 40,
+              "min": 40,
+              "option": undefined,
+              "unscalable": false,
+              "value": 40,
+            },
+            "stat": {
+              "better": 1,
+              "id": "mana_regeneration_rate_+%_while_stationary",
+              "matchers": [
+                {
+                  "string": "#% increased Mana Regeneration Rate while stationary",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Mana Regeneration Rate while stationary",
+                },
+              ],
+              "ref": "#% increased Mana Regeneration Rate while stationary",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_3308030688",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3308030688",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Mana Regeneration Rate while stationary",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "mana_regeneration_rate_+%_while_stationary",
+        "matchers": [
+          {
+            "string": "#% increased Mana Regeneration Rate while stationary",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Mana Regeneration Rate while stationary",
+          },
+        ],
+        "ref": "#% increased Mana Regeneration Rate while stationary",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_3308030688",
+            ],
+            "explicit": [
+              "explicit.stat_3308030688",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 30,
+            "min": 20,
+            "option": undefined,
+            "value": 26,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Elemental",
+                "Lightning",
+                "Resistance",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 30,
+                  "min": 20,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 26,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_lightning_damage_resistance_%",
+                  "matchers": [
+                    {
+                      "string": "#% to Lightning Resistance",
+                    },
+                  ],
+                  "ref": "#% to Lightning Resistance",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_1671376347",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_1671376347",
+                      ],
+                      "enchant": [
+                        "enchant.stat_1671376347",
+                      ],
+                      "explicit": [
+                        "explicit.stat_1671376347",
+                      ],
+                      "fractured": [
+                        "fractured.stat_1671376347",
+                      ],
+                      "implicit": [
+                        "implicit.stat_1671376347",
+                      ],
+                      "rune": [
+                        "rune.stat_1671376347",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% to Lightning Resistance",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 30,
+              "min": 20,
+              "option": undefined,
+              "unscalable": false,
+              "value": 26,
+            },
+            "stat": {
+              "better": 1,
+              "id": "base_lightning_damage_resistance_%",
+              "matchers": [
+                {
+                  "string": "#% to Lightning Resistance",
+                },
+              ],
+              "ref": "#% to Lightning Resistance",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_1671376347",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_1671376347",
+                  ],
+                  "enchant": [
+                    "enchant.stat_1671376347",
+                  ],
+                  "explicit": [
+                    "explicit.stat_1671376347",
+                  ],
+                  "fractured": [
+                    "fractured.stat_1671376347",
+                  ],
+                  "implicit": [
+                    "implicit.stat_1671376347",
+                  ],
+                  "rune": [
+                    "rune.stat_1671376347",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% to Lightning Resistance",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "base_lightning_damage_resistance_%",
+        "matchers": [
+          {
+            "string": "#% to Lightning Resistance",
+          },
+        ],
+        "ref": "#% to Lightning Resistance",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_1671376347",
+            ],
+            "desecrated": [
+              "desecrated.stat_1671376347",
+            ],
+            "enchant": [
+              "enchant.stat_1671376347",
+            ],
+            "explicit": [
+              "explicit.stat_1671376347",
+            ],
+            "fractured": [
+              "fractured.stat_1671376347",
+            ],
+            "implicit": [
+              "implicit.stat_1671376347",
+            ],
+            "rune": [
+              "rune.stat_1671376347",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 5,
+            "min": 5,
+            "option": undefined,
+            "value": 5,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Elemental",
+                "Lightning",
+                "Resistance",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 5,
+                  "min": 5,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 5,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "base_maximum_lightning_damage_resistance_%",
+                  "matchers": [
+                    {
+                      "string": "#% to Maximum Lightning Resistance",
+                    },
+                  ],
+                  "ref": "#% to Maximum Lightning Resistance",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_1011760251",
+                      ],
+                      "enchant": [
+                        "enchant.stat_1011760251",
+                      ],
+                      "explicit": [
+                        "explicit.stat_1011760251",
+                      ],
+                      "fractured": [
+                        "fractured.stat_1011760251",
+                      ],
+                      "rune": [
+                        "rune.stat_1011760251",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% to Maximum Lightning Resistance",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 5,
+              "min": 5,
+              "option": undefined,
+              "unscalable": false,
+              "value": 5,
+            },
+            "stat": {
+              "better": 1,
+              "id": "base_maximum_lightning_damage_resistance_%",
+              "matchers": [
+                {
+                  "string": "#% to Maximum Lightning Resistance",
+                },
+              ],
+              "ref": "#% to Maximum Lightning Resistance",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_1011760251",
+                  ],
+                  "enchant": [
+                    "enchant.stat_1011760251",
+                  ],
+                  "explicit": [
+                    "explicit.stat_1011760251",
+                  ],
+                  "fractured": [
+                    "fractured.stat_1011760251",
+                  ],
+                  "rune": [
+                    "rune.stat_1011760251",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% to Maximum Lightning Resistance",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "base_maximum_lightning_damage_resistance_%",
+        "matchers": [
+          {
+            "string": "#% to Maximum Lightning Resistance",
+          },
+        ],
+        "ref": "#% to Maximum Lightning Resistance",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_1011760251",
+            ],
+            "enchant": [
+              "enchant.stat_1011760251",
+            ],
+            "explicit": [
+              "explicit.stat_1011760251",
+            ],
+            "fractured": [
+              "fractured.stat_1011760251",
+            ],
+            "rune": [
+              "rune.stat_1011760251",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 40,
+            "min": 40,
+            "option": undefined,
+            "value": 40,
+          },
+          "modifier": {
+            "info": {
+              "generation": undefined,
+              "name": undefined,
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [
+                "Mana",
+              ],
+              "tier": undefined,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 40,
+                  "min": 40,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 40,
+                },
+                "stat": {
+                  "better": 1,
+                  "id": "mana_regeneration_rate_+%",
+                  "matchers": [
+                    {
+                      "string": "#% increased Mana Regeneration Rate",
+                    },
+                    {
+                      "negate": true,
+                      "string": "#% reduced Mana Regeneration Rate",
+                    },
+                  ],
+                  "ref": "#% increased Mana Regeneration Rate",
+                  "trade": {
+                    "ids": {
+                      "crafted": [
+                        "crafted.stat_789117908",
+                      ],
+                      "desecrated": [
+                        "desecrated.stat_789117908",
+                      ],
+                      "enchant": [
+                        "enchant.stat_789117908",
+                      ],
+                      "explicit": [
+                        "explicit.stat_789117908",
+                      ],
+                      "fractured": [
+                        "fractured.stat_789117908",
+                      ],
+                      "implicit": [
+                        "implicit.stat_789117908",
+                      ],
+                      "rune": [
+                        "rune.stat_789117908",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% increased Mana Regeneration Rate",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 40,
+              "min": 40,
+              "option": undefined,
+              "unscalable": false,
+              "value": 40,
+            },
+            "stat": {
+              "better": 1,
+              "id": "mana_regeneration_rate_+%",
+              "matchers": [
+                {
+                  "string": "#% increased Mana Regeneration Rate",
+                },
+                {
+                  "negate": true,
+                  "string": "#% reduced Mana Regeneration Rate",
+                },
+              ],
+              "ref": "#% increased Mana Regeneration Rate",
+              "trade": {
+                "ids": {
+                  "crafted": [
+                    "crafted.stat_789117908",
+                  ],
+                  "desecrated": [
+                    "desecrated.stat_789117908",
+                  ],
+                  "enchant": [
+                    "enchant.stat_789117908",
+                  ],
+                  "explicit": [
+                    "explicit.stat_789117908",
+                  ],
+                  "fractured": [
+                    "fractured.stat_789117908",
+                  ],
+                  "implicit": [
+                    "implicit.stat_789117908",
+                  ],
+                  "rune": [
+                    "rune.stat_789117908",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% increased Mana Regeneration Rate",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "id": "mana_regeneration_rate_+%",
+        "matchers": [
+          {
+            "string": "#% increased Mana Regeneration Rate",
+          },
+          {
+            "negate": true,
+            "string": "#% reduced Mana Regeneration Rate",
+          },
+        ],
+        "ref": "#% increased Mana Regeneration Rate",
+        "trade": {
+          "ids": {
+            "crafted": [
+              "crafted.stat_789117908",
+            ],
+            "desecrated": [
+              "desecrated.stat_789117908",
+            ],
+            "enchant": [
+              "enchant.stat_789117908",
+            ],
+            "explicit": [
+              "explicit.stat_789117908",
+            ],
+            "fractured": [
+              "fractured.stat_789117908",
+            ],
+            "implicit": [
+              "implicit.stat_789117908",
+            ],
+            "rune": [
+              "rune.stat_789117908",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+  ],
+  "unknownModifiers": [],
+  "weaponAS": undefined,
+  "weaponCOLD": undefined,
+  "weaponCRIT": undefined,
+  "weaponELEMENTAL": undefined,
+  "weaponFIRE": undefined,
+  "weaponLIGHTNING": undefined,
+  "weaponPHYSICAL": undefined,
+  "weaponRELOAD": undefined,
+  "weaponSPIRIT": undefined,
+}
+`;
