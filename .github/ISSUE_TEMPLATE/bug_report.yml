@@ -9,17 +9,17 @@ body:
       options:
         - AUR (waystone)
         - Built from source / dev checkout
-    validations:
-      required: true
 
-  - type: input
+  - type: dropdown
     id: version
     attributes:
       label: Waystone version
-      description: "`pacman -Qi waystone | grep Version` or the git commit for dev checkouts"
-      placeholder: "0.1.0-1"
-    validations:
-      required: true
+      description: "`pacman -Qi waystone | grep Version`. List is maintained by the release workflow."
+      options:
+        # versions-start
+        - 0.1.0
+        # versions-end
+        - older or dev build
 
   - type: input
     id: system
@@ -27,16 +27,12 @@ body:
       label: Compositor and system
       description: "`hyprctl version | head -1` plus distro. Not on Hyprland? Say what you run — hotkeys and window tracking are Hyprland-only today."
       placeholder: "Hyprland 0.45.0, Arch"
-    validations:
-      required: true
 
   - type: textarea
     id: what
     attributes:
       label: What happened?
       description: What you did, what you expected, what you got instead.
-    validations:
-      required: true
 
   - type: textarea
     id: log
@@ -47,8 +43,6 @@ body:
         Reproduce with debug logging if you can: run `WAYSTONE_DEBUG=1 waystone`.
         The log never contains your session cookie, but skim before posting anyway.
       render: text
-    validations:
-      required: true
 
   - type: textarea
     id: item

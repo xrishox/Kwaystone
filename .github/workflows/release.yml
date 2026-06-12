@@ -55,3 +55,50 @@ jobs:
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           commit_message: "release ${{ github.ref_name }}"
+
+  # Keep the bug-report version dropdown showing the last 5 releases.
+  issue-template:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - name: insert version into dropdown
+        run: |
+          python3 - "${GITHUB_REF_NAME#v}" <<'EOF'
+          import pathlib
+          import re
+          import sys
+
+          ver = sys.argv[1]
+          p = pathlib.Path(".github/ISSUE_TEMPLATE/bug_report.yml")
+          out, versions, in_block = [], [ver], False
+          for line in p.read_text().splitlines(keepends=True):
+              if "# versions-start" in line:
+                  in_block = True
+                  out.append(line)
+              elif "# versions-end" in line:
+                  seen = list(dict.fromkeys(versions))[:5]
+                  out.extend(f"        - {v}\n" for v in seen)
+                  out.append(line)
+                  in_block = False
+              elif in_block:
+                  m = re.match(r"\s*-\s*(.+?)\s*$", line)
+                  if m:
+                      versions.append(m.group(1))
+              else:
+                  out.append(line)
+          p.write_text("".join(out))
+          EOF
+      - name: commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/ISSUE_TEMPLATE/bug_report.yml
+          git diff --cached --quiet || {
+            git commit -m "docs: add ${GITHUB_REF_NAME} to bug report version dropdown"
+            git push
+          }

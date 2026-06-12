@@ -7,8 +7,6 @@ body:
     attributes:
       label: What should it do?
       description: The problem you're trying to solve, not just the solution you have in mind.
-    validations:
-      required: true
 
   - type: textarea
     id: context
