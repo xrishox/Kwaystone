@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "poed"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["PyGObject"]
+dependencies = ["PyGObject", "numpy", "opencv-python"]
 
 [tool.setuptools]
 packages = ["poed"]

@@ -1,6 +1,8 @@
 # Maintainer: Kris Kruse <kriskruse@users.noreply.github.com>
-pkgname=waystone-git
-pkgver=r7.c16975a
+# Template rendered by .github/workflows/release.yml — @VERSION@ and
+# @SHA256@ are substituted from the tagged release.
+pkgname=waystone
+pkgver=@VERSION@
 pkgrel=1
 pkgdesc="Path of Exile 2 price-check overlay for Wayland (Hyprland)"
 arch=('any')
@@ -9,19 +11,12 @@ license=('AGPL-3.0-or-later' 'MIT')
 depends=('python' 'python-gobject' 'python-opencv' 'python-numpy'
          'gtk4' 'gtk4-layer-shell'
          'xdg-desktop-portal-hyprland' 'wl-clipboard' 'xdotool' 'nodejs')
-makedepends=('git' 'npm' 'python-build' 'python-installer' 'python-setuptools' 'python-wheel')
-provides=('waystone')
-conflicts=('waystone')
-source=("$pkgname::git+$url.git")
-sha256sums=('SKIP')
-
-pkgver() {
-  cd "$pkgname"
-  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-}
+makedepends=('npm' 'python-build' 'python-installer' 'python-setuptools' 'python-wheel')
+source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz")
+sha256sums=('@SHA256@')
 
 build() {
-  cd "$pkgname"/brain
+  cd "$pkgname-$pkgver"/brain
   npm ci
   npm run build
   cd ../poed
@@ -29,7 +24,7 @@ build() {
 }
 
 package() {
-  cd "$pkgname"
+  cd "$pkgname-$pkgver"
   # brain bundle + game data (bundle resolves data at ../vendor/ee2/public)
   install -Dm644 brain/dist/server.mjs -t "$pkgdir/usr/lib/waystone/brain/dist/"
   mkdir -p "$pkgdir/usr/lib/waystone/brain/vendor/ee2"

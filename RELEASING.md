@@ -1,6 +1,16 @@
 # Releasing Waystone on the AUR
 
-Plan for packaging and publishing the overlay as `waystone-git`.
+Two packages, two paths:
+
+- **`waystone-git`** — manual: `packaging/PKGBUILD`, pushed to the AUR by hand (below).
+- **`waystone`** (versioned) — automated: pushing a `v*` tag runs `.github/workflows/release.yml`, which runs the test suite, builds a source tarball, creates the GitHub release, renders `packaging/PKGBUILD.release` with version + sha256, and pushes it to the AUR.
+
+CI (`.github/workflows/test.yml`) runs brain vitest/tsc/bundle and poed pytest (Arch container, xvfb) on every PR and push to main.
+
+Repo secrets the release workflow needs (Settings → Secrets → Actions):
+
+- `AUR_SSH_PRIVATE_KEY` — private key whose public half is on your AUR account
+- `AUR_USERNAME`, `AUR_EMAIL` — AUR commit identity
 
 ## Prerequisites (one-time)
 

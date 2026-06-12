@@ -1,0 +1,46 @@
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+jobs:
+  brain:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: brain
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: brain/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx vitest run
+      # the release bundle must keep building
+      - run: npm run build
+
+  poed:
+    runs-on: ubuntu-latest
+    # Arch container: matches the target platform and ships current
+    # gtk4-layer-shell, which Ubuntu LTS lags on.
+    container: archlinux:latest
+    steps:
+      - name: install system deps
+        run: |
+          pacman -Syu --noconfirm \
+            python python-gobject gtk4 gtk4-layer-shell \
+            python-pytest python-opencv python-numpy \
+            nodejs npm git xorg-server-xvfb
+      - uses: actions/checkout@v4
+      # protocol tests round-trip against a live brain child (tsx dev mode)
+      - run: npm ci
+        working-directory: brain
+      # xvfb: GTK widget construction needs a display the container lacks
+      - run: xvfb-run -a python -m pytest -q
+        working-directory: poed
