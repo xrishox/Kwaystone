@@ -34,6 +34,12 @@ Hotkey (`Alt+Z`, dynamically bound/unbound via `hyprctl keyword` while PoE2 wind
 - Protocol: pytest round-trip against live brain child.
 - E2E without game: canned clipboard through the full path.
 
+**Never push without confirmed-green builds first**: `cd poed && python -m pytest`
+and `cd brain && npx vitest run && npx tsc --noEmit` must pass, exit codes
+checked directly — never piped through `tail`/`grep`, which swallow failures
+(that exact mistake shipped a red suite once). Tests green is the smoke test;
+no green, no push.
+
 ## System deps (Arch)
 
 `python-gobject gtk4 gtk4-layer-shell xdg-desktop-portal-hyprland wl-clipboard xdotool nodejs`
