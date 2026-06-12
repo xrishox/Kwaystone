@@ -4,11 +4,15 @@ Path of Exile 2 price-checking overlay, built Wayland-first for Arch Linux + Hyp
 
 Exists because existing tools (Exiled Exchange 2, Sidekick) are broken on Wayland — Electron refuses the portal GlobalShortcuts API, so this project goes around Electron entirely.
 
-## AI disclosure
+## Install (Arch)
 
-This project was built with the help of AI (Claude). Side projects like this wouldn't be possible for me without it.
+From the [AUR](https://aur.archlinux.org/packages/waystone):
 
-If that's a concern for you, the source is right here — read through it, issues and PRs are welcome.
+```sh
+yay -S waystone
+```
+
+Then run `waystone`. Requires Hyprland (hotkeys are bound dynamically via `hyprctl` while the PoE2 window exists).
 
 ## Features
 
@@ -39,15 +43,11 @@ Two processes connected by a Unix socket (JSON-lines protocol):
 
 **Flow:** - Hotkey → portal activation → focused-window guard → inject Ctrl+C → read clipboard → send to brain → parsed item priced via trade APIs → result rendered in the overlay panel.
 
-## Install (Arch)
+## AI disclosure
 
-From the [AUR](https://aur.archlinux.org/packages/waystone):
+This project was built with the help of AI (Claude). Side projects like this wouldn't be possible for me without it.
 
-```sh
-yay -S waystone
-```
-
-Then run `waystone`. Requires Hyprland (hotkeys are bound dynamically via `hyprctl` while the PoE2 window exists).
+If that's a concern for you, the source is right here — read through it, issues and PRs are welcome.
 
 ## Development setup
 
