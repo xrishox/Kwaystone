@@ -509,3 +509,22 @@ it("waystone properties (revives, pack size, rarity, drop chance) surface as tog
     expect(texts).toContain(expected);
   }
 });
+
+it("granted skills on uniques surface as toggleable stats", async () => {
+  // Vendor hides granted-skill filters that aren't max level
+  // ("filters.hide_not_max_level"), so "Grants Skill: Level 18 Spirit Vessel"
+  // never showed on the panel. Skill level drives unique value — surface it
+  // like any other stat (it carries a real trade id, e.g.
+  // skill.spirit_vessel_companion).
+  const { buildQueryAndStats } = await import("../src/price");
+  const text = readFileSync(
+    new URL("./fixtures/unique-armour.txt", import.meta.url),
+    "utf8",
+  );
+  const { stats } = await buildQueryAndStats(text, "L");
+
+  const skill = stats.find((s: any) => s.tag === "skill");
+  expect(skill).toBeDefined();
+  expect(skill!.text).toContain("Spirit Vessel");
+  expect(skill!.value).toBe(18);
+});

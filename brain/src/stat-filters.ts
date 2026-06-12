@@ -113,6 +113,13 @@ export function initExplicitModFilters(
     if (filter.hidden === "filters.hide_revives") {
       filter.hidden = undefined;
     }
+    // Granted skills ("Grants Skill: Level # X"): vendor hides them unless the
+    // skill is max level. Skill level drives unique value and the filter has a
+    // real trade id (skill.*) — surface it; the price.ts pass enables it by
+    // default like an explicit.
+    if (filter.hidden === "filters.hide_not_max_level") {
+      filter.hidden = undefined;
+    }
   }
 
   if (opts.defaultAllSelected) {
