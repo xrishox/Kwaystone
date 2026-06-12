@@ -40,6 +40,10 @@ checked directly — never piped through `tail`/`grep`, which swallow failures
 (that exact mistake shipped a red suite once). Tests green is the smoke test;
 no green, no push.
 
+**Never `git push` without explicit permission** — committing locally is fine,
+pushing requires the user's go-ahead each time. Ask, don't assume earlier
+pushes granted a standing one.
+
 ## System deps (Arch)
 
 `python-gobject gtk4 gtk4-layer-shell xdg-desktop-portal-hyprland wl-clipboard xdotool nodejs`
