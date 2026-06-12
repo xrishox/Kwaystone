@@ -439,3 +439,48 @@ it("returned stats list excludes EE2-hidden lines (hide_const_roll, hide_low_ilv
   // No returned stat should carry a hidden string (they were filtered out).
   expect(stats.every((s: any) => !s.hidden)).toBe(true);
 });
+
+it("waystone query searches the exact tiered base, not every map by category (issue #1)", async () => {
+  // PoE2 waystones (Item Class: Waystones) carry their tier in the base-type
+  // line ("Waystone (Tier 15)"), which is a real, trade-indexed base type. EE2's
+  // map flow sets searchRelaxed { category: Map, disabled: false } alongside the
+  // exact base, and createTradeRequest prefers the relaxed search when it's
+  // enabled — so the emitted query carried only category=map and NO base type,
+  // returning every map of any tier (the "wrong/unrelated listings" bug). The
+  // query must constrain to the exact base type.
+  const { buildQueryAndStats } = await import("../src/price");
+  const text = readFileSync(
+    new URL("./fixtures/waystone.txt", import.meta.url),
+    "utf8",
+  );
+  const { query } = await buildQueryAndStats(text, "L");
+
+  // The exact tiered base type must be the search term.
+  expect((query.query as any).type).toBe("Waystone (Tier 15)");
+});
+
+it("waystone explicit mods are visible, enabled and reach the query body (issue #1)", async () => {
+  // EE2 marks every explicit affix on a map item hidden+disabled
+  // ("filters.hide_for_map"), because PoE1 maps were fungible by tier. PoE2
+  // waystone affixes (Item Rarity %, Pack Size %, Waystone Drop Chance %, and
+  // dangerous suffixes) are exactly what buyers filter on, so they rendered gray
+  // (not matched/toggleable) and never reached the trade query. They must
+  // surface as enabled, toggleable explicit stats and emit enabled stat filters.
+  const { buildQueryAndStats } = await import("../src/price");
+  const text = readFileSync(
+    new URL("./fixtures/waystone.txt", import.meta.url),
+    "utf8",
+  );
+  const { query, stats } = await buildQueryAndStats(text, "L");
+
+  // The 4 parsed explicit mods are now visible (not hidden) and default-enabled.
+  const explicits = stats.filter((s: any) => s.tag === "explicit");
+  expect(explicits.length).toBe(4);
+  expect(explicits.every((s: any) => s.enabled)).toBe(true);
+  expect(stats.every((s: any) => !s.hidden)).toBe(true);
+
+  // Those stat filters reach the query body as enabled (not disabled) filters.
+  const statFilters = (query.query as any).stats[0].filters;
+  expect(statFilters.length).toBeGreaterThanOrEqual(4);
+  expect(statFilters.some((f: any) => f.disabled === true)).toBe(false);
+});
