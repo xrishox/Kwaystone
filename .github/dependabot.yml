@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Brain (Node) deps — vendored EE2 has no manifest of its own, so /brain
+  # covers everything JS.
+  - package-ecosystem: npm
+    directory: /brain
+    schedule:
+      interval: weekly
+    groups:
+      # One PR for routine bumps; majors stay separate for real review.
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
