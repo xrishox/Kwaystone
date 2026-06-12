@@ -39,17 +39,26 @@ Two processes connected by a Unix socket (JSON-lines protocol):
 
 **Flow:** - Hotkey → portal activation → focused-window guard → inject Ctrl+C → read clipboard → send to brain → parsed item priced via trade APIs → result rendered in the overlay panel.
 
-## Requirements
+## Install (Arch)
+
+From the [AUR](https://aur.archlinux.org/packages/waystone):
+
+```sh
+yay -S waystone        # latest release
+yay -S waystone-git    # build from HEAD
+```
+
+Then run `waystone`. Requires Hyprland (hotkeys are bound dynamically via `hyprctl` while the PoE2 window exists).
+
+## Development setup
 
 Arch packages:
 
 ```
-python-gobject gtk4 gtk4-layer-shell xdg-desktop-portal-hyprland wl-clipboard xdotool nodejs
+python-gobject python-opencv python-numpy gtk4 gtk4-layer-shell xdg-desktop-portal-hyprland wl-clipboard xdotool nodejs
 ```
 
-Python ≥ 3.12, Hyprland (hotkeys are bound dynamically via `hyprctl` while the PoE2 window exists).
-
-## Setup
+Python ≥ 3.12.
 
 ```sh
 cd brain && npm install
