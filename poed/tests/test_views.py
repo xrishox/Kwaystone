@@ -409,7 +409,8 @@ def test_stat_rows_built_from_response():
               ]}
     rows = stat_rows(result)
     assert rows[0] == {"id": 0, "text": "+# to Dexterity", "label": "+30 to Dexterity",
-                       "value": "30", "min": "27", "enabled": True, "tag": "explicit"}
+                       "value": "30", "min": "27", "enabled": True, "tag": "explicit",
+                       "generation": None}
     assert rows[1]["enabled"] is False
     assert rows[1]["min"] is None
     assert rows[1]["tag"] == "rune"
