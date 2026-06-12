@@ -54,9 +54,12 @@ const handlers: Record<string, Handler> = {
 
 async function handleLine(conn: net.Socket, line: string): Promise<void> {
   let id: unknown = null;
+  let cmd = "?";
   try {
     const req = JSON.parse(line);
     id = req.id;
+    cmd = String(req.cmd);
+    if (process.env.WAYSTONE_DEBUG) console.error(`cmd=${cmd} id=${id} start`);
     const h = handlers[req.cmd];
     if (!h) throw new Error(`unknown cmd: ${req.cmd}`);
     // Progress lines stream before the final response, tagged with the same
@@ -70,6 +73,12 @@ async function handleLine(conn: net.Socket, line: string): Promise<void> {
       JSON.stringify({ id, ok: true, result: await h(req, emit) }) + "\n",
     );
   } catch (e) {
+    // Full stack to stderr — poed pumps it into the shared waystone log.
+    // The wire error stays message-only (it surfaces in the panel).
+    console.error(
+      `cmd=${cmd} failed:`,
+      e instanceof Error ? (e.stack ?? e.message) : e,
+    );
     conn.write(
       JSON.stringify({
         id,

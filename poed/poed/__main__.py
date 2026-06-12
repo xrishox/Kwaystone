@@ -7,6 +7,7 @@ if "libgtk4-layer-shell" not in os.environ.get("LD_PRELOAD", "") and os.path.exi
     env["LD_PRELOAD"] = f"{_LAYER_SHELL} {env.get('LD_PRELOAD', '')}".strip()
     os.execve(sys.executable, [sys.executable, "-m", "poed", *sys.argv[1:]], env)
 
+import logging
 import signal
 import threading
 import time
@@ -20,6 +21,7 @@ gi.require_version("GLibUnix", "2.0")
 from gi.repository import Gtk, Gio, GLib, GLibUnix  # noqa: E402
 
 from poed import config
+from poed import log as log_mod
 from poed import capture
 from poed import sessid as sessid_mod
 from poed.badges import BadgeLayer
@@ -239,11 +241,9 @@ class App:
             if matches is None:
                 GLib.idle_add(self._deliver_error, gen, "screen capture failed")
                 return
-            print(
-                f"uniquescan: rows={t_rows - t0:.2f}s "
-                f"capture+match={t_scan - t_rows:.2f}s "
-                f"worker-total={t_scan - t0:.2f}s",
-                flush=True,
+            _LOG.info(
+                "uniquescan: rows=%.2fs capture+match=%.2fs worker-total=%.2fs",
+                t_rows - t0, t_scan - t_rows, t_scan - t0,
             )
             GLib.idle_add(self._deliver_uniques, gen, matches, output, t0)
         except (RuntimeError, OSError, TimeoutError) as e:
@@ -252,7 +252,7 @@ class App:
             self.in_flight = False
 
     def on_portal_error(self, message):
-        print(f"exit: portal error — {message}", flush=True)
+        _LOG.error("exit: portal error — %s", message)
         self.application.quit()
 
     def on_activate(self, application):
@@ -302,9 +302,9 @@ class App:
                 except BlockingIOError:
                     return GLib.SOURCE_CONTINUE
                 if not chunk:
-                    print(
-                        "hyprbind: event socket closed; dynamic bind disabled until restart",
-                        flush=True,
+                    _LOG.warning(
+                        "hyprbind: event socket closed; "
+                        "dynamic bind disabled until restart"
                     )
                     bind_mgr.stop()
                     return GLib.SOURCE_REMOVE
@@ -322,10 +322,7 @@ class App:
                 None,
             )
         except KeyError:
-            print(
-                "hyprbind: not a Hyprland session, dynamic bind disabled",
-                flush=True,
-            )
+            _LOG.warning("hyprbind: not a Hyprland session, dynamic bind disabled")
 
         def on_sigint():
             return self._shutdown("Ctrl+C received")
@@ -343,7 +340,7 @@ class App:
         ).start()
 
     def _shutdown(self, label):
-        print(f"exit: {label}, quitting.", flush=True)
+        _LOG.info("exit: %s, quitting.", label)
         if self.bind_mgr is not None:
             self.bind_mgr.stop()
         if self.esc_bind is not None:
@@ -352,7 +349,11 @@ class App:
         return GLib.SOURCE_REMOVE
 
 
+_LOG = logging.getLogger("waystone")
+
+
 def main():
+    log_mod.setup(debug="--debug" in sys.argv or bool(os.environ.get("WAYSTONE_DEBUG")))
     cfg = config.load()
     # Click-only login (iteration 5): no startup auto-detect. The configured
     # poesessid is still honored as the initial brain env (explicit opt-in);
@@ -371,7 +372,7 @@ def main():
     positions = PositionStore()  # per-panel saved positions (XDG state)
     app_obj = None
     try:
-        print("brain up:", brain.request({"cmd": "ping"}))
+        _LOG.info("brain up: %s", brain.request({"cmd": "ping"}))
 
         app = Gtk.Application(
             application_id="io.github.kriskruse.waystone",

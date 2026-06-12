@@ -30,6 +30,7 @@ Pitfalls applied (from spike Findings):
   - signal callbacks take 7 positional args (incl. trailing user_data).
 """
 
+import logging
 import uuid
 
 import gi
@@ -50,7 +51,7 @@ def _token() -> str:
 
 
 def _log(step: str, msg: str) -> None:
-    print(f"[portal:{step}] {msg}", flush=True)
+    logging.getLogger("waystone.portal").info("[%s] %s", step, msg)
 
 
 class GlobalShortcuts:

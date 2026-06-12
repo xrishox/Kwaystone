@@ -7,6 +7,8 @@ import subprocess
 import threading
 import time
 
+from poed import log
+
 
 def resolve_brain_dir() -> str:
     """WAYSTONE_BRAIN_DIR for installed packages (launcher sets it);
@@ -56,7 +58,10 @@ class Brain:
             cwd=self.brain_dir,
             env={**os.environ, "BRAIN_SOCKET": self.socket_path, **self.env_extra},
             start_new_session=True,
+            # stderr flows into the shared waystone log (stacks survive there).
+            stderr=subprocess.PIPE,
         )
+        log.pump_in_thread(self.proc.stderr)
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             try:

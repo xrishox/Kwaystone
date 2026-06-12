@@ -9,6 +9,8 @@ All text is set via Gtk.Label.set_text (no markup) — the account name is a
 remote value, and set_text needs no escaping.
 """
 
+import logging
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -16,6 +18,8 @@ gi.require_version("Gtk4LayerShell", "1.0")
 from gi.repository import Gtk, Gdk, Gtk4LayerShell as LayerShell  # noqa: E402
 
 from . import draggable
+
+_LOG = logging.getLogger("waystone.login")
 
 
 class LoginBox:
@@ -63,7 +67,7 @@ class LoginBox:
         self._win.set_child(box)
 
     def _on_click(self, _btn):
-        print("login: button clicked", flush=True)
+        _LOG.info("button clicked")
         if self._mode == "logged_in":
             self._on_logout()
         else:
@@ -109,7 +113,7 @@ class LoginBox:
         self._status.set_text("")
 
     def set_logged_in(self, name: str) -> None:
-        print("login: verified", flush=True)
+        _LOG.info("verified")
         self._mode = "logged_in"
         self._dot.set_text("●")
         self._name.set_text(name or "logged in")
@@ -117,7 +121,7 @@ class LoginBox:
         self._status.set_text("")
 
     def set_status(self, message: str) -> None:
-        print(f"login: status — {message}", flush=True)
+        _LOG.info("status — %s", message)
         # Detection failed/finished without logging in: reset the dot + button
         # out of the busy state so the user can read the message and retry.
         self._mode = "anonymous"
