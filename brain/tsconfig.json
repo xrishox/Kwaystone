@@ -7,13 +7,12 @@
     "skipLibCheck": true,
     "noEmit": true,
     "types": ["node"],
-    "baseUrl": ".",
     "paths": {
-      "@/web/Config": ["src/stubs/Config.ts"],
-      "@/web/background/IPC": ["src/stubs/IPC.ts"],
-      "@/web/overlay/widgets": ["src/stubs/widgets.ts"],
-      "@/web/overlay/interfaces": ["src/stubs/widgets.ts"],
-      "@/*": ["vendor/ee2/src/*"]
+      "@/web/Config": ["./src/stubs/Config.ts"],
+      "@/web/background/IPC": ["./src/stubs/IPC.ts"],
+      "@/web/overlay/widgets": ["./src/stubs/widgets.ts"],
+      "@/web/overlay/interfaces": ["./src/stubs/widgets.ts"],
+      "@/*": ["./vendor/ee2/src/*"]
     }
   },
   "include": ["src/**/*.ts", "vendor/ee2/src/**/*.ts"]
