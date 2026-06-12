@@ -19,14 +19,14 @@ Hotkey (`Alt+Z`, dynamically bound/unbound via `hyprctl keyword` while PoE2 wind
 
 - **Never** use Electron-style global shortcut APIs or X11 global grabs — portal GlobalShortcuts only. That failure mode is the whole reason this project exists.
 - Overlay windows are wlr-layer-shell surfaces (overlay layer, keyboard `on_demand` — an `exclusive` grab seizes the whole seat and starves sibling surfaces), never normal toplevels — no Hyprland window-rule hacks. One-press Esc comes from a visibility-scoped consuming Esc bind, not a keyboard grab.
-- Surfaces are TOP+LEFT-anchored and positioned via margins; draggable by a grab-handle strip. Live drag reads `hyprctl cursorpos` (compositor-absolute) — NOT the gesture's own offset, which feeds back through async margin commits and halves/jumps. Positions persist to `~/.local/state/poe2-overlay/positions.json`.
+- Surfaces are TOP+LEFT-anchored and positioned via margins; draggable by a grab-handle strip. Live drag reads `hyprctl cursorpos` (compositor-absolute) — NOT the gesture's own offset, which feeds back through async margin commits and halves/jumps. Positions persist to `~/.local/state/waystone/positions.json`.
 - Respect trade-API rate limits — EE2's `RateLimiter.ts` handles this; route all API calls through it.
 - Game data (`vendor/ee2/data/*.ndjson`, ~2.4 MB) is regenerated upstream by EE2's `dataParser/` pipeline. On PoE2 patches: re-pull from the EE2 repo, don't hand-edit, don't run the pipeline locally.
 - `AppConfig` is stubbed static (`language: "en"`, league from config) — non-English clients out of scope.
 
 ## Config
 
-`~/.config/poe2-overlay/config.toml`: league, hotkey_price, panel_position, panel_width, account name, game_window_class, poesessid (optional session cookie — keep the file chmod 600), unique_min_exalted (unique-scan highlight threshold; the scan hotkey is Alt+X).
+`~/.config/waystone/config.toml` (written with defaults on first run; old `poe2-overlay` dirs auto-migrate): league, hotkey_price, panel_position, panel_width, account name, game_window_class, poesessid (optional session cookie — keep the file chmod 600), unique_min_exalted (unique-scan highlight threshold; the scan hotkey is Alt+X).
 
 ## Testing
 

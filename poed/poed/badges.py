@@ -20,7 +20,7 @@ class BadgeLayer:
         self._win = Gtk.Window(application=application)
         LayerShell.init_for_window(self._win)
         LayerShell.set_layer(self._win, LayerShell.Layer.OVERLAY)
-        LayerShell.set_namespace(self._win, "poe2-overlay-badges")
+        LayerShell.set_namespace(self._win, "waystone-badges")
         # Anchor all four edges: the surface covers the whole output.
         for e in (LayerShell.Edge.TOP, LayerShell.Edge.LEFT,
                   LayerShell.Edge.BOTTOM, LayerShell.Edge.RIGHT):

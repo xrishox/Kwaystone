@@ -8,10 +8,13 @@ import json
 import os
 from pathlib import Path
 
+from poed import config
+
 
 def default_path() -> Path:
-    state = os.environ.get("XDG_STATE_HOME") or (Path.home() / ".local/state")
-    return Path(state) / "poe2-overlay" / "positions.json"
+    state = Path(os.environ.get("XDG_STATE_HOME") or (Path.home() / ".local/state"))
+    config.migrate_dir(state / "poe2-overlay", state / "waystone")
+    return state / "waystone" / "positions.json"
 
 
 class PositionStore:

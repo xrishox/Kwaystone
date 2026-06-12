@@ -6,3 +6,8 @@ dist/
 .superpowers/
 .idea/
 Screenshots/
+packaging/src/
+packaging/pkg/
+packaging/waystone/
+packaging/*.pkg.tar*
+packaging/*.log

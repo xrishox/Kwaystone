@@ -1,5 +1,55 @@
 import os
+
+import pytest
+
+from poed import brain as brain_mod
 from poed.brain import Brain
+
+
+def test_resolve_brain_dir_env_override(monkeypatch):
+    monkeypatch.setenv("WAYSTONE_BRAIN_DIR", "/usr/lib/waystone/brain")
+
+    assert brain_mod.resolve_brain_dir() == "/usr/lib/waystone/brain"
+
+
+def test_resolve_brain_dir_defaults_to_checkout(monkeypatch):
+    monkeypatch.delenv("WAYSTONE_BRAIN_DIR", raising=False)
+
+    expected = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "../../brain")
+    )
+    assert brain_mod.resolve_brain_dir() == expected
+
+
+def test_launch_command_prefers_bundle(tmp_path, monkeypatch):
+    """Release installs ship dist/server.mjs — run it with plain node."""
+    (tmp_path / "dist").mkdir()
+    (tmp_path / "dist/server.mjs").touch()
+    monkeypatch.setattr(brain_mod.shutil, "which", lambda n: f"/usr/bin/{n}")
+
+    assert brain_mod.launch_command(str(tmp_path)) == ["/usr/bin/node", "dist/server.mjs"]
+
+
+def test_launch_command_dev_fallback(tmp_path, monkeypatch):
+    monkeypatch.setattr(brain_mod.shutil, "which", lambda n: f"/usr/bin/{n}")
+
+    assert brain_mod.launch_command(str(tmp_path)) == ["/usr/bin/npx", "tsx", "src/server.ts"]
+
+
+def test_launch_command_bundle_needs_node(tmp_path, monkeypatch):
+    (tmp_path / "dist").mkdir()
+    (tmp_path / "dist/server.mjs").touch()
+    monkeypatch.setattr(brain_mod.shutil, "which", lambda n: None)
+
+    with pytest.raises(RuntimeError, match="node"):
+        brain_mod.launch_command(str(tmp_path))
+
+
+def test_launch_command_dev_needs_npx(tmp_path, monkeypatch):
+    monkeypatch.setattr(brain_mod.shutil, "which", lambda n: None)
+
+    with pytest.raises(RuntimeError, match="npx"):
+        brain_mod.launch_command(str(tmp_path))
 
 
 def test_ping_roundtrip(tmp_path):

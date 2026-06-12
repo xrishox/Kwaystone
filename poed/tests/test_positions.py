@@ -1,4 +1,25 @@
-from poed.positions import PositionStore
+import json
+
+from poed.positions import PositionStore, default_path
+
+
+def test_default_path_is_waystone(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+
+    assert default_path() == tmp_path / "waystone/positions.json"
+
+
+def test_default_path_migrates_old_dir(tmp_path, monkeypatch):
+    """Pre-rename installs keep saved positions: poe2-overlay/ moves to waystone/."""
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    old = tmp_path / "poe2-overlay"
+    old.mkdir()
+    (old / "positions.json").write_text(json.dumps({"panel": {"x": 7, "y": 9}}))
+
+    s = PositionStore(default_path())
+
+    assert s.get("panel") == (7, 9)
+    assert not old.exists()
 
 
 def test_missing_file_returns_none(tmp_path):

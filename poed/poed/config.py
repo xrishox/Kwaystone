@@ -20,12 +20,64 @@ DEFAULTS = {
 }
 
 
-def load() -> dict:
-    p = pathlib.Path.home() / ".config/poe2-overlay/config.toml"
+# Written on first run. Values must mirror DEFAULTS —
+# test_created_template_roundtrips_to_defaults pins the sync.
+TEMPLATE = """\
+# Waystone config — created automatically on first run.
+# Values below are the defaults; edit and restart to apply.
+
+# Current PoE2 league for price lookups.
+league = "{league}"
+
+# Your account name (marks your own listings).
+account_name = "{account_name}"
+
+# Price-check hotkey. Unique-scan is ALT+x.
+hotkey_price = "{hotkey_price}"
+
+# Hyprland window class of the game (verify with: hyprctl activewindow).
+game_window_class = "{game_window_class}"
+
+# Optional session cookie (browser devtools -> Cookie POESESSID).
+# Grants account access — this file stays chmod 600 for that reason.
+poesessid = "{poesessid}"
+
+# Unique-scan: highlight items worth >= this (exalted).
+unique_min_exalted = {unique_min_exalted}
+
+# Unique-scan: skip items worth < this (exalted) for faster scans, at a
+# measured misidentification risk. 0 = off (recommended).
+unique_scan_min_price = {unique_scan_min_price}
+"""
+
+
+def migrate_dir(old: pathlib.Path, new: pathlib.Path) -> None:
+    """One-shot rename from the pre-Waystone dir name; best-effort."""
+    if old.is_dir() and not new.exists():
+        try:
+            new.parent.mkdir(parents=True, exist_ok=True)
+            old.rename(new)
+        except OSError:
+            pass
+
+
+def default_path() -> pathlib.Path:
+    base = pathlib.Path.home() / ".config"
+    migrate_dir(base / "poe2-overlay", base / "waystone")
+    return base / "waystone/config.toml"
+
+
+def load(p: pathlib.Path | None = None) -> dict:
+    if p is None:
+        p = default_path()
     cfg = dict(DEFAULTS)
     if p.exists():
         try:
             cfg.update(tomllib.loads(p.read_text()))
         except tomllib.TOMLDecodeError as e:
             raise SystemExit(f"config error in {p}: {e}")
+    else:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.touch(mode=0o600)
+        p.write_text(TEMPLATE.format(**DEFAULTS))
     return cfg

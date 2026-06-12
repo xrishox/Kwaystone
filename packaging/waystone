@@ -1,0 +1,6 @@
+#!/bin/sh
+# Waystone launcher for system installs (AUR package).
+# Points poed at the bundled brain; poed itself handles the
+# gtk4-layer-shell LD_PRELOAD re-exec.
+export WAYSTONE_BRAIN_DIR="${WAYSTONE_BRAIN_DIR:-/usr/lib/waystone/brain}"
+exec python -m poed "$@"

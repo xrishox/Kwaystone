@@ -8,6 +8,32 @@ import threading
 import time
 
 
+def resolve_brain_dir() -> str:
+    """WAYSTONE_BRAIN_DIR for installed packages (launcher sets it);
+    repo-relative default for dev checkouts."""
+    env = os.environ.get("WAYSTONE_BRAIN_DIR")
+    if env:
+        return env
+    return os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "brain"))
+
+
+def launch_command(brain_dir: str) -> list[str]:
+    """Bundled brain (release install) when dist/server.mjs exists, tsx dev mode otherwise."""
+    if os.path.exists(os.path.join(brain_dir, "dist/server.mjs")):
+        node = shutil.which("node")
+        if node is None:
+            raise RuntimeError("node not found on PATH; install nodejs")
+        return [node, "dist/server.mjs"]
+    npx = shutil.which("npx")
+    if npx is None:
+        raise RuntimeError(
+            "npx not found on PATH; ensure node/npx is available "
+            "(e.g. mise: ~/.local/share/mise/installs/node/*/bin) and run "
+            "poed from a shell where PATH includes it"
+        )
+    return [npx, "tsx", "src/server.ts"]
+
+
 class Brain:
     """Spawns the Node brain as a child and speaks JSON-lines to it."""
 
@@ -21,19 +47,12 @@ class Brain:
         self._lock = threading.Lock()
 
     def start(self, timeout=15.0):
-        npx = shutil.which("npx")
-        if npx is None:
-            raise RuntimeError(
-                "npx not found on PATH; ensure node/npx is available "
-                "(e.g. mise: ~/.local/share/mise/installs/node/*/bin) and run "
-                "poed from a shell where PATH includes it"
-            )
         # npx -> npm exec -> node(tsx) is a process tree; terminating only the
         # npx wrapper reparents the node child and leaves an orphan brain. Run
         # the child as its own session/process-group leader so stop() can
         # signal the whole group.
         self.proc = subprocess.Popen(
-            [npx, "tsx", "src/server.ts"],
+            launch_command(self.brain_dir),
             cwd=self.brain_dir,
             env={**os.environ, "BRAIN_SOCKET": self.socket_path, **self.env_extra},
             start_new_session=True,

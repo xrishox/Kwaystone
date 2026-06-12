@@ -23,6 +23,7 @@ from poed import config
 from poed import capture
 from poed import sessid as sessid_mod
 from poed.badges import BadgeLayer
+from poed import brain as brain_module
 from poed.brain import Brain
 from poed import hyprbind
 from poed import uniquescan
@@ -358,10 +359,10 @@ def main():
     # Firefox cookie auto-detection now happens only on a Login button click.
     sessid = cfg["poesessid"] or ""
     sock = os.path.join(
-        os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "poe2-overlay-brain.sock"
+        os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "waystone-brain.sock"
     )
     brain = Brain(
-        brain_dir=os.path.join(os.path.dirname(__file__), "../../brain"),
+        brain_dir=brain_module.resolve_brain_dir(),
         socket_path=sock,
         env_extra={"POE2_SESSID": sessid} if sessid else None,
     )

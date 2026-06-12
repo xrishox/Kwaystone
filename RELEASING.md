@@ -4,25 +4,23 @@ Plan for packaging and publishing the overlay as `waystone-git`.
 
 ## Prerequisites (one-time)
 
-- [ ] **AUR account** at [aur.archlinux.org](https://aur.archlinux.org) with an SSH public key added to the profile.
+- [x] **AUR account** at [aur.archlinux.org](https://aur.archlinux.org) with an SSH public key added to the profile.
 - [ ] **Public GitHub repo** — the AUR hosts only the PKGBUILD; sources are pulled from GitHub at build time. Suggested rename: `github.com/kriskruse/waystone`.
-- [ ] **Top-level `LICENSE` file** — the repo currently has none (only the vendored EE2 MIT license). Add MIT; the vendored `brain/vendor/ee2/` code stays under its own MIT (see `PROVENANCE.md`).
+- [x] **Top-level `LICENSE` file** — AGPL-3.0-or-later; the vendored `brain/vendor/ee2/` code stays under its own MIT (see `PROVENANCE.md`).
 
-## Code changes needed before packaging
+## Code changes before packaging (done)
 
-1. **Bundle the brain.** Add an esbuild step so users don't need `node_modules` or npm:
+1. [x] **Bundle the brain** — `npm run build` in `brain/` (esbuild → `dist/server.mjs`, ~2.5 MB, deps inlined). Game data is NOT bundled: ship `vendor/ee2/public/` alongside, since `bootstrap.ts` resolves it as `<bundle dir>/../vendor/ee2/public/` — `dist/` and `src/` sit at the same depth, so the same relative layout works for dev and release.
 
-   ```sh
-   esbuild src/server.ts --bundle --platform=node --format=esm --outfile=dist/server.mjs
-   ```
+2. [x] **Brain launch selection** — `poed/poed/brain.py:launch_command()` runs `node dist/server.mjs` when the bundle exists, falls back to `npx tsx src/server.ts` for dev checkouts.
 
-   Ship `vendor/ee2/data/*.ndjson` alongside `dist/` — data is loaded via `readFile`, so keep the relative layout.
+3. [x] **Brain dir override** — `WAYSTONE_BRAIN_DIR` env var (`brain.py:resolve_brain_dir()`); without it poed uses the repo-relative path, which doesn't exist for an installed wheel.
 
-2. **Brain launch fallback** in `poed/poed/brain.py` — it currently hardcodes `npx tsx src/server.ts` (dev mode). Release builds should run `node dist/server.mjs` when it exists, falling back to npx/tsx for development. This also removes the npx process-tree orphan workaround.
+4. [x] **Launcher script** — `packaging/waystone`: sets `WAYSTONE_BRAIN_DIR=/usr/lib/waystone/brain`, execs `python -m poed`.
 
-3. **Launcher script** `/usr/bin/waystone` that execs `python -m poed` with the installed paths.
+5. [x] **Dir/name rename** — config (`~/.config/waystone/`), state (`~/.local/state/waystone/`), icon cache (`~/.cache/waystone/icons/`), socket (`waystone-brain.sock`), badge layer namespace (`waystone-badges`). Old `poe2-overlay` config/state dirs auto-migrate on first launch (`config.migrate_dir`); the icon cache just re-fills.
 
-4. Optional, can wait: rename config/state dirs (`~/.config/poe2-overlay/`, `~/.local/state/poe2-overlay/`) to `waystone`. If done, migrate or document the move.
+Gotcha fixed along the way: the bundle's main-module guard in `src/server.ts` matched only `server.ts`; now also `server.mjs` (the bundle exited silently otherwise).
 
 Identity strings already updated: app id `io.github.kriskruse.waystone`, trade-API user-agent `waystone/0.1 (contact: github.com/kriskruse)`. Note: changing the app id invalidates any existing portal GlobalShortcuts grant — users re-approve the hotkey binding once.
 
@@ -35,10 +33,10 @@ pkgrel=1
 pkgdesc="Path of Exile 2 price-check overlay for Wayland (Hyprland)"
 arch=(any)
 url="https://github.com/kriskruse/waystone"
-license=(MIT)
+license=(AGPL-3.0-or-later MIT)
 depends=(python python-gobject gtk4 gtk4-layer-shell
          xdg-desktop-portal-hyprland wl-clipboard xdotool nodejs)
-makedepends=(git npm esbuild python-build python-installer python-wheel)
+makedepends=(git npm python-build python-installer python-wheel)
 source=("git+$url.git")
 sha256sums=('SKIP')
 
@@ -50,16 +48,17 @@ pkgver() {
 build() {
   cd waystone/brain
   npm ci
-  esbuild src/server.ts --bundle --platform=node --format=esm --outfile=dist/server.mjs
+  npm run build
   cd ../poed
   python -m build --wheel --no-isolation
 }
 
 package() {
   cd waystone
-  # brain bundle + game data
+  # brain bundle + game data (bundle expects ../vendor/ee2/public relative to dist/)
   install -Dm644 brain/dist/server.mjs -t "$pkgdir/usr/lib/waystone/brain/dist/"
-  cp -r brain/vendor/ee2/data "$pkgdir/usr/lib/waystone/brain/vendor/ee2/data"
+  mkdir -p "$pkgdir/usr/lib/waystone/brain/vendor/ee2"
+  cp -r brain/vendor/ee2/public "$pkgdir/usr/lib/waystone/brain/vendor/ee2/"
   # poed
   python -m installer --destdir="$pkgdir" poed/dist/*.whl
   # launcher
@@ -67,8 +66,6 @@ package() {
   install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"
 }
 ```
-
-Adjust paths once the launcher and build scripts exist; this is the shape, not final.
 
 ## Publishing
 

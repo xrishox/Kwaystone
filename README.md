@@ -17,7 +17,7 @@ Two processes connected by a Unix socket (JSON-lines protocol):
 - **poed** (Python) — everything Wayland/desktop: GTK4 + gtk4-layer-shell overlay, global hotkeys via xdg-desktop-portal GlobalShortcuts, clipboard (`wl-paste`), Ctrl+C injection into the game window (`xdotool`, PoE2 runs under Proton/XWayland), brain process lifecycle.
 - **brain** (Node/TypeScript) — everything PoE: item-text parser, trade-query builder, trade2 + bulk API clients, rate limiter, cache. Parser and game data vendored from [Exiled Exchange 2](https://github.com/Kvan7/Exiled-Exchange-2) (MIT) under `brain/vendor/ee2/`.
 
-Hotkey → portal activation → focused-window guard → inject Ctrl+C → read clipboard → send to brain → parsed item priced via trade APIs → result rendered in the overlay panel.
+**Flow:** - Hotkey → portal activation → focused-window guard → inject Ctrl+C → read clipboard → send to brain → parsed item priced via trade APIs → result rendered in the overlay panel.
 
 ## Requirements
 
@@ -35,21 +35,13 @@ Python ≥ 3.12, Hyprland (hotkeys are bound dynamically via `hyprctl` while the
 cd brain && npm install
 ```
 
-Create `~/.config/poe2-overlay/config.toml`:
-
-```toml
-league = "Standard"
-hotkey_price = "ALT+z"
-# account = "your-account-name"
-# poesessid = "..."        # optional session cookie — chmod 600 this file
-# unique_min_exalted = 1.0 # unique-scan highlight threshold
-```
-
 Run the daemon:
 
 ```sh
 cd poed && python -m poed
 ```
+
+On first run a commented config is written to `~/.config/waystone/config.toml` with all defaults — edit it to set your league, account name, or an optional `poesessid` session cookie, then restart.
 
 ## Testing
 
@@ -58,4 +50,4 @@ cd poed && python -m poed
 
 ## License
 
-Brain parser and game data vendored from Exiled Exchange 2 under MIT — see `brain/vendor/ee2/PROVENANCE.md`.
+[AGPL-3.0-or-later](LICENSE), except `brain/vendor/ee2/` — brain parser and game data vendored from Exiled Exchange 2 under MIT (see `brain/vendor/ee2/PROVENANCE.md`).

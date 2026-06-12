@@ -5,6 +5,7 @@
   "type": "module",
   "description": "PoE brains: item parser, trade-query builder, trade2/bulk API client. Vendored from Exiled Exchange 2 (MIT).",
   "scripts": {
+    "build": "esbuild src/server.ts --bundle --platform=node --format=esm --outfile=dist/server.mjs",
     "make-index-files": "cd vendor/ee2 && node tools/make-index-files.mjs",
     "check-types": "tsc --noEmit",
     "test": "vitest"
@@ -22,6 +23,7 @@
     "@types/luxon": "^3.0.0",
     "@types/node": "^20.0.0",
     "@types/object-hash": "^3.0.0",
+    "esbuild": "^0.24.0",
     "typescript": "^5.4.0",
     "tsx": "^4.7.0",
     "vitest": "^2.0.0"

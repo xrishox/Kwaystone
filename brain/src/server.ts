@@ -136,10 +136,11 @@ export async function startServer(
     });
 }
 
-if (process.argv[1]?.endsWith("server.ts")) {
+// server.ts when run via tsx (dev), server.mjs as the esbuild bundle (release).
+if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.mjs")) {
   const sock =
     process.env.BRAIN_SOCKET ??
-    `${process.env.XDG_RUNTIME_DIR ?? "/tmp"}/poe2-overlay-brain.sock`;
+    `${process.env.XDG_RUNTIME_DIR ?? "/tmp"}/waystone-brain.sock`;
   startServer(sock)
     .then(() => console.error(`brain listening on ${sock}`))
     .catch((e) => { console.error(e); process.exit(1); });

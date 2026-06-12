@@ -1,0 +1,45 @@
+# Maintainer: Kris Kruse <kriskruse@users.noreply.github.com>
+pkgname=waystone-git
+pkgver=r1
+pkgrel=1
+pkgdesc="Path of Exile 2 price-check overlay for Wayland (Hyprland)"
+arch=('any')
+url="https://github.com/kriskruse/waystone"
+license=('AGPL-3.0-or-later' 'MIT')
+depends=('python' 'python-gobject' 'gtk4' 'gtk4-layer-shell'
+         'xdg-desktop-portal-hyprland' 'wl-clipboard' 'xdotool' 'nodejs')
+makedepends=('git' 'npm' 'python-build' 'python-installer' 'python-wheel')
+provides=('waystone')
+conflicts=('waystone')
+source=("waystone::git+$url.git")
+# For a local test build before the repo is on GitHub:
+#   source=("waystone::git+file:///home/kris/Documents/Github/POE2-Overlay")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd waystone
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd waystone/brain
+  npm ci
+  npm run build
+  cd ../poed
+  python -m build --wheel --no-isolation
+}
+
+package() {
+  cd waystone
+  # brain bundle + game data (bundle resolves data at ../vendor/ee2/public)
+  install -Dm644 brain/dist/server.mjs -t "$pkgdir/usr/lib/waystone/brain/dist/"
+  mkdir -p "$pkgdir/usr/lib/waystone/brain/vendor/ee2"
+  cp -r brain/vendor/ee2/public "$pkgdir/usr/lib/waystone/brain/vendor/ee2/"
+  # poed
+  python -m installer --destdir="$pkgdir" poed/dist/*.whl
+  # launcher
+  install -Dm755 packaging/waystone "$pkgdir/usr/bin/waystone"
+  # licenses: project AGPL + vendored EE2 MIT
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 brain/vendor/ee2/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE.ee2-mit"
+}

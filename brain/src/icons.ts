@@ -5,7 +5,7 @@ import path from "node:path";
 
 const cacheDir = () =>
   process.env.POE2_ICON_CACHE ??
-  path.join(homedir(), ".cache", "poe2-overlay", "icons");
+  path.join(homedir(), ".cache", "waystone", "icons");
 
 const inflight = new Map<string, Promise<string | null>>();
 let warnedOnce = false;
