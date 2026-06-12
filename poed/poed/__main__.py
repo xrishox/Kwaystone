@@ -32,18 +32,20 @@ from poed import uniquescan
 from poed.hyprbind import EscBind, MultiBindManager
 from poed.leaguebox import LeagueBox
 from poed.loginbox import LoginBox
+from poed.loginstate import LoginState
 from poed.overlay import OverlayPanel
 from poed.portal import GlobalShortcuts
 from poed.positions import PositionStore
 
 
 class App:
-    def __init__(self, application, cfg, brain, positions, esc_bind):
+    def __init__(self, application, cfg, brain, positions, esc_bind, login_state):
         self.application = application
         self.cfg = cfg
         self.brain = brain
         self.positions = positions
         self.esc_bind = esc_bind
+        self.login_state = login_state
         self.panel = None
         self.loginbox = None
         self.leaguebox = None
@@ -136,33 +138,50 @@ class App:
         threading.Thread(target=run_requery, daemon=True).start()
         return True
 
-    def on_login(self):
-        # Thread: config sid wins, else click-time Firefox auto-detect.
-        # The sid VALUE is never printed or logged.
+    def _run_login(self, *, startup: bool):
+        # Worker body shared by the Login button and startup auto-login:
+        # config sid wins, else Firefox auto-detect. The sid VALUE is never
+        # printed or logged — only the boolean "was logged in" flag persists.
+        # On success the flag is set; on a missing/invalid session the
+        # startup path falls back to anonymous quietly (status line only).
         box = self.loginbox
+        sid = self.cfg["poesessid"] or sessid_mod.autodetect()
+        if not sid:
+            # pathofexile.com's POESESSID is a browser-session cookie —
+            # Firefox keeps it in memory only, never on disk, so autodetect
+            # can't see it. Manual paste is the standard workflow (same as
+            # EE2/Awakened). On startup this just means "stay anonymous".
+            msg = (
+                "previous session not found — paste POESESSID into config.toml"
+                if startup
+                else "no session — paste POESESSID into config.toml "
+                "(F12 on pathofexile.com → Storage → Cookies)"
+            )
+            GLib.idle_add(box.set_status, msg)
+            return
+        GLib.idle_add(box.set_busy)
+        try:
+            result = self.brain.request({"cmd": "login", "sessionId": sid})
+            self.login_state.set(True)
+            GLib.idle_add(box.set_logged_in, result.get("name", ""))
+        except (RuntimeError, OSError, TimeoutError) as e:
+            GLib.idle_add(box.set_anonymous)
+            GLib.idle_add(box.set_status, str(e))
 
-        def run_login():
-            sid = self.cfg["poesessid"] or sessid_mod.autodetect()
-            if not sid:
-                # pathofexile.com's POESESSID is a browser-session cookie —
-                # Firefox keeps it in memory only, never on disk, so
-                # autodetect can't see it. Manual paste is the standard
-                # workflow (same as EE2/Awakened).
-                GLib.idle_add(
-                    box.set_status,
-                    "no session — paste POESESSID into config.toml "
-                    "(F12 on pathofexile.com → Storage → Cookies)",
-                )
-                return
-            GLib.idle_add(box.set_busy)
-            try:
-                result = self.brain.request({"cmd": "login", "sessionId": sid})
-                GLib.idle_add(box.set_logged_in, result.get("name", ""))
-            except (RuntimeError, OSError, TimeoutError) as e:
-                GLib.idle_add(box.set_anonymous)
-                GLib.idle_add(box.set_status, str(e))
+    def on_login(self):
+        threading.Thread(
+            target=self._run_login, kwargs={"startup": False}, daemon=True
+        ).start()
 
-        threading.Thread(target=run_login, daemon=True).start()
+    def resume_login(self):
+        # Startup: if the user was logged in last session, re-run the same
+        # resolution the Login click does. Failure stays anonymous quietly.
+        if not self.login_state.logged_in():
+            return
+        _LOG.info("resuming previous login")
+        threading.Thread(
+            target=self._run_login, kwargs={"startup": True}, daemon=True
+        ).start()
 
     def on_logout(self):
         box = self.loginbox
@@ -170,6 +189,7 @@ class App:
         def run_logout():
             try:
                 self.brain.request({"cmd": "logout"})
+                self.login_state.set(False)
                 GLib.idle_add(box.set_anonymous)
             except (RuntimeError, OSError, TimeoutError) as e:
                 GLib.idle_add(box.set_status, str(e))
@@ -288,6 +308,9 @@ class App:
         )
         self.loginbox = loginbox
         self.panel.attach_loginbox(loginbox)
+        # Restore last session's login if the flag is set (resolves a fresh
+        # POESESSID live; the value itself is never persisted).
+        self.resume_login()
         leaguebox = LeagueBox(
             application, self.cfg["league"], self.on_league_changed,
             positions=self.positions,
@@ -397,9 +420,10 @@ _LOG = logging.getLogger("waystone")
 def main():
     log_mod.setup(debug="--debug" in sys.argv or bool(os.environ.get("WAYSTONE_DEBUG")))
     cfg = config.load()
-    # Click-only login (iteration 5): no startup auto-detect. The configured
-    # poesessid is still honored as the initial brain env (explicit opt-in);
-    # Firefox cookie auto-detection now happens only on a Login button click.
+    # Login is click-driven, but persists across restarts: if the user was
+    # logged in last session (login.json flag), on_activate re-runs the same
+    # resolution a Login click does. The session VALUE is never persisted —
+    # the configured poesessid is still honored as the initial brain env.
     sessid = cfg["poesessid"] or ""
     sock = os.path.join(
         os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "waystone-brain.sock"
@@ -417,6 +441,7 @@ def main():
     brain.start()
     esc_bind = EscBind("panel-close")
     positions = PositionStore()  # per-panel saved positions (XDG state)
+    login_state = LoginState()  # boolean "was logged in" flag (XDG state)
     app_obj = None
     try:
         _LOG.info("brain up: %s", brain.request({"cmd": "ping"}))
@@ -425,7 +450,7 @@ def main():
             application_id="io.github.kriskruse.waystone",
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
         )
-        app_obj = App(app, cfg, brain, positions, esc_bind)
+        app_obj = App(app, cfg, brain, positions, esc_bind, login_state)
         app.connect("activate", app_obj.on_activate)
         app.run(None)
     finally:
