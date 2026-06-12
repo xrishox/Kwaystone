@@ -53,12 +53,17 @@ def _inject_copy() -> bool:
     # %1 is xdotool window-stack syntax: key goes to the window getactivewindow
     # pushed. Small TOCTOU vs the hyprctl guard (user may alt-tab between guard
     # and injection); worst case a stray Ctrl+C lands elsewhere — benign.
+    # Ctrl+ALT+C: the game's "advanced item text" copy. Plain Ctrl+C lacks the
+    # { Prefix Modifier ... (Tier: N) } blocks the parser needs to categorise
+    # mods (prefix/suffix groups, tiers, roll bounds on the card).
     try:
         r = subprocess.run(
             [
                 "xdotool", "getactivewindow",
                 "keydown", "--window", "%1", "ctrl",
+                "keydown", "--window", "%1", "alt",
                 "key",     "--window", "%1", "--delay", "60", "c",
+                "keyup",   "--window", "%1", "alt",
                 "keyup",   "--window", "%1", "ctrl",
             ],
             capture_output=True,

@@ -119,3 +119,19 @@ def test_grab_unchanged_stale_item_accepted_on_final_retry(monkeypatch):
 def test_grab_not_focused_returns_none(monkeypatch):
     monkeypatch.setattr(capture, "is_game_focused", lambda gc: False)
     assert grab_item_text("steam_app_2694490") is None
+
+
+def test_inject_copy_uses_advanced_copy_chord(monkeypatch):
+    """Ctrl+Alt+C (advanced item text) — plain Ctrl+C lacks the mod-info blocks
+    the parser needs for prefix/suffix/tier categorisation."""
+    seen = {}
+
+    def fake_run(cmd, **kw):
+        seen["cmd"] = cmd
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    _inject_copy()
+    joined = " ".join(seen["cmd"])
+    assert "alt" in joined
+    assert "ctrl" in joined
