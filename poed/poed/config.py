@@ -1,6 +1,9 @@
+import logging
 import pathlib
 import re
 import tomllib
+
+_LOG = logging.getLogger("waystone.config")
 
 DEFAULTS = {
     "league": "Runes of Aldur",  # verified current league
@@ -58,8 +61,9 @@ def migrate_dir(old: pathlib.Path, new: pathlib.Path) -> None:
         try:
             new.parent.mkdir(parents=True, exist_ok=True)
             old.rename(new)
-        except OSError:
-            pass
+            _LOG.info("migrated %s -> %s", old, new)
+        except OSError as e:
+            _LOG.warning("could not migrate %s -> %s: %s", old, new, e)
 
 
 def default_path() -> pathlib.Path:
@@ -100,4 +104,5 @@ def load(p: pathlib.Path | None = None) -> dict:
         p.parent.mkdir(parents=True, exist_ok=True)
         p.touch(mode=0o600)
         p.write_text(TEMPLATE.format(**DEFAULTS))
+        _LOG.info("wrote default config to %s", p)
     return cfg

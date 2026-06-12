@@ -305,6 +305,7 @@ class App:
             except (RuntimeError, OSError, TimeoutError) as e:
                 _LOG.warning("league roster unavailable: %s", e)
                 return
+            _LOG.info("league roster: %s", ", ".join(names))
             GLib.idle_add(leaguebox.set_leagues, names, self.cfg["league"])
 
         threading.Thread(target=fetch_leagues, daemon=True).start()
