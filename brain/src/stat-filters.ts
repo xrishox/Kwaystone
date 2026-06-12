@@ -92,6 +92,23 @@ export function initExplicitModFilters(
 
   finalFilterTweaks(ctx);
 
+  // DEVIATION FROM VENDOR: finalFilterTweaks marks EVERY non-property/-desecrated
+  // affix on a map-category item hidden+disabled ("filters.hide_for_map",
+  // create-stat-filters.ts:679) — a PoE1 assumption that maps are fungible by
+  // tier. PoE2 waystone affixes (Item Rarity %, Pack Size %, Waystone Drop
+  // Chance %, dangerous suffixes) are exactly what buyers filter on, and this
+  // project's whole point is to keep explicit mods displayed and queryable
+  // (same rationale as the omitted filterPseudo above). Un-hide them so they
+  // surface as toggleable stats; the price.ts force-enable pass then enables
+  // them by default like any other explicit. Genuine noise lines keep their
+  // other hidden markers (hide_const_roll, hide_low_ilvl, ...).
+  for (const filter of ctx.filters) {
+    if (filter.hidden === "filters.hide_for_map") {
+      filter.hidden = undefined;
+      filter.disabled = false;
+    }
+  }
+
   if (opts.defaultAllSelected) {
     enableAllFilters(ctx.filters);
   }

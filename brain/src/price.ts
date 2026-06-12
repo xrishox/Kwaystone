@@ -190,6 +190,34 @@ async function buildQueryAndStatsFromItem(
   const { presets, active } = createPresets(item, opts);
   const preset = presets.find((p) => p.id === active) ?? presets[0];
 
+  // Map / waystone search scoping (issue #1). EE2's map flow sets BOTH an exact
+  // base (filters.searchExact.baseType, e.g. "Waystone (Tier 15)" — a real,
+  // trade-indexed base whose name encodes the tier) AND a relaxed category
+  // search (filters.searchRelaxed { category: Map, disabled: false }).
+  // createTradeRequest prefers searchRelaxed whenever it's enabled, so the
+  // emitted query carried only category=map and NO base type — matching every
+  // map of any tier (the "wrong/unrelated listings" symptom). Disable the
+  // relaxed search so the exact tiered base type drives the query. The separate
+  // mapTier filter is then redundant (the base type already pins the tier) and
+  // parses to an empty FilterNumeric here anyway (PoE2 puts the tier in the
+  // base-type line, not a "Waystone Tier:" section EE2 expects), so drop it to
+  // avoid a valueless "Map Tier" prop row.
+  //
+  // Scope strictly to map-category items: rare GEAR also carries a relaxed
+  // category search ("armour.chest", ...), and there searching by category is
+  // the intended behaviour (find every chest with these mods, not just the
+  // exact base), so we must NOT touch it.
+  const { ItemCategory } = await import("@/parser/meta");
+  const f = preset.filters as any;
+  if (
+    item.category === ItemCategory.Map &&
+    f.searchRelaxed &&
+    f.searchExact?.baseType
+  ) {
+    f.searchRelaxed.disabled = true;
+    if (f.mapTier && f.mapTier.value == null) delete f.mapTier;
+  }
+
   // We keep createPresets' `preset.filters` (ItemFilters: quality, sockets,
   // category, rarity, corrupted, trade status, etc.) but REPLACE its stat list.
   // createPresets runs EE2's filterPseudo pass, which absorbs resist/attr/life

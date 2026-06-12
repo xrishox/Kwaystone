@@ -5682,3 +5682,755 @@ her motionless dance the pulse of bliss
   "weaponSPIRIT": undefined,
 }
 `;
+
+exports[`parseClipboard golden fixtures > parses waystone.txt 1`] = `
+{
+  "baseType": "Waystone (Tier 15)",
+  "category": "Map",
+  "influences": [],
+  "info": {
+    "craftable": {
+      "category": "Map",
+    },
+    "h": 1,
+    "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvTWFwcy9FbmRnYW1lTWFwcy9FbmRnYW1lTWFwMTUiLCJzY2FsZSI6MSwicmVhbG0iOiJwb2UyIn1d/36fdc2dffa/EndgameMap15.png",
+    "name": "Waystone (Tier 15)",
+    "namespace": "ITEM",
+    "refName": "Waystone (Tier 15)",
+    "tags": [
+      "high_level_map",
+      "map_key_high",
+    ],
+    "w": 1,
+  },
+  "infoVariants": [
+    {
+      "craftable": {
+        "category": "Map",
+      },
+      "h": 1,
+      "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvTWFwcy9FbmRnYW1lTWFwcy9FbmRnYW1lTWFwMTUiLCJzY2FsZSI6MSwicmVhbG0iOiJwb2UyIn1d/36fdc2dffa/EndgameMap15.png",
+      "name": "Waystone (Tier 15)",
+      "namespace": "ITEM",
+      "refName": "Waystone (Tier 15)",
+      "tags": [
+        "high_level_map",
+        "map_key_high",
+      ],
+      "w": 1,
+    },
+  ],
+  "isCorrupted": false,
+  "isUnidentified": false,
+  "itemLevel": 82,
+  "name": "Fungus Solitude",
+  "newMods": [
+    {
+      "info": {
+        "generation": "prefix",
+        "name": "Venomous",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [],
+        "tier": 1,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 33,
+            "min": 27,
+            "option": undefined,
+            "unscalable": false,
+            "value": 31,
+          },
+          "stat": {
+            "better": 1,
+            "fromAreaMods": true,
+            "id": "map_monsters_chance_to_poison_on_hit_%",
+            "matchers": [
+              {
+                "string": "Monsters have #% chance to Poison on Hit",
+              },
+            ],
+            "ref": "Monsters have #% chance to Poison on Hit",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_95221307",
+                ],
+                "explicit": [
+                  "explicit.stat_95221307",
+                ],
+                "fractured": [
+                  "fractured.stat_95221307",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "Monsters have #% chance to Poison on Hit",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of the Prism",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [],
+        "tier": 1,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": 34,
+            "min": 30,
+            "option": undefined,
+            "unscalable": false,
+            "value": 32,
+          },
+          "stat": {
+            "better": 1,
+            "fromAreaMods": true,
+            "id": "map_monsters_additional_elemental_resistance",
+            "matchers": [
+              {
+                "string": "#% Monster Elemental Resistances",
+              },
+            ],
+            "ref": "#% Monster Elemental Resistances",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_1054098949",
+                ],
+                "explicit": [
+                  "explicit.stat_1054098949",
+                ],
+                "fractured": [
+                  "fractured.stat_1054098949",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% Monster Elemental Resistances",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of Exposure",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [],
+        "tier": 1,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": {
+            "dp": false,
+            "legacy": undefined,
+            "max": -6,
+            "min": -8,
+            "option": undefined,
+            "unscalable": false,
+            "value": -7,
+          },
+          "stat": {
+            "better": 1,
+            "fromAreaMods": true,
+            "id": "map_additional_player_maximum_resistances_%",
+            "matchers": [
+              {
+                "string": "#% maximum Player Resistances",
+              },
+            ],
+            "ref": "#% maximum Player Resistances",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_3376488707",
+                ],
+                "explicit": [
+                  "explicit.stat_3376488707",
+                ],
+                "sanctum": [
+                  "sanctum.stat_3376488707",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "#% maximum Player Resistances",
+          },
+        },
+      ],
+    },
+    {
+      "info": {
+        "generation": "suffix",
+        "name": "of Erosion",
+        "rank": undefined,
+        "rollIncr": undefined,
+        "tags": [],
+        "tier": 1,
+        "type": "explicit",
+      },
+      "stats": [
+        {
+          "roll": undefined,
+          "stat": {
+            "better": 1,
+            "fromAreaMods": true,
+            "id": "map_elemental_weakness_curse_zones",
+            "matchers": [
+              {
+                "string": "Players are periodically Cursed with Elemental Weakness",
+              },
+            ],
+            "ref": "Players are periodically Cursed with Elemental Weakness",
+            "trade": {
+              "ids": {
+                "desecrated": [
+                  "desecrated.stat_554690751",
+                ],
+                "explicit": [
+                  "explicit.stat_554690751",
+                ],
+                "fractured": [
+                  "fractured.stat_554690751",
+                ],
+              },
+            },
+          },
+          "translation": {
+            "string": "Players are periodically Cursed with Elemental Weakness",
+          },
+        },
+      ],
+    },
+  ],
+  "rarity": "Rare",
+  "rawText": "Item Class: Waystones
+Rarity: Rare
+Fungus Solitude
+Waystone (Tier 15)
+--------
+Revives Available: 2 (augmented)
+Item Rarity: +27% (augmented)
+Pack Size: +17% (augmented)
+Waystone Drop Chance: +65% (augmented)
+--------
+Item Level: 82
+--------
+{ Prefix Modifier "Venomous" (Tier: 1) }
+Monsters have 31(27-33)% chance to Poison on Hit
+{ Suffix Modifier "of the Prism" (Tier: 1) }
++32(30-34)% Monster Elemental Resistances
+{ Suffix Modifier "of Exposure" (Tier: 1) }
+-7(-8--6)% maximum Player Resistances
+{ Suffix Modifier "of Erosion" (Tier: 1) }
+Players are periodically Cursed with Elemental Weakness — Unscalable Value
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
+",
+  "statsByType": [
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 33,
+            "min": 27,
+            "option": undefined,
+            "value": 31,
+          },
+          "modifier": {
+            "info": {
+              "generation": "prefix",
+              "name": "Venomous",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 33,
+                  "min": 27,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 31,
+                },
+                "stat": {
+                  "better": 1,
+                  "fromAreaMods": true,
+                  "id": "map_monsters_chance_to_poison_on_hit_%",
+                  "matchers": [
+                    {
+                      "string": "Monsters have #% chance to Poison on Hit",
+                    },
+                  ],
+                  "ref": "Monsters have #% chance to Poison on Hit",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_95221307",
+                      ],
+                      "explicit": [
+                        "explicit.stat_95221307",
+                      ],
+                      "fractured": [
+                        "fractured.stat_95221307",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "Monsters have #% chance to Poison on Hit",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 33,
+              "min": 27,
+              "option": undefined,
+              "unscalable": false,
+              "value": 31,
+            },
+            "stat": {
+              "better": 1,
+              "fromAreaMods": true,
+              "id": "map_monsters_chance_to_poison_on_hit_%",
+              "matchers": [
+                {
+                  "string": "Monsters have #% chance to Poison on Hit",
+                },
+              ],
+              "ref": "Monsters have #% chance to Poison on Hit",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_95221307",
+                  ],
+                  "explicit": [
+                    "explicit.stat_95221307",
+                  ],
+                  "fractured": [
+                    "fractured.stat_95221307",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "Monsters have #% chance to Poison on Hit",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "fromAreaMods": true,
+        "id": "map_monsters_chance_to_poison_on_hit_%",
+        "matchers": [
+          {
+            "string": "Monsters have #% chance to Poison on Hit",
+          },
+        ],
+        "ref": "Monsters have #% chance to Poison on Hit",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_95221307",
+            ],
+            "explicit": [
+              "explicit.stat_95221307",
+            ],
+            "fractured": [
+              "fractured.stat_95221307",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": 34,
+            "min": 30,
+            "option": undefined,
+            "value": 32,
+          },
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of the Prism",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": 34,
+                  "min": 30,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": 32,
+                },
+                "stat": {
+                  "better": 1,
+                  "fromAreaMods": true,
+                  "id": "map_monsters_additional_elemental_resistance",
+                  "matchers": [
+                    {
+                      "string": "#% Monster Elemental Resistances",
+                    },
+                  ],
+                  "ref": "#% Monster Elemental Resistances",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_1054098949",
+                      ],
+                      "explicit": [
+                        "explicit.stat_1054098949",
+                      ],
+                      "fractured": [
+                        "fractured.stat_1054098949",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% Monster Elemental Resistances",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": 34,
+              "min": 30,
+              "option": undefined,
+              "unscalable": false,
+              "value": 32,
+            },
+            "stat": {
+              "better": 1,
+              "fromAreaMods": true,
+              "id": "map_monsters_additional_elemental_resistance",
+              "matchers": [
+                {
+                  "string": "#% Monster Elemental Resistances",
+                },
+              ],
+              "ref": "#% Monster Elemental Resistances",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_1054098949",
+                  ],
+                  "explicit": [
+                    "explicit.stat_1054098949",
+                  ],
+                  "fractured": [
+                    "fractured.stat_1054098949",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% Monster Elemental Resistances",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "fromAreaMods": true,
+        "id": "map_monsters_additional_elemental_resistance",
+        "matchers": [
+          {
+            "string": "#% Monster Elemental Resistances",
+          },
+        ],
+        "ref": "#% Monster Elemental Resistances",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_1054098949",
+            ],
+            "explicit": [
+              "explicit.stat_1054098949",
+            ],
+            "fractured": [
+              "fractured.stat_1054098949",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": {
+            "max": -6,
+            "min": -8,
+            "option": undefined,
+            "value": -7,
+          },
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of Exposure",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": {
+                  "dp": false,
+                  "legacy": undefined,
+                  "max": -6,
+                  "min": -8,
+                  "option": undefined,
+                  "unscalable": false,
+                  "value": -7,
+                },
+                "stat": {
+                  "better": 1,
+                  "fromAreaMods": true,
+                  "id": "map_additional_player_maximum_resistances_%",
+                  "matchers": [
+                    {
+                      "string": "#% maximum Player Resistances",
+                    },
+                  ],
+                  "ref": "#% maximum Player Resistances",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_3376488707",
+                      ],
+                      "explicit": [
+                        "explicit.stat_3376488707",
+                      ],
+                      "sanctum": [
+                        "sanctum.stat_3376488707",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "#% maximum Player Resistances",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": {
+              "dp": false,
+              "legacy": undefined,
+              "max": -6,
+              "min": -8,
+              "option": undefined,
+              "unscalable": false,
+              "value": -7,
+            },
+            "stat": {
+              "better": 1,
+              "fromAreaMods": true,
+              "id": "map_additional_player_maximum_resistances_%",
+              "matchers": [
+                {
+                  "string": "#% maximum Player Resistances",
+                },
+              ],
+              "ref": "#% maximum Player Resistances",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_3376488707",
+                  ],
+                  "explicit": [
+                    "explicit.stat_3376488707",
+                  ],
+                  "sanctum": [
+                    "sanctum.stat_3376488707",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "#% maximum Player Resistances",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "fromAreaMods": true,
+        "id": "map_additional_player_maximum_resistances_%",
+        "matchers": [
+          {
+            "string": "#% maximum Player Resistances",
+          },
+        ],
+        "ref": "#% maximum Player Resistances",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_3376488707",
+            ],
+            "explicit": [
+              "explicit.stat_3376488707",
+            ],
+            "sanctum": [
+              "sanctum.stat_3376488707",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+    {
+      "sources": [
+        {
+          "contributes": undefined,
+          "modifier": {
+            "info": {
+              "generation": "suffix",
+              "name": "of Erosion",
+              "rank": undefined,
+              "rollIncr": undefined,
+              "tags": [],
+              "tier": 1,
+              "type": "explicit",
+            },
+            "stats": [
+              {
+                "roll": undefined,
+                "stat": {
+                  "better": 1,
+                  "fromAreaMods": true,
+                  "id": "map_elemental_weakness_curse_zones",
+                  "matchers": [
+                    {
+                      "string": "Players are periodically Cursed with Elemental Weakness",
+                    },
+                  ],
+                  "ref": "Players are periodically Cursed with Elemental Weakness",
+                  "trade": {
+                    "ids": {
+                      "desecrated": [
+                        "desecrated.stat_554690751",
+                      ],
+                      "explicit": [
+                        "explicit.stat_554690751",
+                      ],
+                      "fractured": [
+                        "fractured.stat_554690751",
+                      ],
+                    },
+                  },
+                },
+                "translation": {
+                  "string": "Players are periodically Cursed with Elemental Weakness",
+                },
+              },
+            ],
+          },
+          "stat": {
+            "roll": undefined,
+            "stat": {
+              "better": 1,
+              "fromAreaMods": true,
+              "id": "map_elemental_weakness_curse_zones",
+              "matchers": [
+                {
+                  "string": "Players are periodically Cursed with Elemental Weakness",
+                },
+              ],
+              "ref": "Players are periodically Cursed with Elemental Weakness",
+              "trade": {
+                "ids": {
+                  "desecrated": [
+                    "desecrated.stat_554690751",
+                  ],
+                  "explicit": [
+                    "explicit.stat_554690751",
+                  ],
+                  "fractured": [
+                    "fractured.stat_554690751",
+                  ],
+                },
+              },
+            },
+            "translation": {
+              "string": "Players are periodically Cursed with Elemental Weakness",
+            },
+          },
+        },
+      ],
+      "stat": {
+        "better": 1,
+        "fromAreaMods": true,
+        "id": "map_elemental_weakness_curse_zones",
+        "matchers": [
+          {
+            "string": "Players are periodically Cursed with Elemental Weakness",
+          },
+        ],
+        "ref": "Players are periodically Cursed with Elemental Weakness",
+        "trade": {
+          "ids": {
+            "desecrated": [
+              "desecrated.stat_554690751",
+            ],
+            "explicit": [
+              "explicit.stat_554690751",
+            ],
+            "fractured": [
+              "fractured.stat_554690751",
+            ],
+          },
+        },
+      },
+      "type": "explicit",
+    },
+  ],
+  "unknownModifiers": [],
+}
+`;

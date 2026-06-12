@@ -1,0 +1,22 @@
+Item Class: Waystones
+Rarity: Rare
+Fungus Solitude
+Waystone (Tier 15)
+--------
+Revives Available: 2 (augmented)
+Item Rarity: +27% (augmented)
+Pack Size: +17% (augmented)
+Waystone Drop Chance: +65% (augmented)
+--------
+Item Level: 82
+--------
+{ Prefix Modifier "Venomous" (Tier: 1) }
+Monsters have 31(27-33)% chance to Poison on Hit
+{ Suffix Modifier "of the Prism" (Tier: 1) }
++32(30-34)% Monster Elemental Resistances
+{ Suffix Modifier "of Exposure" (Tier: 1) }
+-7(-8--6)% maximum Player Resistances
+{ Suffix Modifier "of Erosion" (Tier: 1) }
+Players are periodically Cursed with Elemental Weakness — Unscalable Value
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
