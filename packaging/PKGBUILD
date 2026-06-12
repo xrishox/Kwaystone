@@ -1,6 +1,6 @@
 # Maintainer: Kris Kruse <kriskruse@users.noreply.github.com>
 pkgname=waystone-git
-pkgver=r6.5364356
+pkgver=r7.c16975a
 pkgrel=1
 pkgdesc="Path of Exile 2 price-check overlay for Wayland (Hyprland)"
 arch=('any')
@@ -11,9 +11,7 @@ depends=('python' 'python-gobject' 'gtk4' 'gtk4-layer-shell'
 makedepends=('git' 'npm' 'python-build' 'python-installer' 'python-setuptools' 'python-wheel')
 provides=('waystone')
 conflicts=('waystone')
-# TODO before AUR publish: switch source back to the GitHub URL:
-#   source=("$pkgname::git+$url.git")
-source=("$pkgname::git+file:///home/kris/Documents/Github/POE2-Overlay")
+source=("$pkgname::git+$url.git")
 sha256sums=('SKIP')
 
 pkgver() {
