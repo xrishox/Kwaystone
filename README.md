@@ -44,8 +44,7 @@ Two processes connected by a Unix socket (JSON-lines protocol):
 From the [AUR](https://aur.archlinux.org/packages/waystone):
 
 ```sh
-yay -S waystone        # latest release
-yay -S waystone-git    # build from HEAD
+yay -S waystone
 ```
 
 Then run `waystone`. Requires Hyprland (hotkeys are bound dynamically via `hyprctl` while the PoE2 window exists).
