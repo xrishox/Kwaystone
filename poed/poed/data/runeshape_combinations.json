@@ -1,0 +1,4632 @@
+{
+  "entries": [
+    {
+      "href": "Aldurs_Legacy",
+      "level": "Lv78+",
+      "levelMax": null,
+      "levelMin": 78,
+      "name": "Aldur's Legacy",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneWisdom",
+        "RemnantRareRunePower",
+        "RemnantRunePrismatic",
+        "RemnantRuneFire",
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneEarth",
+        "RemnantRuneProtective",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Medveds_Boon",
+      "level": "Lv78+",
+      "levelMax": null,
+      "levelMin": 78,
+      "name": "Medved's Boon",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRuneWisdom",
+        "RemnantRareRunePower",
+        "RemnantRunePrismatic",
+        "RemnantRuneEnrage",
+        "RemnantRuneGasp",
+        "RemnantRareRuneLife",
+        "RemnantRuneProtective",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Uhtreds_Boon",
+      "level": "Lv78+",
+      "levelMax": null,
+      "levelMin": 78,
+      "name": "Uhtred's Boon",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRuneWisdom",
+        "RemnantRareRunePower",
+        "RemnantRunePrismatic",
+        "RemnantRuneLightning",
+        "RemnantRareRuneSoul",
+        "RemnantRuneArcane",
+        "RemnantRuneProtective",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Voranas_Boon",
+      "level": "Lv78+",
+      "levelMax": null,
+      "levelMin": 78,
+      "name": "Vorana's Boon",
+      "runes": [
+        "RemnantRareRuneDeath",
+        "RemnantRuneWisdom",
+        "RemnantRareRunePower",
+        "RemnantRunePrismatic",
+        "RemnantRuneToxic",
+        "RemnantRuneMoon",
+        "RemnantRuneTidal",
+        "RemnantRuneProtective",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Olroths_Boon",
+      "level": "Lv78+",
+      "levelMax": null,
+      "levelMin": 78,
+      "name": "Olroth's Boon",
+      "runes": [
+        "RemnantRareRuneOath",
+        "RemnantRuneWisdom",
+        "RemnantRareRunePower",
+        "RemnantRunePrismatic",
+        "RemnantRuneCold",
+        "RemnantRuneRebirth",
+        "RemnantRuneAdaptive",
+        "RemnantRuneProtective",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Olroths_Boon",
+      "level": "Lv78+",
+      "levelMax": null,
+      "levelMin": 78,
+      "name": "Olroth's Boon",
+      "runes": [
+        "RemnantRareRunePower",
+        "RemnantRareRunePower",
+        "RemnantRareRunePower",
+        "RemnantRareRunePower",
+        "RemnantRareRunePower",
+        "RemnantRareRunePower",
+        "RemnantRareRunePower",
+        "RemnantRareRunePower",
+        "RemnantRareRunePower",
+        "RemnantRareRunePower"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Mirror_of_Kalandra",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Mirror of Kalandra",
+      "runes": [
+        "RemnantRareRunePower",
+        "RemnantRuneOpulent",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneOath",
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneSoul",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneEarth",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Hinekoras_Lock",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Hinekora's Lock",
+      "runes": [
+        "RemnantRuneOpulent",
+        "RemnantRareRunePower",
+        "RemnantRareRuneWard",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneLife",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Chaos_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Chaos Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneSky",
+        "RemnantRareRuneOath",
+        "RemnantRuneEnrage",
+        "RemnantRareRuneEarth",
+        "RemnantRareRunePower",
+        "RemnantRuneTempest",
+        "RemnantRareRuneLife",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Perfect_Exalted_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Exalted Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneLife",
+        "RemnantRareRuneSoul",
+        "RemnantRuneStone",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneOath",
+        "RemnantRareRunePower",
+        "RemnantRareRuneDeath",
+        "RemnantRuneToxic"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Divine_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Divine Orb",
+      "runes": [
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneSoul",
+        "RemnantRareRunePower",
+        "RemnantRareRuneLife",
+        "RemnantRuneVision",
+        "RemnantRuneCelestial",
+        "RemnantRuneToxic",
+        "RemnantRunePrismatic",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 10
+    },
+    {
+      "href": "Orb_of_Annulment",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Orb of Annulment",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneArcane",
+        "RemnantRuneVision",
+        "RemnantRuneRebirth",
+        "RemnantRuneCyclonic",
+        "RemnantRuneLightning",
+        "RemnantRunePrismatic",
+        "RemnantRuneElectrocuting",
+        "RemnantRareRunePower"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Orb_of_Chance",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Orb of Chance",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneOpulent",
+        "RemnantRuneMoon",
+        "RemnantRareRuneWard",
+        "RemnantRareRuneEarth",
+        "RemnantRuneProtective",
+        "RemnantRunePrismatic",
+        "RemnantRuneRebirth",
+        "RemnantRuneFire"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneWisdom",
+        "RemnantRuneMoon",
+        "RemnantRareRunePower",
+        "RemnantRareRuneEarth",
+        "RemnantRuneProtective",
+        "RemnantRunePrismatic",
+        "RemnantRuneRebirth",
+        "RemnantRuneFire"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Flux",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Flux",
+      "runes": [
+        "RemnantRuneWisdom",
+        "RemnantRuneOpulent",
+        "RemnantRareRuneOath",
+        "RemnantRareRuneLife",
+        "RemnantRareRunePower",
+        "RemnantRareRuneTime",
+        "RemnantRuneCelestial",
+        "RemnantRuneLightning"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Regal_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Regal Orb",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRuneToxic",
+        "RemnantRareRuneSoul",
+        "RemnantRuneMoon",
+        "RemnantRuneAdaptive",
+        "RemnantRuneRebirth",
+        "RemnantRuneOpulent",
+        "RemnantRareRunePower"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Perfect_Orb_of_Transmutation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Transmutation",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneDeath",
+        "RemnantRuneOpulent",
+        "RemnantRuneTempest",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneLife",
+        "RemnantRuneMoon",
+        "RemnantRuneCold"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneTime",
+        "RemnantRuneOpulent",
+        "RemnantRuneFire",
+        "RemnantRareRuneTime",
+        "RemnantRuneVision",
+        "RemnantRuneBloodletting",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Serles_Triumph",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Serle's Triumph",
+      "runes": [
+        "RemnantRuneWisdom",
+        "RemnantRuneMomentum",
+        "RemnantRuneProtective",
+        "RemnantRuneMoon",
+        "RemnantRareRunePower",
+        "RemnantRareRuneOath",
+        "RemnantRareRuneSky",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Uhtreds_Sidereus",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Uhtred's Sidereus",
+      "runes": [
+        "RemnantRareRuneTime",
+        "RemnantRareRuneBond",
+        "RemnantRuneMoon",
+        "RemnantRuneCyclonic",
+        "RemnantRareRunePower",
+        "RemnantRuneGasp",
+        "RemnantRuneOpulent",
+        "RemnantRuneCold"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Medveds_Tending",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Medved's Tending",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneBond",
+        "RemnantRuneProtective",
+        "RemnantRunePrismatic",
+        "RemnantRareRunePower",
+        "RemnantRareRuneLife",
+        "RemnantRuneOpulent",
+        "RemnantRuneAdaptive"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Kolrs_Hunt",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Kolr's Hunt",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneSky",
+        "RemnantRuneTempest",
+        "RemnantRareRunePower",
+        "RemnantRuneEnrage",
+        "RemnantRuneOpulent",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thruds_Might",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Thrud's Might",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneDeath",
+        "RemnantRareRunePower",
+        "RemnantRareRuneWard",
+        "RemnantRuneOpulent",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Katlas_Gloom",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Katla's Gloom",
+      "runes": [
+        "RemnantRuneToxic",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneDeath",
+        "RemnantRuneRebirth",
+        "RemnantRareRunePower",
+        "RemnantRuneVision",
+        "RemnantRuneOpulent",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Voranas_Carnage",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Vorana's Carnage",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRareRuneBond",
+        "RemnantRuneCold",
+        "RemnantRuneFire",
+        "RemnantRareRunePower",
+        "RemnantRuneBloodletting",
+        "RemnantRuneOpulent",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Voranas_Carnage",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Vorana's Carnage",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneTime",
+        "RemnantRuneCold",
+        "RemnantRareRunePower",
+        "RemnantRunePrismatic",
+        "RemnantRuneMoon",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Voranas_Carnage",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Vorana's Carnage",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneSoul",
+        "RemnantRuneCyclonic",
+        "RemnantRareRunePower",
+        "RemnantRuneLightning",
+        "RemnantRuneBloodletting",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Cadigans_Epiphany",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Cadigan's Epiphany",
+      "runes": [
+        "RemnantRuneWisdom",
+        "RemnantRareRuneSky",
+        "RemnantRareRuneOath",
+        "RemnantRuneProtective",
+        "RemnantRareRunePower",
+        "RemnantRareRuneSoul",
+        "RemnantRuneBloodletting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Betrayal_of_Aldur",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Betrayal of Aldur",
+      "runes": [
+        "RemnantRareRuneSoul",
+        "RemnantRuneToxic",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneDeath",
+        "RemnantRareRunePower",
+        "RemnantRuneWisdom",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Astrids_Creativity",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Astrid's Creativity",
+      "runes": [
+        "RemnantRuneWisdom",
+        "RemnantRuneArcane",
+        "RemnantRareRuneTime",
+        "RemnantRuneAdaptive",
+        "RemnantRareRunePower",
+        "RemnantRuneGasp",
+        "RemnantRareRuneDeath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Ire_of_Aldur",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Ire of Aldur",
+      "runes": [
+        "RemnantRareRuneSoul",
+        "RemnantRuneLightning",
+        "RemnantRuneElectrocuting",
+        "RemnantRareRuneSky",
+        "RemnantRareRunePower",
+        "RemnantRuneWisdom",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Passion_of_Aldur",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Passion of Aldur",
+      "runes": [
+        "RemnantRareRuneSoul",
+        "RemnantRuneFire",
+        "RemnantRuneEnrage",
+        "RemnantRareRuneLife",
+        "RemnantRareRunePower",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneEarth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Breath_of_Aldur",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Breath of Aldur",
+      "runes": [
+        "RemnantRareRuneSoul",
+        "RemnantRuneCold",
+        "RemnantRuneCyclonic",
+        "RemnantRuneTidal",
+        "RemnantRareRunePower",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Transcendent_Alloy",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Transcendent Alloy",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneRebirth",
+        "RemnantRuneMomentum",
+        "RemnantRuneEnrage",
+        "RemnantRareRunePower",
+        "RemnantRuneElectrocuting",
+        "RemnantRareRuneDeath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Celestial_Alloy",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Celestial Alloy",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRuneRebirth",
+        "RemnantRuneCelestial",
+        "RemnantRuneAdaptive",
+        "RemnantRareRunePower",
+        "RemnantRareRuneSoul",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Annulment",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Orb of Annulment",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneArcane",
+        "RemnantRuneVision",
+        "RemnantRuneRebirth",
+        "RemnantRuneCyclonic",
+        "RemnantRuneLightning",
+        "RemnantRareRunePower"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Aldurs_Saga",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Aldur's Saga",
+      "runes": [
+        "RemnantRuneWisdom",
+        "RemnantRuneVision",
+        "RemnantRareRuneLife",
+        "RemnantRareRuneWard",
+        "RemnantRareRunePower",
+        "RemnantRuneArcane",
+        "RemnantRareRuneTime"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_20%29",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Thaumaturgic Flux (Level 20)",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone",
+        "RemnantRuneArcane",
+        "RemnantRareRuneOath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Annulment",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Orb of Annulment",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneMomentum",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneTime",
+        "RemnantRuneMoon",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Chance",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Orb of Chance",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRareRuneSoul",
+        "RemnantRuneBloodletting",
+        "RemnantRuneEnrage",
+        "RemnantRareRuneSky",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Sovereign_Alloy",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Sovereign Alloy",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneRebirth",
+        "RemnantRuneMoon",
+        "RemnantRuneToxic",
+        "RemnantRareRunePower",
+        "RemnantRareRuneOath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Chaos_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Chaos Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneCelestial",
+        "RemnantRareRuneOath",
+        "RemnantRareRunePower",
+        "RemnantRuneOpulent",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Divine_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Divine Orb",
+      "runes": [
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneSoul",
+        "RemnantRareRunePower",
+        "RemnantRareRuneLife",
+        "RemnantRuneVision",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Uncut_Skill_Gem_%28Level_20%29",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Uncut Skill Gem (Level 20)",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRuneFire",
+        "RemnantRareRuneDeath",
+        "RemnantRuneWisdom",
+        "RemnantRuneProtective",
+        "RemnantRareRuneSoul"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Uncut_Spirit_Gem_%28Level_20%29",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Uncut Spirit Gem (Level 20)",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRuneArcane",
+        "RemnantRareRuneSoul",
+        "RemnantRuneWisdom",
+        "RemnantRunePrismatic",
+        "RemnantRareRuneOath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Void_Flux",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Void Flux",
+      "runes": [
+        "RemnantRuneToxic",
+        "RemnantRareRuneTime",
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneSoul",
+        "RemnantRareRunePower",
+        "RemnantRareRuneDeath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Exalted_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Exalted Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneLife",
+        "RemnantRareRuneEarth",
+        "RemnantRareRunePower",
+        "RemnantRuneOpulent",
+        "RemnantRareRuneOath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Exalted_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Exalted Orb",
+      "runes": [
+        "RemnantRareRuneTime",
+        "RemnantRuneBloodletting",
+        "RemnantRuneCyclonic",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneOath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Exalted_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Exalted Orb",
+      "runes": [
+        "RemnantRareRuneTime",
+        "RemnantRareRuneWard",
+        "RemnantRuneArcane",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneSky",
+        "RemnantRareRuneOath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Exalted_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Exalted Orb",
+      "runes": [
+        "RemnantRareRuneTime",
+        "RemnantRuneTempest",
+        "RemnantRareRuneSky",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneWard",
+        "RemnantRareRuneOath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Crackling_Flux",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Crackling Flux",
+      "runes": [
+        "RemnantRuneLightning",
+        "RemnantRuneCelestial",
+        "RemnantRunePrismatic",
+        "RemnantRuneElectrocuting",
+        "RemnantRareRuneOath",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Blazing_Flux",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Blazing Flux",
+      "runes": [
+        "RemnantRuneFire",
+        "RemnantRareRuneEarth",
+        "RemnantRunePrismatic",
+        "RemnantRareRuneSoul",
+        "RemnantRuneEnrage",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Chilling_Flux",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Chilling Flux",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRuneCyclonic",
+        "RemnantRunePrismatic",
+        "RemnantRareRuneDeath",
+        "RemnantRuneTidal",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Rain_of_Blades",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Rain of Blades",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRareRuneSky",
+        "RemnantRareRuneWard",
+        "RemnantRuneArcane",
+        "RemnantRuneStone",
+        "RemnantRuneEnrage"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Wardbound_Minions",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Wardbound Minions",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRareRuneSky",
+        "RemnantRuneToxic",
+        "RemnantRuneProtective",
+        "RemnantRareRuneOath",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Voltaic_Barrier",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Voltaic Barrier",
+      "runes": [
+        "RemnantRuneProtective",
+        "RemnantRareRuneSky",
+        "RemnantRareRuneEarth",
+        "RemnantRuneStone",
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Hollow_Shell",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Hollow Shell",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRareRuneSky",
+        "RemnantRuneBloodletting",
+        "RemnantRunePrismatic",
+        "RemnantRareRuneLife",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Explosive_Transmutation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Explosive Transmutation",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRareRuneSky",
+        "RemnantRuneFire",
+        "RemnantRuneGasp",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Animus_Splinters",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Animus Splinters",
+      "runes": [
+        "RemnantRuneBloodletting",
+        "RemnantRareRuneSky",
+        "RemnantRuneAdaptive",
+        "RemnantRuneEnrage",
+        "RemnantRareRuneSoul",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Olroths_Saga",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Olroth's Saga",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRuneVision",
+        "RemnantRareRuneTime",
+        "RemnantRuneCelestial",
+        "RemnantRuneWisdom",
+        "RemnantRareRunePower"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Voranas_Saga",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Vorana's Saga",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneVision",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneTime",
+        "RemnantRuneWisdom",
+        "RemnantRuneToxic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Uhtreds_Saga",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Uhtred's Saga",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRuneVision",
+        "RemnantRuneStone",
+        "RemnantRuneArcane",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneTime"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Medveds_Saga",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Medved's Saga",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRuneVision",
+        "RemnantRuneBloodletting",
+        "RemnantRuneMoon",
+        "RemnantRareRuneTime",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Regal_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Regal Orb",
+      "runes": [
+        "RemnantRareRuneOath",
+        "RemnantRuneCyclonic",
+        "RemnantRuneMomentum",
+        "RemnantRuneMoon",
+        "RemnantRuneOpulent",
+        "RemnantRuneBloodletting"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Greater_Chaos_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Chaos Orb",
+      "runes": [
+        "RemnantRareRuneOath",
+        "RemnantRareRuneWard",
+        "RemnantRuneEnrage",
+        "RemnantRuneGasp",
+        "RemnantRuneOpulent",
+        "RemnantRareRuneTime"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Greater_Exalted_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Exalted Orb",
+      "runes": [
+        "RemnantRareRuneOath",
+        "RemnantRuneArcane",
+        "RemnantRareRuneBond",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneOpulent",
+        "RemnantRunePrismatic"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "/us/Skyfall",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Skyfall",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRuneCelestial",
+        "RemnantRuneProtective",
+        "RemnantRareRuneWard",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneOath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Triskelion_Cascade",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Triskelion Cascade",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRuneCelestial",
+        "RemnantRuneStone",
+        "RemnantRareRuneWard",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Refutation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Refutation",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRunePrismatic",
+        "RemnantRuneStone",
+        "RemnantRareRuneWard",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneDeath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Runic_Reprieve",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Runic Reprieve",
+      "runes": [
+        "RemnantRuneBloodletting",
+        "RemnantRunePrismatic",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneWard",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneSoul"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Leylines",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Leylines",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRuneCelestial",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneWard",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Animus_Exchange",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Animus Exchange",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRunePrismatic",
+        "RemnantRuneElectrocuting",
+        "RemnantRareRuneWard",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneOath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_19%29",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Thaumaturgic Flux (Level 19)",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneBloodletting",
+        "RemnantRuneArcane"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Divine_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Divine Orb",
+      "runes": [
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneSoul",
+        "RemnantRareRunePower",
+        "RemnantRareRuneLife",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Divine_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Divine Orb",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRareRuneBond",
+        "RemnantRuneEnrage",
+        "RemnantRareRuneTime",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Divine_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Divine Orb",
+      "runes": [
+        "RemnantRuneBloodletting",
+        "RemnantRuneCold",
+        "RemnantRuneToxic",
+        "RemnantRareRuneTime",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Divine_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Divine Orb",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRareRuneSky",
+        "RemnantRareRuneSoul",
+        "RemnantRareRuneTime",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Divine_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Divine Orb",
+      "runes": [
+        "RemnantRuneElectrocuting",
+        "RemnantRareRuneBond",
+        "RemnantRuneTidal",
+        "RemnantRareRuneTime",
+        "RemnantRunePrismatic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Transmutation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Transmutation",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneSky",
+        "RemnantRareRuneOath",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneSky",
+        "RemnantRuneTidal",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRuneBloodletting",
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneToxic",
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneTime",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRareRuneSky",
+        "RemnantRuneBloodletting",
+        "RemnantRareRuneTime",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneTidal",
+        "RemnantRuneEnrage",
+        "RemnantRuneToxic",
+        "RemnantRareRuneTime",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneBloodletting",
+        "RemnantRuneEnrage",
+        "RemnantRuneMomentum",
+        "RemnantRareRuneTime",
+        "RemnantRuneToxic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneLightning",
+        "RemnantRareRuneBond",
+        "RemnantRuneGasp",
+        "RemnantRareRuneTime",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneTidal",
+        "RemnantRuneCold",
+        "RemnantRuneCyclonic",
+        "RemnantRareRuneTime",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneFire",
+        "RemnantRareRuneBond",
+        "RemnantRuneEnrage",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneDeath"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRareRuneDeath",
+        "RemnantRuneToxic",
+        "RemnantRuneCold",
+        "RemnantRareRuneTime",
+        "RemnantRuneArcane"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRuneToxic",
+        "RemnantRuneTempest",
+        "RemnantRareRuneTime",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRareRuneDeath",
+        "RemnantRuneTidal",
+        "RemnantRareRuneSoul",
+        "RemnantRareRuneTime",
+        "RemnantRuneEnrage"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneVision",
+        "RemnantRuneBloodletting",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneTime",
+        "RemnantRuneEnrage"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRareRuneSky",
+        "RemnantRuneVision",
+        "RemnantRareRuneTime",
+        "RemnantRuneToxic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Orb of Augmentation",
+      "runes": [
+        "RemnantRareRuneLife",
+        "RemnantRuneTidal",
+        "RemnantRuneCold",
+        "RemnantRareRuneTime",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Chaos_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Chaos Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneOath",
+        "RemnantRareRuneDeath",
+        "RemnantRuneRebirth",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Mystic_Alloy",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Mystic Alloy",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneTime",
+        "RemnantRuneArcane",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Mystic_Alloy",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Mystic Alloy",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneWisdom",
+        "RemnantRareRuneSky",
+        "RemnantRuneArcane",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Prismatic_Alloy",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Prismatic Alloy",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneRebirth",
+        "RemnantRuneAdaptive",
+        "RemnantRuneOpulent",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Perfect_Jewellers_Orb",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Perfect Jeweller's Orb",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneLife",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneWisdom",
+        "RemnantRuneProtective",
+        "RemnantRuneEnrage",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Chance",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Orb of Chance",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRareRuneTime",
+        "RemnantRuneEnrage",
+        "RemnantRuneBloodletting",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Verisium_Manifestations",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Verisium Manifestations",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRuneLightning",
+        "RemnantRareRuneWard",
+        "RemnantRuneCold",
+        "RemnantRareRuneSoul"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Powered_by_Verisium",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Powered by Verisium",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneVision",
+        "RemnantRareRuneSoul"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Remnants_of_Kalguur",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Remnants of Kalguur",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneTempest",
+        "RemnantRareRuneWard",
+        "RemnantRuneLightning",
+        "RemnantRareRuneSoul"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Grim_Pillars",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Grim Pillars",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneMomentum",
+        "RemnantRareRuneSoul"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Bitter_Dead",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Bitter Dead",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRunePrismatic",
+        "RemnantRareRuneWard",
+        "RemnantRuneToxic",
+        "RemnantRareRuneSoul"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Bitter_Dead",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Bitter Dead",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneLightning",
+        "RemnantRuneVision",
+        "RemnantRuneVision",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Repulsion",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Repulsion",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRareRuneEarth",
+        "RemnantRuneProtective",
+        "RemnantRuneLightning",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Frostflame_Nova",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Frostflame Nova",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneLightning",
+        "RemnantRuneFire",
+        "RemnantRuneMomentum",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Fragments_Of_The_Past",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Fragments Of The Past",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneTempest",
+        "RemnantRuneLightning",
+        "RemnantRuneToxic",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Eternal_March",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Eternal March",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRunePrismatic",
+        "RemnantRuneProtective",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Detonate_Living",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Detonate Living",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneGasp",
+        "RemnantRuneCelestial",
+        "RemnantRuneFire",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Orb_of_Transmutation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Orb of Transmutation",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneFire",
+        "RemnantRuneCold",
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Greater_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Orb of Augmentation",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRuneArcane",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Greater_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Orb of Augmentation",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRuneLightning",
+        "RemnantRareRuneSoul",
+        "RemnantRuneStone",
+        "RemnantRuneArcane"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Orb of Augmentation",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRuneProtective",
+        "RemnantRareRuneOath",
+        "RemnantRuneStone",
+        "RemnantRunePrismatic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Orb of Augmentation",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRuneTempest",
+        "RemnantRuneProtective",
+        "RemnantRuneStone",
+        "RemnantRuneBloodletting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Orb of Augmentation",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRareRuneLife",
+        "RemnantRuneEnrage",
+        "RemnantRuneStone",
+        "RemnantRuneFire"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Orb of Augmentation",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRuneGasp",
+        "RemnantRareRuneBond",
+        "RemnantRuneStone",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Orb_of_Augmentation",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Greater Orb of Augmentation",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneOpulent",
+        "RemnantRareRuneDeath",
+        "RemnantRuneTempest",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Uncut_Skill_Gem_%28Level_19%29",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Uncut Skill Gem (Level 19)",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRuneFire",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneCold",
+        "RemnantRunePrismatic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Uncut_Spirit_Gem_%28Level_19%29",
+      "level": "Lv70+",
+      "levelMax": null,
+      "levelMin": 70,
+      "name": "Uncut Spirit Gem (Level 19)",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRuneArcane",
+        "RemnantRunePrismatic",
+        "RemnantRareRuneLife",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Divine_Orb",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Divine Orb",
+      "runes": [
+        "RemnantRareRuneDeath",
+        "RemnantRareRuneSoul",
+        "RemnantRareRunePower",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Chaos_Orb",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Greater Chaos Orb",
+      "runes": [
+        "RemnantRareRuneOath",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneEnrage",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Exalted_Orb",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Greater Exalted Orb",
+      "runes": [
+        "RemnantRareRuneOath",
+        "RemnantRuneArcane",
+        "RemnantRareRuneBond",
+        "RemnantRunePrismatic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Regal_Orb",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Greater Regal Orb",
+      "runes": [
+        "RemnantRareRuneOath",
+        "RemnantRuneCyclonic",
+        "RemnantRareRuneLife",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRareRuneSky",
+        "RemnantRuneCold",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRareRuneBond",
+        "RemnantRareRuneWard",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneCold",
+        "RemnantRuneFire",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRuneBloodletting",
+        "RemnantRuneCelestial",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneToxic",
+        "RemnantRuneAdaptive",
+        "RemnantRuneArcane",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneToxic",
+        "RemnantRuneCelestial",
+        "RemnantRareRuneSky",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRuneAdaptive",
+        "RemnantRuneMoon",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneMomentum",
+        "RemnantRuneArcane",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneToxic",
+        "RemnantRuneTidal",
+        "RemnantRuneLightning",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneToxic",
+        "RemnantRuneBloodletting",
+        "RemnantRuneEnrage",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneTidal",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneLightning",
+        "RemnantRareRuneEarth",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRareRuneEarth",
+        "RemnantRuneStone",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRareRuneSky",
+        "RemnantRuneMomentum",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneToxic",
+        "RemnantRuneAdaptive",
+        "RemnantRuneTempest",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneMomentum",
+        "RemnantRuneEnrage",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneBloodletting",
+        "RemnantRuneMomentum",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneTempest",
+        "RemnantRuneLightning",
+        "RemnantRuneOpulent"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRuneMomentum",
+        "RemnantRuneLightning",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneCyclonic",
+        "RemnantRuneMomentum",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneCyclonic",
+        "RemnantRuneLightning",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneFire",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRuneCyclonic",
+        "RemnantRuneFire",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRuneCyclonic",
+        "RemnantRuneFire",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneFire",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRunePrismatic",
+        "RemnantRuneCold",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRuneCyclonic",
+        "RemnantRuneCold",
+        "RemnantRareRuneLife"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneCold",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneCold",
+        "RemnantRuneAdaptive"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneToxic",
+        "RemnantRuneMoon",
+        "RemnantRuneWisdom",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Swift_Alloy",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Swift Alloy",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneSoul",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Jewellers_Orb",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Greater Jeweller's Orb",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRareRuneOath",
+        "RemnantRuneAdaptive",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Cyclonic_Alloy",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Cyclonic Alloy",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRuneRebirth",
+        "RemnantRuneTidal",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Chaos_Orb",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Chaos Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRareRuneOath",
+        "RemnantRuneFire",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneMoon",
+        "RemnantRuneTidal",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRareRuneWard",
+        "RemnantRareRuneLife",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRareRuneWard",
+        "RemnantRuneMoon",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneVision",
+        "RemnantRareRuneWard",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneElectrocuting",
+        "RemnantRareRuneWard",
+        "RemnantRuneVision",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneTidal",
+        "RemnantRareRuneWard",
+        "RemnantRuneProtective",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRareRuneWard",
+        "RemnantRuneArcane",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Gemcutters_Prism",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Gemcutter's Prism",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRareRuneSoul",
+        "RemnantRuneVision",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Glassblowers_Bauble",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Glassblower's Bauble",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneToxic",
+        "RemnantRuneTidal",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Exalted_Orb",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Exalted Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneMoon",
+        "RemnantRareRuneSoul",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneArcane",
+        "RemnantRuneWisdom",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneEnrage",
+        "RemnantRuneWisdom",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneEnrage",
+        "RemnantRuneWisdom",
+        "RemnantRuneBloodletting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneArcane",
+        "RemnantRuneWisdom",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneEnrage",
+        "RemnantRuneWisdom",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneProtective",
+        "RemnantRuneWisdom",
+        "RemnantRunePrismatic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneProtective",
+        "RemnantRuneWisdom",
+        "RemnantRuneArcane"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneProtective",
+        "RemnantRuneWisdom",
+        "RemnantRuneEnrage"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneEnrage",
+        "RemnantRuneWisdom",
+        "RemnantRuneAdaptive"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneEnrage",
+        "RemnantRuneWisdom",
+        "RemnantRuneArcane"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneProtective",
+        "RemnantRuneWisdom",
+        "RemnantRuneArcane"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneElectrocuting",
+        "RemnantRuneWisdom",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneVision",
+        "RemnantRuneWisdom",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneElectrocuting",
+        "RemnantRunePrismatic",
+        "RemnantRuneProtective",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Skyfall",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Skyfall",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRuneCelestial",
+        "RemnantRuneProtective",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Triskelion_Cascade",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Triskelion Cascade",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRuneCelestial",
+        "RemnantRuneStone",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Refutation",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Refutation",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRunePrismatic",
+        "RemnantRuneStone",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Runic_Reprieve",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Runic Reprieve",
+      "runes": [
+        "RemnantRuneBloodletting",
+        "RemnantRunePrismatic",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Leylines",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Leylines",
+      "runes": [
+        "RemnantRuneLightning",
+        "RemnantRuneCelestial",
+        "RemnantRuneRebirth",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Animus_Exchange",
+      "level": "Lv65-74",
+      "levelMax": 74,
+      "levelMin": 65,
+      "name": "Animus Exchange",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRunePrismatic",
+        "RemnantRuneElectrocuting",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_18%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 18)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_17%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 17)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_16%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 16)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_15%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 15)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_14%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 14)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_13%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 13)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_12%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 12)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_11%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 11)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_10%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 10)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_9%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 9)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_8%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 8)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_7%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 7)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_6%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 6)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Thaumaturgic_Flux_%28Level_5%29",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Thaumaturgic Flux (Level 5)",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneRebirth",
+        "RemnantRunePrismatic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRuneStone",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRareRuneWard",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneBloodletting",
+        "RemnantRuneStone",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRuneStone",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneVision",
+        "RemnantRuneProtective",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneLightning",
+        "RemnantRareRuneWard",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Alchemy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Orb of Alchemy",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRareRuneSky",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Gemcutters_Prism",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Gemcutter's Prism",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneCelestial",
+        "RemnantRareRuneBond"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "/us/Rain_of_Blades",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Rain of Blades",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRareRuneSky",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Runic_Infusion",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Runic Infusion",
+      "runes": [
+        "RemnantRuneElectrocuting",
+        "RemnantRareRuneSky",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Runic_Extraction",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Runic Extraction",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRareRuneSky",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Fist_Of_Kalguur",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Fist Of Kalguur",
+      "runes": [
+        "RemnantRuneBloodletting",
+        "RemnantRareRuneSky",
+        "RemnantRuneEnrage"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Wardbound_Minions",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Wardbound Minions",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRareRuneSky",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Voltaic_Barrier",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Voltaic Barrier",
+      "runes": [
+        "RemnantRareRuneWard",
+        "RemnantRareRuneSky",
+        "RemnantRuneLightning"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Hollow_Shell",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Hollow Shell",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRareRuneSky",
+        "RemnantRareRuneEarth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Explosive_Transmutation",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Explosive Transmutation",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRareRuneSky",
+        "RemnantRuneFire"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Animus_Splinters",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Animus Splinters",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRareRuneSky",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Scouring_Flame",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Scouring Flame",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneFire",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Scouring_Flame",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Scouring Flame",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneElectrocuting",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Verisium_Manifestations",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Verisium Manifestations",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRuneEnrage",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Powered_by_Verisium",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Powered by Verisium",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRareRuneEarth",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Remnants_of_Kalguur",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Remnants of Kalguur",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneTidal",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Grim_Pillars",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Grim Pillars",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneCold",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Bitter_Dead",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Bitter Dead",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRuneCold",
+        "RemnantRareRuneWard"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Bitter_Dead",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Bitter Dead",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRunePrismatic",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Bitter_Dead",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Bitter Dead",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneLightning",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Repulsion",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Repulsion",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRareRuneEarth",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Frostflame_Nova",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Frostflame Nova",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneCold",
+        "RemnantRuneFire"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Fragments_Of_The_Past",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Fragments Of The Past",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneTidal",
+        "RemnantRuneLightning"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Eternal_March",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Eternal March",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneCold",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "/us/Detonate_Living",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Detonate Living",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneCold",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Expansive_Alloy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Expansive Alloy",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneRebirth",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Greater_Orb_of_Transmutation",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Greater Orb of Transmutation",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRareRuneLife",
+        "RemnantRuneCold"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Glassblowers_Bauble",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Glassblower's Bauble",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneToxic",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Greater_Orb_of_Augmentation",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Greater Orb of Augmentation",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRareRuneLife",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Blacksmiths_Whetstone",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Blacksmith's Whetstone",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRuneAdaptive",
+        "RemnantRuneBloodletting"
+      ],
+      "stackSize": 6
+    },
+    {
+      "href": "Protective_Alloy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Protective Alloy",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneRebirth",
+        "RemnantRuneBloodletting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Arcanists_Etcher",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Arcanist's Etcher",
+      "runes": [
+        "RemnantRuneTidal",
+        "RemnantRuneAdaptive",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 6
+    },
+    {
+      "href": "Armourers_Scrap",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Armourer's Scrap",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneAdaptive",
+        "RemnantRuneCold"
+      ],
+      "stackSize": 6
+    },
+    {
+      "href": "Lesser_Jewellers_Orb",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Lesser Jeweller's Orb",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneArcane",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Adaptive_Alloy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Adaptive Alloy",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRuneRebirth",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Runic_Alloy",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Runic Alloy",
+      "runes": [
+        "RemnantRuneVision",
+        "RemnantRuneRebirth",
+        "RemnantRunePrismatic"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Regal_Orb",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Regal Orb",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRuneArcane",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Chaos_Orb",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Chaos Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneTidal",
+        "RemnantRuneBloodletting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Exalted_Orb",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Exalted Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneArcane",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneStone",
+        "RemnantRuneVision",
+        "RemnantRunePrismatic"
+      ],
+      "stackSize": 3
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneTempest",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneLightning",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRuneLightning",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneCelestial",
+        "RemnantRunePrismatic",
+        "RemnantRuneWisdom"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneProtective",
+        "RemnantRareRuneWard",
+        "RemnantRuneFire"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneProtective",
+        "RemnantRareRuneWard",
+        "RemnantRuneLightning"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneProtective",
+        "RemnantRuneTidal",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRuneVision",
+        "RemnantRuneEnrage"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneElectrocuting",
+        "RemnantRuneProtective",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneFire",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneTidal",
+        "RemnantRuneCyclonic",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneVision",
+        "RemnantRuneProtective",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneProtective",
+        "RemnantRuneGasp",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneTidal",
+        "RemnantRuneVision",
+        "RemnantRareRuneEarth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRuneCyclonic",
+        "RemnantRareRuneEarth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneProtective",
+        "RemnantRuneCyclonic",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneVision",
+        "RemnantRuneLightning"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneCyclonic",
+        "RemnantRuneEnrage"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRuneVision",
+        "RemnantRuneProtective",
+        "RemnantRuneCold"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Rarity",
+      "level": "Lv30-74",
+      "levelMax": 74,
+      "levelMin": 30,
+      "name": "Unique",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneTidal",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Blacksmiths_Whetstone",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Blacksmith's Whetstone",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRuneAdaptive"
+      ],
+      "stackSize": 4
+    },
+    {
+      "href": "Arcanists_Etcher",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Arcanist's Etcher",
+      "runes": [
+        "RemnantRuneTidal",
+        "RemnantRuneAdaptive"
+      ],
+      "stackSize": 4
+    },
+    {
+      "href": "Armourers_Scrap",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Armourer's Scrap",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneAdaptive"
+      ],
+      "stackSize": 4
+    },
+    {
+      "href": "Regal_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Regal Orb",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Gemcutters_Prism",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Gemcutter's Prism",
+      "runes": [
+        "RemnantRareRuneSky",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Glassblowers_Bauble",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Glassblower's Bauble",
+      "runes": [
+        "RemnantRareRuneEarth",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Glassblowers_Bauble",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Glassblower's Bauble",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneCelestial"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Runic_Alloy",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Runic Alloy",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneRebirth"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Transmutation",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Orb of Transmutation",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Orb_of_Augmentation",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Orb of Augmentation",
+      "runes": [
+        "RemnantRunePrismatic",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneFire"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneProtective",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneElectrocuting",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneGasp",
+        "RemnantRuneFire"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneTidal",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneVision",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneProtective",
+        "RemnantRuneGasp"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneTidal",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneEnrage",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneProtective",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneVision"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneMoon",
+        "RemnantRuneCyclonic"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneVision",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneCyclonic",
+        "RemnantRuneTidal"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneStone",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneStone",
+        "RemnantRuneCold"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneFire",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRuneCold"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneLightning",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneLightning",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneFire",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneStone",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRuneMomentum"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneRebirth",
+        "RemnantRuneElectrocuting"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Blacksmiths_Whetstone",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Blacksmith's Whetstone",
+      "runes": [
+        "RemnantRuneFire",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Regal_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Regal Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneMoon"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Arcanists_Etcher",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Arcanist's Etcher",
+      "runes": [
+        "RemnantRuneLightning",
+        "RemnantRuneArcane"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Armourers_Scrap",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Armourer's Scrap",
+      "runes": [
+        "RemnantRuneCold",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 2
+    },
+    {
+      "href": "Exalted_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Exalted Orb",
+      "runes": [
+        "RemnantRuneAdaptive",
+        "RemnantRuneProtective"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneArcane",
+        "RemnantRuneTempest"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRuneStone"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Artificers_Orb",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Artificer's Orb",
+      "runes": [
+        "RemnantRuneMomentum",
+        "RemnantRuneFire"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Transmutation",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Orb of Transmutation",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRuneCold"
+      ],
+      "stackSize": 1
+    },
+    {
+      "href": "Orb_of_Augmentation",
+      "level": "Lv15-16",
+      "levelMax": 16,
+      "levelMin": 15,
+      "name": "Orb of Augmentation",
+      "runes": [
+        "RemnantRuneTempest",
+        "RemnantRuneLightning"
+      ],
+      "stackSize": 1
+    }
+  ],
+  "entryCount": 321,
+  "runes": {
+    "RemnantRareRuneBond": "runeshape_runes/RemnantRareRuneBond.webp",
+    "RemnantRareRuneDeath": "runeshape_runes/RemnantRareRuneDeath.webp",
+    "RemnantRareRuneEarth": "runeshape_runes/RemnantRareRuneEarth.webp",
+    "RemnantRareRuneLife": "runeshape_runes/RemnantRareRuneLife.webp",
+    "RemnantRareRuneOath": "runeshape_runes/RemnantRareRuneOath.webp",
+    "RemnantRareRunePower": "runeshape_runes/RemnantRareRunePower.webp",
+    "RemnantRareRuneSky": "runeshape_runes/RemnantRareRuneSky.webp",
+    "RemnantRareRuneSoul": "runeshape_runes/RemnantRareRuneSoul.webp",
+    "RemnantRareRuneTime": "runeshape_runes/RemnantRareRuneTime.webp",
+    "RemnantRareRuneWard": "runeshape_runes/RemnantRareRuneWard.webp",
+    "RemnantRuneAdaptive": "runeshape_runes/RemnantRuneAdaptive.webp",
+    "RemnantRuneArcane": "runeshape_runes/RemnantRuneArcane.webp",
+    "RemnantRuneBloodletting": "runeshape_runes/RemnantRuneBloodletting.webp",
+    "RemnantRuneCelestial": "runeshape_runes/RemnantRuneCelestial.webp",
+    "RemnantRuneCold": "runeshape_runes/RemnantRuneCold.webp",
+    "RemnantRuneCyclonic": "runeshape_runes/RemnantRuneCyclonic.webp",
+    "RemnantRuneElectrocuting": "runeshape_runes/RemnantRuneElectrocuting.webp",
+    "RemnantRuneEnrage": "runeshape_runes/RemnantRuneEnrage.webp",
+    "RemnantRuneFire": "runeshape_runes/RemnantRuneFire.webp",
+    "RemnantRuneGasp": "runeshape_runes/RemnantRuneGasp.webp",
+    "RemnantRuneLightning": "runeshape_runes/RemnantRuneLightning.webp",
+    "RemnantRuneMomentum": "runeshape_runes/RemnantRuneMomentum.webp",
+    "RemnantRuneMoon": "runeshape_runes/RemnantRuneMoon.webp",
+    "RemnantRuneOpulent": "runeshape_runes/RemnantRuneOpulent.webp",
+    "RemnantRunePrismatic": "runeshape_runes/RemnantRunePrismatic.webp",
+    "RemnantRuneProtective": "runeshape_runes/RemnantRuneProtective.webp",
+    "RemnantRuneRebirth": "runeshape_runes/RemnantRuneRebirth.webp",
+    "RemnantRuneStone": "runeshape_runes/RemnantRuneStone.webp",
+    "RemnantRuneTempest": "runeshape_runes/RemnantRuneTempest.webp",
+    "RemnantRuneTidal": "runeshape_runes/RemnantRuneTidal.webp",
+    "RemnantRuneToxic": "runeshape_runes/RemnantRuneToxic.webp",
+    "RemnantRuneVision": "runeshape_runes/RemnantRuneVision.webp",
+    "RemnantRuneWisdom": "runeshape_runes/RemnantRuneWisdom.webp"
+  },
+  "source": "https://poe2db.tw/us/Runeshape_Combinations"
+}

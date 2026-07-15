@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+version="@VERSION@"
+artifact="Kwaystone-nvidia-x86_64.AppImage"
+base="https://github.com/kriskruse/waystone/releases/download/v$version"
+
+for part in 00 01 02; do
+  curl --fail --location --retry 3 --remote-name \
+    "$base/$artifact.part-$part"
+done
+cat "$artifact".part-* > "$artifact"
+printf '%s  %s\n' "@APPIMAGE_SHA256@" "$artifact" | sha256sum -c -
+chmod +x "$artifact"
+printf 'Ready: %s\n' "$artifact"

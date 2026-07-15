@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON="$ROOT/.venv/bin/python"
+if [[ ! -x "$PYTHON" ]]; then
+  echo "development environment missing; run scripts/bootstrap first" >&2
+  exit 1
+fi
+
+runtime="$(cat "$ROOT/.venv/.waystone-runtime" 2>/dev/null || printf cpu)"
+export WAYSTONE_BRAIN_DIR="${WAYSTONE_BRAIN_DIR:-$ROOT/brain}"
+export WAYSTONE_OCR_MODEL_ROOT="${WAYSTONE_OCR_MODEL_ROOT:-$ROOT/.cache/ocr-models}"
+export WAYSTONE_PADDLE_DEVICE="${WAYSTONE_PADDLE_DEVICE:-$([[ "$runtime" == nvidia ]] && printf gpu:0 || printf cpu)}"
+export PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
+export PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT=0
+export PYTHONDONTWRITEBYTECODE=1
+
+exec "$PYTHON" -m poed "$@"

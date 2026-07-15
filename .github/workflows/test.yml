@@ -8,7 +8,7 @@ on:
 
 jobs:
   brain:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: brain
@@ -20,27 +20,94 @@ jobs:
           cache: npm
           cache-dependency-path: brain/package-lock.json
       - run: npm ci
-      - run: npx tsc --noEmit
-      - run: npx vitest run
-      # the release bundle must keep building
+      - run: npm run check-types
+      - run: npm test -- --run
       - run: npm run build
+      - run: npm audit --omit=dev
 
   poed:
-    runs-on: ubuntu-latest
-    # Arch container: matches the target platform and ships current
-    # gtk4-layer-shell, which Ubuntu LTS lags on.
-    container: archlinux:latest
+    runs-on: ubuntu-24.04
     steps:
-      - name: install system deps
+      - name: install native runtime dependencies
         run: |
-          pacman -Syu --noconfirm \
-            python python-gobject gtk4 gtk4-layer-shell \
-            python-pytest python-opencv python-numpy \
-            nodejs npm git xorg-server-xvfb
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            desktop-file-utils \
+            gir1.2-gtk-4.0 gir1.2-gtk4layershell-1.0 \
+            libgirepository-2.0-dev libgtk-4-dev libgtk4-layer-shell-dev \
+            libcairo2-dev shellcheck xvfb
+
       - uses: actions/checkout@v6
-      # protocol tests round-trip against a live brain child (tsx dev mode)
-      - run: npm ci
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: brain/package-lock.json
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: 0.11.21
+          enable-cache: true
+          cache-dependency-glob: requirements/cpu.lock
+
+      - name: create managed Python 3.13 runtime
+        run: |
+          uv python install 3.13.14
+          uv venv --python 3.13.14 .venv
+          uv pip sync --python .venv/bin/python requirements/cpu.lock
+          uv pip install --python .venv/bin/python -r requirements/dev.lock
+          uv pip install --python .venv/bin/python --no-deps --editable poed
+
+      - name: install brain dependencies
+        run: npm ci
         working-directory: brain
-      # xvfb: GTK widget construction needs a display the container lacks
-      - run: xvfb-run -a python -m pytest -q
+
+      - name: run Python and protocol tests
+        run: |
+          # Lint every Python-shebang script under scripts/ so new scripts
+          # cannot silently drift out of CI coverage.
+          python_scripts=()
+          for script in ../scripts/*; do
+            if [ -f "$script" ] && [ -x "$script" ] \
+              && head -n1 "$script" | grep -q python; then
+              python_scripts+=("$script")
+            fi
+          done
+          ../.venv/bin/ruff check poed tests "${python_scripts[@]}"
+          xvfb-run -a ../.venv/bin/python -m pytest -q
         working-directory: poed
+
+      - name: validate packaging scripts
+        run: |
+          scripts/check-source-hygiene --strict
+          bash -n \
+            scripts/bootstrap \
+            scripts/run \
+            scripts/fetch-ocr-models \
+            packaging/PKGBUILD.release \
+            packaging/PKGBUILD.cuda.release \
+            packaging/appimage/assemble-nvidia.release \
+            packaging/appimage/build.sh \
+            packaging/appimage/inner-build.sh
+          shellcheck \
+            scripts/bootstrap scripts/run scripts/fetch-ocr-models \
+            packaging/PKGBUILD.release packaging/PKGBUILD.cuda.release \
+            packaging/appimage/assemble-nvidia.release \
+            packaging/appimage/build.sh packaging/appimage/inner-build.sh
+          # Byte-compile every Python-shebang script under scripts/ so new
+          # scripts cannot silently drift out of CI coverage.
+          python_scripts=()
+          for script in scripts/*; do
+            if [ -f "$script" ] && [ -x "$script" ] \
+              && head -n1 "$script" | grep -q python; then
+              python_scripts+=("$script")
+            fi
+          done
+          python -m py_compile \
+            packaging/appimage/sbom.py \
+            "${python_scripts[@]}"
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          ET.parse("packaging/io.github.kriskruse.waystone.appdata.xml")
+          PY
+          desktop-file-validate packaging/io.github.kriskruse.waystone.desktop
+          test "$(wc -l < packaging/appimage/models.sha256)" -eq 9

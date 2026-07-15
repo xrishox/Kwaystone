@@ -7,14 +7,17 @@ body:
     attributes:
       label: Install method
       options:
-        - AUR (waystone)
+        - AppImage CPU
+        - AppImage NVIDIA
+        - AUR CPU (waystone)
+        - AUR NVIDIA (waystone-cuda)
         - Built from source / dev checkout
 
   - type: dropdown
     id: version
     attributes:
-      label: Waystone version
-      description: "`pacman -Qi waystone | grep Version`. List is maintained by the release workflow."
+      label: Kwaystone version
+      description: "Release version/AppImage filename, or `pacman -Qi waystone | grep Version` for AUR installs. List is maintained by the release workflow."
       options:
         # versions-start
         - 0.1.1
@@ -26,8 +29,8 @@ body:
     id: system
     attributes:
       label: Compositor and system
-      description: "`hyprctl version | head -1` plus distro. Not on Hyprland? Say what you run — hotkeys and window tracking are Hyprland-only today."
-      placeholder: "Hyprland 0.45.0, Arch"
+      description: "KDE Plasma or Hyprland version plus distro. Example: `plasmashell --version` or `hyprctl version | head -1`."
+      placeholder: "KDE Plasma 6.5, Arch"
 
   - type: textarea
     id: what

@@ -35,7 +35,7 @@ def test_request_collects_progress_in_order(tmp_path):
     ])
     stages = []
     result = Brain("unused", sock).request(
-        {"cmd": "price"}, timeout=5.0, on_progress=stages.append
+        {"cmd": "test"}, timeout=5.0, on_progress=stages.append
     )
     t.join(2)
     assert stages == ["exchange", "listings"]
@@ -48,7 +48,7 @@ def test_request_without_callback_skips_progress(tmp_path):
         {"id": 1, "progress": "exchange"},
         {"id": 1, "ok": True, "result": "r"},
     ])
-    assert Brain("unused", sock).request({"cmd": "price"}, timeout=5.0) == "r"
+    assert Brain("unused", sock).request({"cmd": "test"}, timeout=5.0) == "r"
     t.join(2)
 
 
@@ -63,6 +63,6 @@ def test_request_survives_raising_progress_callback(tmp_path):
         raise RuntimeError("ui bug")
 
     assert Brain("unused", sock).request(
-        {"cmd": "price"}, timeout=5.0, on_progress=boom
+        {"cmd": "test"}, timeout=5.0, on_progress=boom
     ) == "r"
     t.join(2)

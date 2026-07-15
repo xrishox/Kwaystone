@@ -10,6 +10,8 @@ import os
 import socket
 import subprocess
 
+from poed.image_geometry import Rect
+
 
 def _norm(addr: str) -> str:
     """Normalize a Hyprland window address to bare hex (no 0x prefix, no whitespace).
@@ -184,11 +186,40 @@ class MultiBindManager:
         return self._managers[0].connect_events()
 
 
-def active_game_output() -> str | None:
-    """Name of the monitor showing the focused window (`hyprctl activewindow
-    -j` monitor id -> `hyprctl monitors -j` name); None on any failure."""
+def _is_game_window(win: dict, game_class: str) -> bool:
+    klass = win.get("class") or win.get("initialClass") or ""
+    title = win.get("title") or ""
+    return klass == game_class or title == "Path of Exile 2"
+
+
+def _active_or_known_game_window(game_class: str) -> dict | None:
+    active = json.loads(_hyprctl_out("activewindow", "-j"))
+    if isinstance(active, dict) and _is_game_window(active, game_class):
+        return active
+
+    clients = json.loads(_hyprctl_out("clients", "-j"))
+    if not isinstance(clients, list):
+        return None
+    matches = [
+        c for c in clients if isinstance(c, dict) and _is_game_window(c, game_class)
+    ]
+    if not matches:
+        return None
+    matches.sort(key=lambda c: c.get("focusHistoryID", 999999))
+    return matches[0]
+
+
+def active_game_output(game_class: str | None = None) -> str | None:
+    """Name of the monitor showing the game window. With no game class, retain
+    the older focused-window behaviour for callers/tests that only need it."""
     try:
-        win = json.loads(_hyprctl_out("activewindow", "-j"))
+        win = (
+            _active_or_known_game_window(game_class)
+            if game_class
+            else json.loads(_hyprctl_out("activewindow", "-j"))
+        )
+        if not isinstance(win, dict):
+            return None
         mons = json.loads(_hyprctl_out("monitors", "-j"))
         for m in mons:
             if m.get("id") == win.get("monitor"):
@@ -196,6 +227,83 @@ def active_game_output() -> str | None:
     except (OSError, ValueError, KeyError, TypeError, AttributeError):
         pass
     return None
+
+
+def active_game_rect(
+    game_class: str,
+    output: str,
+    frame_size: tuple[int, int],
+) -> Rect | None:
+    """PoE window rectangle in captured-output pixels, or None on failure."""
+    try:
+        win = _active_or_known_game_window(game_class)
+        if not isinstance(win, dict):
+            return None
+        mons = json.loads(_hyprctl_out("monitors", "-j"))
+        mon = next(
+            (m for m in mons if isinstance(m, dict) and m.get("name") == output),
+            None,
+        )
+        if mon is None:
+            return None
+
+        at = win.get("at")
+        size = win.get("size")
+        if not (
+            isinstance(at, list)
+            and len(at) >= 2
+            and isinstance(size, list)
+            and len(size) >= 2
+        ):
+            return None
+
+        mx, my = float(mon["x"]), float(mon["y"])
+        mw, mh = float(mon["width"]), float(mon["height"])
+        wx, wy = float(at[0]), float(at[1])
+        ww, wh = float(size[0]), float(size[1])
+        frame_w, frame_h = frame_size
+        if mw <= 0 or mh <= 0 or frame_w <= 0 or frame_h <= 0:
+            return None
+
+        ix0 = max(wx, mx)
+        iy0 = max(wy, my)
+        ix1 = min(wx + ww, mx + mw)
+        iy1 = min(wy + wh, my + mh)
+        if ix1 <= ix0 or iy1 <= iy0:
+            return None
+
+        sx = frame_w / mw
+        sy = frame_h / mh
+        return Rect(
+            int(round((ix0 - mx) * sx)),
+            int(round((iy0 - my) * sy)),
+            int(round((ix1 - ix0) * sx)),
+            int(round((iy1 - iy0) * sy)),
+        ).clipped(frame_w, frame_h)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None
+
+
+def active_output_rect(game_class: str) -> Rect | None:
+    try:
+        output = active_game_output(game_class)
+        if not output:
+            return None
+        mons = json.loads(_hyprctl_out("monitors", "-j"))
+        mon = next(
+            (m for m in mons if isinstance(m, dict) and m.get("name") == output),
+            None,
+        )
+        if mon is None:
+            return None
+        return Rect(
+            int(mon["x"]),
+            int(mon["y"]),
+            int(mon["width"]),
+            int(mon["height"]),
+        )
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None
 
 
 def _hyprctl_out(*args: str) -> str:

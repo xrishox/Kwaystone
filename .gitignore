@@ -1,13 +1,63 @@
+# Node / frontend build output
 node_modules/
-__pycache__/
-*.pyc
 dist/
+/package-lock.json
+
+# Python build output and caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 .venv/
-.superpowers/
+venv/
+
+# Local configuration, credentials, and runtime data
+.env
+.env.*
+!.env.example
+!.env.template
+*.local
+*.log
+*.pid
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.db
+*.db-*
+*.pem
+*.key
+*.p12
+*.pfx
+.netrc
+.npmrc
+.pypirc
+/config.toml
+/poed/config.toml
+
+# Editors and operating systems
 .idea/
-Screenshots/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Local tooling
+.superpowers/
+.cache/
+
+# Arch packaging output
 packaging/src/
 packaging/pkg/
 packaging/waystone/
+packaging/waystone-git/
 packaging/*.pkg.tar*
-packaging/*.log
+
+# Claude agent worktrees
+.claude/worktrees/

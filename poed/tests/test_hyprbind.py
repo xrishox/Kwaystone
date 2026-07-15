@@ -1,3 +1,6 @@
+import json
+
+from poed.image_geometry import Rect
 from poed.hyprbind import BindManager, EscBind, _norm, resolve_shortcut_name
 
 
@@ -76,7 +79,8 @@ def test_open_with_0x_addr_and_bare_close_match():
 def test_prime_address_normalized_against_socket_events(monkeypatch):
     """prime() reads 0x-prefixed addresses from hyprctl clients -j.
     A subsequent closewindow (bare hex) must still match."""
-    import json, subprocess
+    import json
+    import subprocess
 
     fake_clients = [{"class": "steam_app_2694490", "address": "0x5933a0c0"}]
 
@@ -251,3 +255,49 @@ def test_multi_bind_manager_binds_and_unbinds_all():
     mgr.handle_line("openwindow>>abc123,1,steam_app_2694490,PoE2")
     mgr.stop()
     assert {a[2] for a in ctl.calls if a[1] == "unbind"} == {"ALT,Z", "ALT,X"}
+
+
+def test_active_game_rect_maps_hypr_geometry_to_output_pixels(monkeypatch):
+    from poed import hyprbind
+
+    def fake_hyprctl(*args):
+        if args == ("activewindow", "-j"):
+            return json.dumps(
+                {
+                    "class": "steam_app_2694490",
+                    "monitor": 1,
+                    "at": [2020, 100],
+                    "size": [1000, 700],
+                }
+            )
+        if args == ("monitors", "-j"):
+            return json.dumps(
+                [
+                    {
+                        "id": 0,
+                        "name": "HDMI-A-1",
+                        "x": 0,
+                        "y": 0,
+                        "width": 1920,
+                        "height": 1080,
+                    },
+                    {
+                        "id": 1,
+                        "name": "DP-2",
+                        "x": 1920,
+                        "y": 0,
+                        "width": 2560,
+                        "height": 1440,
+                    },
+                ]
+            )
+        if args == ("clients", "-j"):
+            return "[]"
+        raise AssertionError(args)
+
+    monkeypatch.setattr(hyprbind, "_hyprctl_out", fake_hyprctl)
+
+    assert hyprbind.active_game_output("steam_app_2694490") == "DP-2"
+    assert hyprbind.active_game_rect("steam_app_2694490", "DP-2", (5120, 2880)) == Rect(
+        200, 200, 2000, 1400
+    )

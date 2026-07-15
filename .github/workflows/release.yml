@@ -6,47 +6,111 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   tests:
     uses: ./.github/workflows/test.yml
 
-  release:
+  appimage:
     needs: tests
-    runs-on: ubuntu-latest
-    # 'aur' environment carries the AUR secrets behind a required-reviewer
-    # gate: each release waits for a manual approve before publishing.
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [cpu, nvidia]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: free build space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          docker system prune --all --force
+          df -h /
+
+      - name: build ${{ matrix.runtime }} AppImage
+        run: packaging/appimage/build.sh "${{ matrix.runtime }}"
+
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: dist/appimage/*.AppImage
+
+      - name: split NVIDIA artifact for GitHub Releases
+        if: matrix.runtime == 'nvidia'
+        run: |
+          cd dist/appimage
+          split --number=3 --numeric-suffixes=0 --suffix-length=2 \
+            Kwaystone-nvidia-x86_64.AppImage \
+            Kwaystone-nvidia-x86_64.AppImage.part-
+          rm Kwaystone-nvidia-x86_64.AppImage
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: appimage-${{ matrix.runtime }}
+          path: |
+            dist/appimage/*.AppImage
+            dist/appimage/*.AppImage.part-*
+            dist/appimage/*.spdx.json
+            dist/appimage/SHA256SUMS-*
+          if-no-files-found: error
+          compression-level: 0
+
+  release:
+    needs: appimage
+    runs-on: ubuntu-24.04
     environment: aur
     steps:
       - uses: actions/checkout@v6
+
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: appimage-*
+          path: artifacts
+          merge-multiple: true
 
       - name: version from tag
         id: ver
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - name: source tarball
+      - name: source tarball and NVIDIA assembler
         run: |
           git archive --format=tar.gz \
-            --prefix="waystone-${{ steps.ver.outputs.version }}/" \
-            -o "waystone-${{ steps.ver.outputs.version }}.tar.gz" \
+            --prefix="Kwaystone-${{ steps.ver.outputs.version }}/" \
+            -o "artifacts/Kwaystone-${{ steps.ver.outputs.version }}.tar.gz" \
             "$GITHUB_REF_NAME"
+          NVIDIA_SHA=$(cut -d' ' -f1 artifacts/SHA256SUMS-nvidia)
+          sed -e "s/@VERSION@/${{ steps.ver.outputs.version }}/g" \
+              -e "s/@APPIMAGE_SHA256@/${NVIDIA_SHA}/g" \
+              packaging/appimage/assemble-nvidia.release \
+              > artifacts/assemble-kwaystone-nvidia.sh
+          chmod +x artifacts/assemble-kwaystone-nvidia.sh
+          (cd artifacts && sha256sum \
+            Kwaystone-* \
+            assemble-kwaystone-nvidia.sh \
+              > SHA256SUMS)
 
-      - name: github release
+      - name: GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "$GITHUB_REF_NAME" \
-            "waystone-${{ steps.ver.outputs.version }}.tar.gz" \
-            --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" artifacts/* --generate-notes
 
-      - name: render AUR PKGBUILD
+      - name: render AUR packages
         run: |
-          SHA=$(sha256sum "waystone-${{ steps.ver.outputs.version }}.tar.gz" | cut -d' ' -f1)
-          sed -e "s/@VERSION@/${{ steps.ver.outputs.version }}/" \
-              -e "s/@SHA256@/${SHA}/" \
+          CPU_SHA=$(sha256sum artifacts/Kwaystone-x86_64.AppImage | cut -d' ' -f1)
+          PART_00_SHA=$(sha256sum artifacts/Kwaystone-nvidia-x86_64.AppImage.part-00 | cut -d' ' -f1)
+          PART_01_SHA=$(sha256sum artifacts/Kwaystone-nvidia-x86_64.AppImage.part-01 | cut -d' ' -f1)
+          PART_02_SHA=$(sha256sum artifacts/Kwaystone-nvidia-x86_64.AppImage.part-02 | cut -d' ' -f1)
+          sed -e "s/@VERSION@/${{ steps.ver.outputs.version }}/g" \
+              -e "s/@APPIMAGE_SHA256@/${CPU_SHA}/g" \
               packaging/PKGBUILD.release > PKGBUILD.aur
+          sed -e "s/@VERSION@/${{ steps.ver.outputs.version }}/g" \
+              -e "s/@PART_00_SHA256@/${PART_00_SHA}/g" \
+              -e "s/@PART_01_SHA256@/${PART_01_SHA}/g" \
+              -e "s/@PART_02_SHA256@/${PART_02_SHA}/g" \
+              packaging/PKGBUILD.cuda.release > PKGBUILD.cuda.aur
 
-      - name: publish to AUR
+      - name: publish CPU package to AUR
         uses: KSXGitHub/github-actions-deploy-aur@v4.1.3
         with:
           pkgname: waystone
@@ -56,7 +120,16 @@ jobs:
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           commit_message: "release ${{ github.ref_name }}"
 
-  # Keep the bug-report version dropdown showing the last 5 releases.
+      - name: publish NVIDIA package to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v4.1.3
+        with:
+          pkgname: waystone-cuda
+          pkgbuild: PKGBUILD.cuda.aur
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: "release ${{ github.ref_name }}"
+
   issue-template:
     needs: release
     runs-on: ubuntu-latest

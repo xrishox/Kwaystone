@@ -131,3 +131,7 @@ class Brain:
                     except ProcessLookupError:
                         pass
                     self.proc.wait()
+        try:
+            os.unlink(self.socket_path)
+        except OSError:
+            pass

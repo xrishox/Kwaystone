@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_VERSION="3.13.14"
+runtime="${1:-}"
+
+if [[ -z "$runtime" ]]; then
+  if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi >/dev/null 2>&1; then
+    runtime=nvidia
+  else
+    runtime=cpu
+  fi
+fi
+if [[ "$runtime" != cpu && "$runtime" != nvidia ]]; then
+  echo "usage: scripts/bootstrap [cpu|nvidia]" >&2
+  exit 2
+fi
+if ! command -v uv >/dev/null 2>&1; then
+  echo "uv is required: https://docs.astral.sh/uv/getting-started/installation/" >&2
+  exit 1
+fi
+if ! command -v npm >/dev/null 2>&1; then
+  echo "Node.js 22+ and npm are required" >&2
+  exit 1
+fi
+
+uv python install "$PYTHON_VERSION"
+if [[ -x "$ROOT/.venv/bin/python" ]] &&
+   [[ "$("$ROOT/.venv/bin/python" -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')" != "3.13" ]]; then
+  echo ".venv is not Python 3.13; remove it and rerun bootstrap" >&2
+  exit 1
+fi
+uv venv --python "$PYTHON_VERSION" "$ROOT/.venv"
+uv pip sync --python "$ROOT/.venv/bin/python" "$ROOT/requirements/$runtime.lock"
+uv pip install --python "$ROOT/.venv/bin/python" -r "$ROOT/requirements/dev.lock"
+uv pip install --python "$ROOT/.venv/bin/python" --no-deps --editable "$ROOT/poed"
+printf '%s\n' "$runtime" > "$ROOT/.venv/.waystone-runtime"
+
+npm ci --prefix "$ROOT/brain"
+npm run build --prefix "$ROOT/brain"
+"$ROOT/scripts/fetch-ocr-models"
+
+printf 'Kwaystone development runtime ready (%s). Run scripts/run.\n' "$runtime"

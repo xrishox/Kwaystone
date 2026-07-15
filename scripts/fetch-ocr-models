@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DEST="${WAYSTONE_OCR_MODEL_ROOT:-$ROOT/.cache/ocr-models}"
+MANIFEST="$ROOT/packaging/appimage/models.sha256"
+BASE_URL="https://huggingface.co/PaddlePaddle"
+
+mkdir -p "$DEST"
+while read -r expected relative; do
+  [[ -n "$expected" && -n "$relative" ]] || continue
+  target="$DEST/$relative"
+  model="${relative%%/*}"
+  file="${relative#*/}"
+  mkdir -p "$(dirname "$target")"
+  if [[ -f "$target" ]] && printf '%s  %s\n' "$expected" "$target" | sha256sum -c - >/dev/null 2>&1; then
+    continue
+  fi
+  tmp="$target.part"
+  rm -f "$tmp"
+  curl --fail --location --retry 3 --output "$tmp" \
+    "$BASE_URL/$model/resolve/main/$file"
+  printf '%s  %s\n' "$expected" "$tmp" | sha256sum -c -
+  mv "$tmp" "$target"
+done < "$MANIFEST"
+
+(cd "$DEST" && sha256sum -c "$MANIFEST")
+printf 'OCR models ready: %s\n' "$DEST"

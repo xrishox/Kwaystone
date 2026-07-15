@@ -4,7 +4,7 @@ import { Host } from "@/web/background/IPC";
 import { useLeagues } from "./Leagues";
 import { AppConfig } from "@/web/Config";
 import { PriceCheckWidget } from "@/web/overlay/widgets";
-import { ITEM_BY_REF } from "@/assets/data";
+import { DropEntry, ITEM_BY_REF } from "@/assets/data";
 
 export type NinjaSchema = NinjaSchemaV1;
 type NinjaSchemaV1 = {
@@ -112,6 +112,9 @@ export const DivCurrency: CoreCurrency = {
 export const usePoeninja = createGlobalState(() => {
   const leagues = useLeagues();
 
+  // TODO: move out of here
+  const ITEM_DROP = shallowRef<DropEntry[]>([]);
+
   const availableCoreCurrencies = shallowRef<CoreCurrency[]>([]);
   const selectedCoreCurrencyId = computed<"exalted" | "chaos">({
     get() {
@@ -150,10 +153,7 @@ export const usePoeninja = createGlobalState(() => {
   let downloadController: AbortController | undefined;
   let lastInterestTime = 0;
 
-  let priceCache = new Map<
-    { ns: string; name: string; count: number },
-    CurrencyValue
-  >();
+  let priceCache = new Map<string, CurrencyValue>();
 
   async function load(force: boolean = false) {
     const league = leagues.selected.value;
@@ -168,6 +168,12 @@ export const usePoeninja = createGlobalState(() => {
     try {
       isLoading.value = true;
       downloadController = new AbortController();
+
+      ITEM_DROP.value = JSON.parse(
+        await Host.proxy("api.exiledexchange2.dev/proxy/data/item-drop.json", {
+          signal: downloadController.signal,
+        }).then((r) => r.text()),
+      );
 
       availableCoreCurrencies.value = getAvailableCoreCurrencies().map(
         (currency) => ({
@@ -221,10 +227,7 @@ export const usePoeninja = createGlobalState(() => {
       }
 
       // Clear cache
-      priceCache = new Map<
-        { ns: string; name: string; count: number },
-        CurrencyValue
-      >();
+      priceCache = new Map<string, CurrencyValue>();
 
       lastUpdateTime = Date.now();
     } catch (e) {
@@ -248,9 +251,9 @@ export const usePoeninja = createGlobalState(() => {
         return "hardcore";
     }
     if (league.startsWith("HC ")) {
-      return proxy ? "leaguehc" : "vaalhc";
+      return proxy ? "leaguehc" : "runesofaldurhc";
     }
-    return proxy ? "league" : "vaal";
+    return proxy ? "league" : "runesofaldur";
   }
 
   function findPriceByQuery(query: DbQuery) {
@@ -338,7 +341,8 @@ export const usePoeninja = createGlobalState(() => {
   }
 
   function cachedCurrencyByQuery(query: DbQuery, count: number) {
-    const key = { ns: query.ns, name: query.name, count };
+    // variant should always be undefined for currencies
+    const key = `${query.ns}:${query.name}:${query.variant ?? ""}:${count}`;
     if (priceCache.has(key)) {
       return priceCache.get(key)!;
     }
@@ -379,6 +383,7 @@ export const usePoeninja = createGlobalState(() => {
     cachedCurrencyByQuery,
     initialLoading: () => isLoading.value && !PRICES_DB.length,
     availableCoreCurrencies: readonly(availableCoreCurrencies),
+    ITEM_DROP,
   };
 });
 

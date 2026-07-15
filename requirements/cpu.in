@@ -1,0 +1,2 @@
+-r common.in
+https://paddle-whl.bj.bcebos.com/stable/cpu/paddlepaddle/paddlepaddle-3.3.1-cp313-cp313-linux_x86_64.whl

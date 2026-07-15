@@ -1,0 +1,48 @@
+# Maintainer: Kwaystone contributors
+# shellcheck shell=bash disable=SC2034,SC2154
+# Rendered by .github/workflows/release.yml.
+pkgname=waystone-cuda
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc="Kwaystone, a Path of Exile 2 price-check overlay for Wayland (NVIDIA CUDA 12.6 runtime)"
+arch=('x86_64')
+url="https://github.com/kriskruse/waystone"
+license=('AGPL-3.0-or-later' 'MIT' 'Apache-2.0')
+depends=('glibc>=2.41' 'nvidia-utils')
+optdepends=('kwin: KDE Plasma Wayland compositor'
+            'xdg-desktop-portal-kde: KDE screenshot fallback'
+            'hyprland: Hyprland compositor'
+            'xdg-desktop-portal-hyprland: Hyprland global shortcuts')
+provides=('waystone')
+conflicts=('waystone')
+options=('!strip')
+source=(
+  "Kwaystone-nvidia-x86_64.AppImage.part-00::$url/releases/download/v$pkgver/Kwaystone-nvidia-x86_64.AppImage.part-00"
+  "Kwaystone-nvidia-x86_64.AppImage.part-01::$url/releases/download/v$pkgver/Kwaystone-nvidia-x86_64.AppImage.part-01"
+  "Kwaystone-nvidia-x86_64.AppImage.part-02::$url/releases/download/v$pkgver/Kwaystone-nvidia-x86_64.AppImage.part-02"
+)
+sha256sums=('@PART_00_SHA256@'
+            '@PART_01_SHA256@'
+            '@PART_02_SHA256@')
+
+prepare() {
+  cat Kwaystone-nvidia-x86_64.AppImage.part-* > Kwaystone-nvidia-x86_64.AppImage
+  chmod +x Kwaystone-nvidia-x86_64.AppImage
+  ./Kwaystone-nvidia-x86_64.AppImage --appimage-extract >/dev/null
+}
+
+package() {
+  mkdir -p "$pkgdir/opt/waystone"
+  cp -a squashfs-root/. "$pkgdir/opt/waystone/"
+
+  install -dm755 "$pkgdir/usr/bin"
+  ln -s /opt/waystone/AppRun "$pkgdir/usr/bin/waystone"
+  install -Dm644 squashfs-root/io.github.kriskruse.waystone.desktop \
+    "$pkgdir/usr/share/applications/io.github.kriskruse.waystone.desktop"
+  install -Dm644 squashfs-root/waystone.svg \
+    "$pkgdir/usr/share/icons/hicolor/scalable/apps/waystone.svg"
+  install -Dm644 squashfs-root/usr/share/metainfo/io.github.kriskruse.waystone.appdata.xml \
+    "$pkgdir/usr/share/metainfo/io.github.kriskruse.waystone.appdata.xml"
+  install -Dm644 squashfs-root/usr/share/licenses/waystone/LICENSE \
+    "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

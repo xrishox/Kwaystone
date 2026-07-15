@@ -4,7 +4,6 @@ import fnv1a from "@sindresorhus/fnv1a";
 import fs from "fs";
 import path from "path";
 
-// MODIFIED from upstream: only English data is vendored (see PROVENANCE.md)
 const LANGUAGES = ["en"];
 
 for (const lang of LANGUAGES) {

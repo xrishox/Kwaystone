@@ -5,15 +5,47 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "poed"
 version = "0.1.0"
-requires-python = ">=3.12"
-dependencies = ["PyGObject", "numpy", "opencv-python"]
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "PyGObject==3.56.3",
+    "numpy>=1.24,<2.4",
+    "opencv-contrib-python==4.10.0.84",
+]
 
 [tool.setuptools]
-packages = ["poed"]
+packages = ["poed", "poed.desktop", "poed.have_scan", "poed.scanners"]
+
+[tool.setuptools.package-data]
+poed = [
+    "data/have_digit_glyphs.json",
+    "data/have_digit_glyphs.png",
+    "data/runeshape_combinations.json",
+    "data/runeshape_runes/*.webp",
+]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest>=8,<10", "ruff>=0.14,<1"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = ["E741"]
+
+[tool.ruff.lint.per-file-ignores]
+"poed/__main__.py" = ["E402"]
+"poed/badges.py" = ["E402"]
+"poed/desktop/hyprland.py" = ["E402"]
+"poed/desktop/kwin.py" = ["E402"]
+"poed/overlay.py" = ["E402"]
+"poed/price_check.py" = ["E402"]
+"poed/scan_ui.py" = ["E402"]
+"tests/test_screen_scan.py" = ["E402"]
+"tests/test_uniquescan.py" = ["E402"]
+"tests/test_runeshape.py" = ["E402"]

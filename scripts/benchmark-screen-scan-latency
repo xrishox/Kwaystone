@@ -1,0 +1,269 @@
+#!/usr/bin/env python3
+"""Benchmark saved-frame screen scan latency by category.
+
+This is deliberately separate from ``evaluate-scan-corpus``.  The corpus
+evaluator proves correctness for curated cases only; this script measures
+latency on curated cases plus retained local debug scans when available.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import tempfile
+import time
+from collections import defaultdict
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _common  # noqa: E402
+
+_common.bootstrap()
+ROOT = _common.ROOT
+
+import cv2  # noqa: E402
+
+from poed import brain as brain_module  # noqa: E402
+from poed import config, expeditionscan, scan_corpus, scan_review  # noqa: E402
+from poed.scanners import core  # noqa: E402
+
+
+@dataclass(frozen=True)
+class BenchCase:
+    category: str
+    path: Path
+    source: str
+
+
+class _RowsProvider:
+    def __init__(self, fixture_rows: bool):
+        self.fixture_rows = fixture_rows
+        self.cfg: dict[str, Any] = {}
+        self.rows: dict[str, Any] = {}
+        self.brain: brain_module.Brain | None = None
+
+    def __enter__(self):
+        if self.fixture_rows:
+            self.cfg = {"league": "fixture", "unique_scan_min_price": 0.0}
+            self.rows = scan_review.fixture_rows()
+            return self
+
+        cfg = config.load()
+        self.cfg = cfg.as_dict()
+        sockdir = tempfile.TemporaryDirectory(prefix="waystone-benchmark-brain-")
+        self._sockdir = sockdir
+        sock = str(Path(sockdir.name) / "brain.sock")
+        sessid = cfg["poesessid"] or ""
+        self.brain = brain_module.Brain(
+            brain_dir=brain_module.resolve_brain_dir(),
+            socket_path=sock,
+            env_extra={
+                "POE2_LEAGUE": cfg["league"],
+                **({"POE2_SESSID": sessid} if sessid else {}),
+            },
+        )
+        self.brain.start()
+        self.rows = self.request_rows()[0]
+        return self
+
+    def __exit__(self, *_exc):
+        if self.brain is not None:
+            self.brain.stop()
+        sockdir = getattr(self, "_sockdir", None)
+        if sockdir is not None:
+            sockdir.cleanup()
+
+    def request_rows(self) -> tuple[dict[str, Any], float]:
+        if self.fixture_rows:
+            return self.rows, 0.0
+        if self.brain is None:
+            raise RuntimeError("brain is not running")
+        started = time.perf_counter()
+        rows = self.brain.request(
+            {"cmd": "uniqueprices", "league": self.cfg["league"]},
+            timeout=120.0,
+        )
+        return rows, (time.perf_counter() - started) * 1000.0
+
+
+def _load_corpus_cases(corpus_root: Path) -> list[BenchCase]:
+    index = scan_corpus.load_index(corpus_root)
+    cases = scan_corpus.active_cases(index, corpus_root)
+    return [
+        BenchCase(
+            category=scan_corpus.case_category(item.metadata) or item.expected,
+            path=item.image,
+            source="corpus",
+        )
+        for item in cases
+    ]
+
+
+def _load_debug_cases(limit_per_category: int) -> list[BenchCase]:
+    root = scan_corpus.debug_scan_root()
+    if not root.exists():
+        return []
+    by_category: dict[str, list[tuple[float, Path]]] = defaultdict(list)
+    for manifest in root.glob("scan-*/manifest.json"):
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        category = str(data.get("selected_scanner") or "unclassified")
+        frame = manifest.parent / "01-game-frame.png"
+        if not frame.exists():
+            frame = manifest.parent / "00-capture.png"
+        if not frame.exists():
+            continue
+        try:
+            mtime = frame.stat().st_mtime
+        except OSError:
+            continue
+        by_category[category].append((mtime, frame))
+
+    out: list[BenchCase] = []
+    for category, items in sorted(by_category.items()):
+        for _mtime, frame in sorted(items, reverse=True)[:limit_per_category]:
+            out.append(BenchCase(category=category, path=frame, source="debug"))
+    return out
+
+
+def _dedupe_cases(cases: list[BenchCase]) -> list[BenchCase]:
+    seen: set[Path] = set()
+    out: list[BenchCase] = []
+    for case in cases:
+        key = case.path.resolve()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(case)
+    return out
+
+
+def _benchmark_case(case: BenchCase, provider: _RowsProvider) -> dict[str, Any]:
+    timings: dict[str, Any] = {}
+    started = time.perf_counter()
+    rows, rows_ms = provider.request_rows()
+    timings["rows_ms"] = round(rows_ms, 2)
+    timings["rows_elapsed_ms"] = round((time.perf_counter() - started) * 1000.0, 2)
+
+    started = time.perf_counter()
+    image = cv2.imread(str(case.path))
+    timings["image_load_ms"] = round((time.perf_counter() - started) * 1000.0, 2)
+    if image is None:
+        raise RuntimeError(f"could not read image: {case.path}")
+
+    route, selections, ctx = scan_review.scan_route(
+        image,
+        provider.cfg,
+        rows,
+        output="benchmark",
+        timings_ms=timings,
+    )
+
+    scanner_timings: dict[str, float] = {}
+    results = []
+    started = time.perf_counter()
+    for selection in selections:
+        child_started = time.perf_counter()
+        results.append(selection.scanner.scan(ctx, selection.detection))
+        scanner_timings[selection.scanner.id] = round(
+            (time.perf_counter() - child_started) * 1000.0,
+            2,
+        )
+    result = core._combined_result(results)  # noqa: SLF001
+    timings["extraction_ms"] = round((time.perf_counter() - started) * 1000.0, 2)
+    timings["scanner_extraction_ms"] = scanner_timings
+
+    process_ms = (
+        timings["image_load_ms"]
+        + timings["frame_source_ms"]
+        + timings["scene_ms"]
+        + timings["selection_ms"]
+        + timings["extraction_ms"]
+    )
+    total_ms = timings["rows_elapsed_ms"] + process_ms
+    return {
+        "category": case.category,
+        "source": case.source,
+        "path": str(case.path),
+        "route": route,
+        "matches": len(result.matches),
+        "total_ms": round(total_ms, 2),
+        "process_ms": round(process_ms, 2),
+        "timings_ms": timings,
+    }
+
+
+def _print_table(results: list[dict[str, Any]]) -> None:
+    if not results:
+        print("no benchmark cases found")
+        return
+    print(
+        f"{'category':<13} {'source':<7} {'route':<12} {'matches':>7} "
+        f"{'total':>9} {'process':>9} {'probes':>32} path"
+    )
+    for row in results:
+        probes = ",".join(
+            f"{key}:{value:.0f}"
+            for key, value in row["timings_ms"]["probe_ms"].items()
+        )
+        print(
+            f"{row['category']:<13} {row['source']:<7} {row['route']:<12} "
+            f"{row['matches']:>7} {row['total_ms']:>8.1f}ms "
+            f"{row['process_ms']:>8.1f}ms {probes:>32} {row['path']}"
+        )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--runs", type=int, default=1)
+    parser.add_argument("--json", action="store_true", dest="as_json")
+    parser.add_argument("--fixture-rows", action="store_true")
+    parser.add_argument(
+        "--corpus-root",
+        type=Path,
+        default=ROOT / "poed/tests/fixtures/scanner-corpus",
+    )
+    parser.add_argument(
+        "--debug-per-category",
+        type=int,
+        default=1,
+        help="number of latest retained debug frames to include per saved route",
+    )
+    parser.add_argument(
+        "--no-debug",
+        action="store_true",
+        help="benchmark only managed corpus cases",
+    )
+    args = parser.parse_args()
+    cases = _load_corpus_cases(args.corpus_root)
+    if not args.no_debug:
+        cases.extend(_load_debug_cases(max(0, args.debug_per_category)))
+    cases = _dedupe_cases(cases)
+    if not cases:
+        print("no benchmark cases found", file=sys.stderr)
+        return 1
+
+    expeditionscan.warm()
+    all_results: list[dict[str, Any]] = []
+    try:
+        with _RowsProvider(args.fixture_rows) as provider:
+            for _run in range(max(1, args.runs)):
+                for case in cases:
+                    all_results.append(_benchmark_case(case, provider))
+    finally:
+        expeditionscan.stop()
+
+    if args.as_json:
+        print(json.dumps(all_results, indent=2, sort_keys=True))
+    else:
+        _print_table(all_results)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

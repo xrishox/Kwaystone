@@ -1,20 +1,13 @@
 """xdg-desktop-portal GlobalShortcuts session.
 
-Productionized from spikes/spike_portal.py. The spike proved the full
-CreateSession -> BindShortcuts flow works under xdg-desktop-portal-hyprland
-(xdph) 1.3.12 and returns response code 0, with no approval dialog. See that
-file's ## Findings block for the de-risking detail; this module just ports the
-proven DBus sequence.
-
-Design: session creation is asynchronous (the portal replies via a Request ->
-Response signal, not the method return value). bind() therefore does not block:
-it kicks off CreateSession, stashes the requested shortcuts, and binds them from
-the CreateSession Response callback once the session_handle exists. This is the
-simplest correct shape for a GLib main-loop program -- everything is driven by
+Session creation is asynchronous: the portal replies through a Request Response
+signal, not the method return value. ``bind`` therefore starts CreateSession,
+stashes the requested shortcuts, and binds them after the session handle exists.
+This is the simplest correct shape for a GLib main-loop program: everything is driven by
 signal callbacks on the loop the caller is already running. bind() may be called
 before the loop starts; the work runs as soon as the loop dispatches.
 
-Pitfalls applied (from spike Findings):
+Important constraints:
   - sys.exit in callbacks: NEVER called here. GLib's dispatcher swallows
     SystemExit; failures are logged and the on_error hook is invoked instead.
   - subscription-id cell: each call_with_request captures its subscription id in

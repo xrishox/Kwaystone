@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Kwaystone
+Comment=Path of Exile 2 price-check overlay
+Exec=waystone
+Icon=waystone
+Terminal=false
+Categories=Game;
+StartupNotify=false
+X-DBUS-StartupType=Unique
+X-DBUS-ServiceName=io.github.kriskruse.waystone
+X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2

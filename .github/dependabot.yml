@@ -1,7 +1,8 @@
 version: 2
 updates:
-  # Brain (Node) deps — vendored EE2 has no manifest of its own, so /brain
-  # covers everything JS.
+  # Brain (Node) deps. Vendored EE2 renderer dependencies are intentionally not
+  # Dependabot-managed here; update them by re-pulling EE2 so the vendor subtree
+  # stays close to upstream.
   - package-ecosystem: npm
     directory: /brain
     schedule:
@@ -10,6 +11,21 @@ updates:
       # One PR for routine bumps; majors stay separate for real review.
       minor-and-patch:
         update-types: ["minor", "patch"]
+
+  - package-ecosystem: pip
+    directories:
+      - /poed
+      - /requirements
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: docker
+    directory: /packaging/appimage
+    schedule:
+      interval: weekly
 
   - package-ecosystem: github-actions
     directory: /

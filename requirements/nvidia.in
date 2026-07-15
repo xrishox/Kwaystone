@@ -1,0 +1,4 @@
+-r common.in
+# CUDA 12.6 user-space libraries are included. A compatible host NVIDIA
+# driver is still required; the AppImage does not and must not install one.
+https://paddle-whl.bj.bcebos.com/stable/cu126/paddlepaddle-gpu/paddlepaddle_gpu-3.3.1-cp313-cp313-linux_x86_64.whl

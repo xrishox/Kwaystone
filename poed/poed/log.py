@@ -8,15 +8,16 @@ never logged anywhere — keep it that way.
 """
 import logging
 import logging.handlers
-import os
 import threading
 from pathlib import Path
+
+from poed import config
 
 FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
 
 
 def log_path() -> Path:
-    state = Path(os.environ.get("XDG_STATE_HOME") or (Path.home() / ".local/state"))
+    state = config.state_home()
     return state / "waystone" / "waystone.log"
 
 

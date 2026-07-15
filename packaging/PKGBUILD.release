@@ -1,39 +1,41 @@
-# Maintainer: Kris Kruse <kriskruse@users.noreply.github.com>
-# Template rendered by .github/workflows/release.yml — @VERSION@ and
-# @SHA256@ are substituted from the tagged release.
+# Maintainer: Kwaystone contributors
+# shellcheck shell=bash disable=SC2034,SC2154
+# Rendered by .github/workflows/release.yml.
 pkgname=waystone
 pkgver=@VERSION@
 pkgrel=1
-pkgdesc="Path of Exile 2 price-check overlay for Wayland (Hyprland)"
-arch=('any')
+pkgdesc="Kwaystone, a Path of Exile 2 price-check overlay for Wayland (portable CPU runtime)"
+arch=('x86_64')
 url="https://github.com/kriskruse/waystone"
-license=('AGPL-3.0-or-later' 'MIT')
-depends=('python' 'python-gobject' 'python-opencv' 'python-numpy'
-         'gtk4' 'gtk4-layer-shell'
-         'xdg-desktop-portal-hyprland' 'wl-clipboard' 'xdotool' 'nodejs')
-makedepends=('npm' 'python-build' 'python-installer' 'python-setuptools' 'python-wheel')
-source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz")
-sha256sums=('@SHA256@')
+license=('AGPL-3.0-or-later' 'MIT' 'Apache-2.0')
+depends=('glibc>=2.41')
+optdepends=('kwin: KDE Plasma Wayland compositor'
+            'xdg-desktop-portal-kde: KDE screenshot fallback'
+            'hyprland: Hyprland compositor'
+            'xdg-desktop-portal-hyprland: Hyprland global shortcuts')
+provides=('waystone')
+conflicts=('waystone-cuda')
+options=('!strip')
+source=("Kwaystone-x86_64.AppImage::$url/releases/download/v$pkgver/Kwaystone-x86_64.AppImage")
+sha256sums=('@APPIMAGE_SHA256@')
 
-build() {
-  cd "$pkgname-$pkgver"/brain
-  npm ci
-  npm run build
-  cd ../poed
-  python -m build --wheel --no-isolation
+prepare() {
+  chmod +x Kwaystone-x86_64.AppImage
+  ./Kwaystone-x86_64.AppImage --appimage-extract >/dev/null
 }
 
 package() {
-  cd "$pkgname-$pkgver"
-  # brain bundle + game data (bundle resolves data at ../vendor/ee2/public)
-  install -Dm644 brain/dist/server.mjs -t "$pkgdir/usr/lib/waystone/brain/dist/"
-  mkdir -p "$pkgdir/usr/lib/waystone/brain/vendor/ee2"
-  cp -r brain/vendor/ee2/public "$pkgdir/usr/lib/waystone/brain/vendor/ee2/"
-  # poed
-  python -m installer --destdir="$pkgdir" poed/dist/*.whl
-  # launcher
-  install -Dm755 packaging/waystone "$pkgdir/usr/bin/waystone"
-  # licenses: project AGPL + vendored EE2 MIT
-  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
-  install -Dm644 brain/vendor/ee2/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE.ee2-mit"
+  mkdir -p "$pkgdir/opt/waystone"
+  cp -a squashfs-root/. "$pkgdir/opt/waystone/"
+
+  install -dm755 "$pkgdir/usr/bin"
+  ln -s /opt/waystone/AppRun "$pkgdir/usr/bin/waystone"
+  install -Dm644 squashfs-root/io.github.kriskruse.waystone.desktop \
+    "$pkgdir/usr/share/applications/io.github.kriskruse.waystone.desktop"
+  install -Dm644 squashfs-root/waystone.svg \
+    "$pkgdir/usr/share/icons/hicolor/scalable/apps/waystone.svg"
+  install -Dm644 squashfs-root/usr/share/metainfo/io.github.kriskruse.waystone.appdata.xml \
+    "$pkgdir/usr/share/metainfo/io.github.kriskruse.waystone.appdata.xml"
+  install -Dm644 squashfs-root/usr/share/licenses/waystone/LICENSE \
+    "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+"""Evaluate active managed scanner-corpus cases only."""
+
+from __future__ import annotations
+
+import argparse
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _common  # noqa: E402
+
+_common.bootstrap()
+ROOT = _common.ROOT
+
+import cv2  # noqa: E402
+
+from poed import expeditionscan  # noqa: E402
+from poed import scan_corpus  # noqa: E402
+from poed import scan_review  # noqa: E402
+from poed.scanners import core  # noqa: E402
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--corpus-root",
+        type=Path,
+        default=ROOT / "poed/tests/fixtures/scanner-corpus",
+    )
+    parser.add_argument(
+        "--record-history",
+        action="store_true",
+        help="record managed corpus outcomes to local state",
+    )
+    parser.add_argument(
+        "--history",
+        type=Path,
+        default=scan_corpus.history_path(),
+        help="local history path used with --record-history",
+    )
+    parser.add_argument(
+        "--fixture-rows",
+        action="store_true",
+        help="use the tiny deterministic row fixture instead of the live icon corpus",
+    )
+    args = parser.parse_args()
+    index = scan_corpus.load_index(args.corpus_root)
+    cases = scan_corpus.active_cases(index, args.corpus_root)
+    if not cases:
+        print("checked=0 failures=0", flush=True)
+        return 0
+
+    if args.fixture_rows:
+        cfg = {"league": "fixture", "unique_scan_min_price": 0.0}
+        rows = scan_review.fixture_rows()
+    else:
+        cfg, rows, _row_source = scan_review.review_context()
+    failures = []
+    checked = 0
+    history = scan_corpus.load_history(args.history) if args.record_history else None
+    expeditionscan.warm()
+    try:
+        for item in cases:
+            expected = item.expected
+            image = cv2.imread(str(item.image))
+            if image is None:
+                checked += 1
+                failures.append((item.image, expected, "unreadable", 0.0))
+                if history is not None and item.id:
+                    scan_corpus.record_outcome(
+                        history,
+                        case_id=item.id,
+                        expected=expected,
+                        actual="unreadable",
+                        elapsed_ms=0.0,
+                        passed=False,
+                        reasons=["read: unreadable image"],
+                        tiers={"read": False},
+                    )
+                print(
+                    f"FAIL {item.image} expected={expected} actual=unreadable "
+                    "tiers=read=fail 0.000s reasons=read: unreadable image",
+                    flush=True,
+                )
+                continue
+            started = time.perf_counter()
+            actual, selections, context = scan_review.scan_route(image, cfg, rows)
+            matches = []
+            metadata = item.metadata
+            scan_error = None
+            if scan_corpus.has_output_expectations(metadata):
+                try:
+                    result = core._combined_result([
+                        selection.scanner.scan(context, selection.detection)
+                        for selection in selections
+                    ])
+                    matches = result.matches
+                except Exception as e:  # noqa: BLE001 - preserve all corpus failures
+                    scan_error = f"{type(e).__name__}: {e}"
+            elapsed = time.perf_counter() - started
+            evaluation = scan_corpus.evaluate_case_output(
+                expected=expected,
+                metadata=metadata,
+                actual=actual,
+                matches=matches,
+            )
+            if scan_error is not None:
+                evaluation = scan_corpus.CorpusEvaluation(
+                    passed=False,
+                    tiers={**evaluation.tiers, "scan": False},
+                    reasons=[*evaluation.reasons, f"scan: {scan_error}"],
+                )
+            checked += 1
+            if history is not None and item.id:
+                scan_corpus.record_outcome(
+                    history,
+                    case_id=item.id,
+                    expected=expected,
+                    actual=actual,
+                    elapsed_ms=elapsed * 1000.0,
+                    passed=evaluation.passed,
+                    reasons=evaluation.reasons,
+                    tiers=evaluation.tiers,
+                )
+            tier_text = ",".join(
+                f"{key}={'pass' if value else 'fail'}"
+                for key, value in evaluation.tiers.items()
+            )
+            reason_text = (
+                " reasons=" + " | ".join(evaluation.reasons)
+                if evaluation.reasons
+                else ""
+            )
+            print(
+                f"{'PASS' if evaluation.passed else 'FAIL'} "
+                f"{item.image} expected={expected} actual={actual} "
+                f"tiers={tier_text} {elapsed:.3f}s{reason_text}",
+                flush=True,
+            )
+            if not evaluation.passed:
+                failures.append((item.image, expected, actual, elapsed, evaluation.reasons))
+    finally:
+        expeditionscan.stop()
+
+    if history is not None:
+        scan_corpus.write_history(history, args.history)
+    print(f"checked={checked} failures={len(failures)}", flush=True)
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

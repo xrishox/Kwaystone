@@ -5,14 +5,13 @@ user left them. Read/write are defensive: a missing or corrupt file behaves
 as 'no saved positions', never raises into the UI.
 """
 import json
-import os
 from pathlib import Path
 
 from poed import config
 
 
 def default_path() -> Path:
-    state = Path(os.environ.get("XDG_STATE_HOME") or (Path.home() / ".local/state"))
+    state = config.state_home()
     config.migrate_dir(state / "poe2-overlay", state / "waystone")
     return state / "waystone" / "positions.json"
 

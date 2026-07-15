@@ -721,7 +721,7 @@ exports[`parseClipboard golden fixtures > parses rare-armour.txt 1`] = `
           },
           "stat": {
             "better": 1,
-            "id": "map_player_armour_evasion_energy_shield_+%",
+            "id": "local_armour_and_evasion_and_energy_shield_+%",
             "matchers": [
               {
                 "string": "#% increased Armour, Evasion and Energy Shield",
@@ -853,7 +853,7 @@ exports[`parseClipboard golden fixtures > parses rare-armour.txt 1`] = `
           },
           "stat": {
             "better": 1,
-            "id": "base_physical_damage_reduction_rating",
+            "id": "local_base_physical_damage_reduction_rating",
             "matchers": [
               {
                 "string": "# to Armour",
@@ -969,7 +969,7 @@ exports[`parseClipboard golden fixtures > parses rare-armour.txt 1`] = `
           },
           "stat": {
             "better": 1,
-            "id": "base_physical_damage_reduction_rating",
+            "id": "local_base_physical_damage_reduction_rating",
             "matchers": [
               {
                 "string": "# to Armour",
@@ -1150,7 +1150,7 @@ exports[`parseClipboard golden fixtures > parses rare-armour.txt 1`] = `
           },
           "stat": {
             "better": 1,
-            "id": "map_player_base_self_critical_strike_multiplier_-%",
+            "id": "base_self_critical_strike_multiplier_-%",
             "matchers": [
               {
                 "string": "Hits against you have #% reduced Critical Damage Bonus",
@@ -1260,7 +1260,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
                 },
                 "stat": {
                   "better": 1,
-                  "id": "map_player_armour_evasion_energy_shield_+%",
+                  "id": "local_armour_and_evasion_and_energy_shield_+%",
                   "matchers": [
                     {
                       "string": "#% increased Armour, Evasion and Energy Shield",
@@ -1309,7 +1309,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
             },
             "stat": {
               "better": 1,
-              "id": "map_player_armour_evasion_energy_shield_+%",
+              "id": "local_armour_and_evasion_and_energy_shield_+%",
               "matchers": [
                 {
                   "string": "#% increased Armour, Evasion and Energy Shield",
@@ -1348,7 +1348,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
       ],
       "stat": {
         "better": 1,
-        "id": "map_player_armour_evasion_energy_shield_+%",
+        "id": "local_armour_and_evasion_and_energy_shield_+%",
         "matchers": [
           {
             "string": "#% increased Armour, Evasion and Energy Shield",
@@ -1548,7 +1548,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
                 },
                 "stat": {
                   "better": 1,
-                  "id": "base_physical_damage_reduction_rating",
+                  "id": "local_base_physical_damage_reduction_rating",
                   "matchers": [
                     {
                       "string": "# to Armour",
@@ -1773,7 +1773,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
                 },
                 "stat": {
                   "better": 1,
-                  "id": "base_physical_damage_reduction_rating",
+                  "id": "local_base_physical_damage_reduction_rating",
                   "matchers": [
                     {
                       "string": "# to Armour",
@@ -1876,7 +1876,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
             },
             "stat": {
               "better": 1,
-              "id": "base_physical_damage_reduction_rating",
+              "id": "local_base_physical_damage_reduction_rating",
               "matchers": [
                 {
                   "string": "# to Armour",
@@ -1911,43 +1911,6 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
             },
           },
         },
-      ],
-      "stat": {
-        "better": 1,
-        "id": "base_physical_damage_reduction_rating",
-        "matchers": [
-          {
-            "string": "# to Armour",
-          },
-        ],
-        "ref": "# to Armour",
-        "trade": {
-          "ids": {
-            "desecrated": [
-              "desecrated.stat_3484657501",
-              "desecrated.stat_809229260",
-            ],
-            "explicit": [
-              "explicit.stat_3484657501",
-              "explicit.stat_809229260",
-            ],
-            "fractured": [
-              "fractured.stat_3484657501",
-              "fractured.stat_809229260",
-            ],
-            "implicit": [
-              "implicit.stat_809229260",
-            ],
-            "rune": [
-              "rune.stat_3484657501",
-            ],
-          },
-        },
-      },
-      "type": "explicit",
-    },
-    {
-      "sources": [
         {
           "contributes": {
             "max": 256,
@@ -1980,7 +1943,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
                 },
                 "stat": {
                   "better": 1,
-                  "id": "base_physical_damage_reduction_rating",
+                  "id": "local_base_physical_damage_reduction_rating",
                   "matchers": [
                     {
                       "string": "# to Armour",
@@ -2028,7 +1991,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
             },
             "stat": {
               "better": 1,
-              "id": "base_physical_damage_reduction_rating",
+              "id": "local_base_physical_damage_reduction_rating",
               "matchers": [
                 {
                   "string": "# to Armour",
@@ -2066,7 +2029,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
       ],
       "stat": {
         "better": 1,
-        "id": "base_physical_damage_reduction_rating",
+        "id": "local_base_physical_damage_reduction_rating",
         "matchers": [
           {
             "string": "# to Armour",
@@ -2096,7 +2059,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
           },
         },
       },
-      "type": "desecrated",
+      "type": "explicit",
     },
     {
       "sources": [
@@ -2431,7 +2394,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
                 },
                 "stat": {
                   "better": 1,
-                  "id": "map_player_base_self_critical_strike_multiplier_-%",
+                  "id": "base_self_critical_strike_multiplier_-%",
                   "matchers": [
                     {
                       "string": "Hits against you have #% reduced Critical Damage Bonus",
@@ -2486,7 +2449,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
             },
             "stat": {
               "better": 1,
-              "id": "map_player_base_self_critical_strike_multiplier_-%",
+              "id": "base_self_critical_strike_multiplier_-%",
               "matchers": [
                 {
                   "string": "Hits against you have #% reduced Critical Damage Bonus",
@@ -2531,7 +2494,7 @@ Hits against you have 44(40-50)% reduced Critical Damage Bonus
       ],
       "stat": {
         "better": 1,
-        "id": "map_player_base_self_critical_strike_multiplier_-%",
+        "id": "base_self_critical_strike_multiplier_-%",
         "matchers": [
           {
             "string": "Hits against you have #% reduced Critical Damage Bonus",
@@ -2591,8 +2554,8 @@ exports[`parseClipboard golden fixtures > parses rare-gloves-advanced.txt 1`] = 
   "info": {
     "armour": {
       "ev": [
-        133,
-        133,
+        139,
+        139,
       ],
     },
     "craftable": {
@@ -2613,8 +2576,8 @@ exports[`parseClipboard golden fixtures > parses rare-gloves-advanced.txt 1`] = 
     {
       "armour": {
         "ev": [
-          133,
-          133,
+          139,
+          139,
         ],
       },
       "craftable": {
@@ -4779,6 +4742,9 @@ exports[`parseClipboard golden fixtures > parses unique.txt 1`] = `
             "ref": "#% to Maximum Lightning Resistance",
             "trade": {
               "ids": {
+                "crafted": [
+                  "crafted.stat_1011760251",
+                ],
                 "desecrated": [
                   "desecrated.stat_1011760251",
                 ],
@@ -5396,6 +5362,9 @@ her motionless dance the pulse of bliss
                   "ref": "#% to Maximum Lightning Resistance",
                   "trade": {
                     "ids": {
+                      "crafted": [
+                        "crafted.stat_1011760251",
+                      ],
                       "desecrated": [
                         "desecrated.stat_1011760251",
                       ],
@@ -5441,6 +5410,9 @@ her motionless dance the pulse of bliss
               "ref": "#% to Maximum Lightning Resistance",
               "trade": {
                 "ids": {
+                  "crafted": [
+                    "crafted.stat_1011760251",
+                  ],
                   "desecrated": [
                     "desecrated.stat_1011760251",
                   ],
@@ -5476,6 +5448,9 @@ her motionless dance the pulse of bliss
         "ref": "#% to Maximum Lightning Resistance",
         "trade": {
           "ids": {
+            "crafted": [
+              "crafted.stat_1011760251",
+            ],
             "desecrated": [
               "desecrated.stat_1011760251",
             ],
@@ -5743,7 +5718,7 @@ exports[`parseClipboard golden fixtures > parses unique-armour.txt 1`] = `
           "Life",
         ],
         "tier": undefined,
-        "type": "explicit",
+        "type": "enchant",
       },
       "stats": [
         {
@@ -6292,7 +6267,7 @@ Corrupted
                 "Life",
               ],
               "tier": undefined,
-              "type": "explicit",
+              "type": "enchant",
             },
             "stats": [
               {
@@ -6432,7 +6407,7 @@ Corrupted
           },
         },
       },
-      "type": "explicit",
+      "type": "enchant",
     },
     {
       "sources": [
@@ -7658,6 +7633,9 @@ exports[`parseClipboard golden fixtures > parses waystone.txt 1`] = `
     },
     "h": 1,
     "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvTWFwcy9FbmRnYW1lTWFwcy9FbmRnYW1lTWFwMTUiLCJzY2FsZSI6MSwicmVhbG0iOiJwb2UyIn1d/36fdc2dffa/EndgameMap15.png",
+    "map": {
+      "tier": 15,
+    },
     "name": "Waystone (Tier 15)",
     "namespace": "ITEM",
     "refName": "Waystone (Tier 15)",
@@ -7674,6 +7652,9 @@ exports[`parseClipboard golden fixtures > parses waystone.txt 1`] = `
       },
       "h": 1,
       "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvTWFwcy9FbmRnYW1lTWFwcy9FbmRnYW1lTWFwMTUiLCJzY2FsZSI6MSwicmVhbG0iOiJwb2UyIn1d/36fdc2dffa/EndgameMap15.png",
+      "map": {
+        "tier": 15,
+      },
       "name": "Waystone (Tier 15)",
       "namespace": "ITEM",
       "refName": "Waystone (Tier 15)",
@@ -7687,6 +7668,11 @@ exports[`parseClipboard golden fixtures > parses waystone.txt 1`] = `
   "isCorrupted": false,
   "isUnidentified": false,
   "itemLevel": 82,
+  "mapDropChance": 65,
+  "mapItemRarity": 27,
+  "mapPackSize": 17,
+  "mapRevives": 2,
+  "mapTier": 15,
   "name": "Fungus Solitude",
   "newMods": [
     {

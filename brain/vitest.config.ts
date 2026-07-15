@@ -6,6 +6,9 @@ const r = (p: string) =>
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), p);
 
 export default defineConfig({
+  test: {
+    include: ["test/**/*.test.ts"],
+  },
   resolve: {
     alias: [
       { find: "@/web/Config", replacement: r("src/stubs/Config.ts") },

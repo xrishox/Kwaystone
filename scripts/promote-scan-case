@@ -1,0 +1,212 @@
+#!/usr/bin/env python3
+"""Promote a retained debug scan into the managed scanner regression corpus."""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _common  # noqa: E402
+
+_common.bootstrap()
+ROOT = _common.ROOT
+
+import cv2  # noqa: E402
+
+from poed import scan_corpus  # noqa: E402
+from poed import scan_review  # noqa: E402
+
+
+def _default_corpus_root() -> Path:
+    return ROOT / "poed/tests/fixtures/scanner-corpus"
+
+
+def _write_corpus_image(
+    frame_path: Path,
+    image_dir: Path,
+    case_id: str,
+) -> tuple[str, dict]:
+    image = cv2.imread(str(frame_path))
+    if image is None:
+        raise SystemExit(f"could not read frame image: {frame_path}")
+    image_dir.mkdir(parents=True, exist_ok=True)
+    metadata = {"width": image.shape[1], "height": image.shape[0]}
+
+    webp_path = image_dir / f"{case_id}.webp"
+    if cv2.imwrite(str(webp_path), image, [cv2.IMWRITE_WEBP_QUALITY, 101]):
+        decoded = cv2.imread(str(webp_path))
+        if (
+            decoded is not None
+            and decoded.shape == image.shape
+            and bool((decoded == image).all())
+        ):
+            return f"images/{webp_path.name}", metadata
+        webp_path.unlink(missing_ok=True)
+
+    png_path = image_dir / f"{case_id}.png"
+    if not cv2.imwrite(str(png_path), image):
+        raise SystemExit(f"could not write corpus image: {png_path}")
+    return f"images/{png_path.name}", metadata
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "scan",
+        nargs="?",
+        default="latest",
+        help="retained scan id/path, or 'latest'",
+    )
+    parser.add_argument(
+        "--expected",
+        choices=sorted(scan_corpus.EXPECTED_TYPES),
+        help="expected scanner route; defaults to the current latest-scan-data route",
+    )
+    parser.add_argument(
+        "--category",
+        choices=sorted(scan_corpus.EXPECTED_CATEGORIES),
+        help="corpus category; defaults to --expected",
+    )
+    parser.add_argument(
+        "--verification-level",
+        type=int,
+        choices=(0, 1, 2, 3),
+        default=1,
+        help=(
+            "reviewed verification level to enforce; 0 skips corpus changes, "
+            "1 is routing-only, 2 adds counts, 3 adds names/runes"
+        ),
+    )
+    parser.add_argument(
+        "--from-current-output",
+        action="store_true",
+        help=(
+            "store Level 2/3 truth from the current scanner output; only use "
+            "after the user confirms the latest-scan-data output is correct"
+        ),
+    )
+    parser.add_argument("--reason", default="", help="why this case belongs in the corpus")
+    parser.add_argument("--tag", action="append", default=[], help="repeatable diversity/failure tag")
+    parser.add_argument(
+        "--intentional-negative",
+        action="store_true",
+        help="required when --expected none is intentional",
+    )
+    parser.add_argument("--corpus-root", type=Path, default=_default_corpus_root())
+    args = parser.parse_args()
+
+    try:
+        scan_dir = scan_review.resolve_scan(args.scan)
+    except FileNotFoundError as e:
+        raise SystemExit(str(e)) from e
+    if args.verification_level == 0:
+        print(f"skipped {scan_dir.name}; no corpus changes")
+        return 0
+
+    current = None
+    needs_current = (
+        args.expected is None
+        or args.from_current_output
+        or args.verification_level >= 2
+    )
+    if needs_current:
+        current = scan_review.run_current_scan(scan_dir)
+    expected = scan_corpus.validate_expected(
+        args.expected or (current.actual if current is not None else "")
+    )
+    if args.category is not None:
+        category = scan_corpus.validate_category(args.category)
+    elif current is not None and (args.expected is None or current.actual == expected):
+        category = scan_corpus.validate_category(current.category)
+    else:
+        category = scan_corpus.validate_category(expected)
+    if expected == "none" and not args.intentional_negative:
+        raise SystemExit(
+            "--expected none requires --intentional-negative so accidental Alt+X "
+            "captures are not promoted"
+        )
+
+    manifest = scan_review.load_manifest(scan_dir)
+    observed = str(manifest.get("selected_scanner") or "none")
+    if observed == "none" and expected == "none" and not args.intentional_negative:
+        raise SystemExit("refusing to promote an unmarked none scan")
+    if args.verification_level >= 2:
+        if not args.from_current_output:
+            raise SystemExit(
+                "--verification-level 2 or 3 requires --from-current-output "
+                "after the user confirms scripts/latest-scan-data"
+            )
+        if current.scan_error:
+            raise SystemExit(f"current scanner output failed: {current.scan_error}")
+        if current.actual != expected:
+            raise SystemExit(
+                f"current route is {current.actual}, but --expected is {expected}"
+            )
+    elif args.from_current_output and current is not None and current.actual != expected:
+        raise SystemExit(
+            f"current route is {current.actual}, but --expected is {expected}"
+        )
+
+    corpus_root = args.corpus_root
+    index = scan_corpus.load_index(corpus_root)
+    try:
+        superseded = scan_corpus.remove_superseded_source_cases(
+            corpus_root,
+            index,
+            source_scan_id=scan_dir.name,
+            new_level=args.verification_level,
+        )
+    except ValueError as e:
+        raise SystemExit(str(e)) from e
+    case_id = scan_corpus.unique_case_id(
+        index,
+        expected,
+        scan_dir.name,
+        category=category,
+    )
+    image_rel, resolution = _write_corpus_image(
+        scan_review.frame_path(scan_dir),
+        corpus_root / "images",
+        case_id,
+    )
+    case = {
+        "id": case_id,
+        "expected": expected,
+        "category": category,
+        "verificationLevel": args.verification_level,
+        "observedAtAdmission": observed,
+        "sourceScanId": scan_dir.name,
+        "image": image_rel,
+        "resolution": resolution,
+        "status": "probation",
+        "addedUtc": scan_corpus.now_utc(),
+        "reason": args.reason,
+        "tags": sorted(set(args.tag)),
+    }
+    if current is not None:
+        case.update(
+            scan_review.truth_metadata(
+                level=args.verification_level,
+                expected=expected,
+                category=category,
+                matches=current.matches,
+            )
+        )
+        case["reviewedCurrentScannerUtc"] = scan_corpus.now_utc()
+    if superseded:
+        case["supersedes"] = superseded
+    index.setdefault("cases", []).append(case)
+    scan_corpus.write_index(corpus_root, index)
+    for superseded_id in superseded:
+        print(f"removed superseded lower/equal-level case {superseded_id}")
+    print(
+        f"promoted {scan_dir.name} -> {case_id} expected={expected} "
+        f"category={category} level={args.verification_level} observed={observed}"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

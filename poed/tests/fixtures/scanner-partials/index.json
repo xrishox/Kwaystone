@@ -1,0 +1,1541 @@
+{
+  "cases": [
+    {
+      "assumedUnverifiedBaseline": true,
+      "category": "have",
+      "expected": "have",
+      "expectedMatches": [
+        {
+          "name": "Greater Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Greater Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 1
+        },
+        {
+          "name": "Greater Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Greater Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Greater Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 24
+        },
+        {
+          "name": "Greater Essence of Thawing",
+          "scanKind": "have",
+          "stackSize": 27
+        },
+        {
+          "name": "Greater Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Greater Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 17
+        },
+        {
+          "name": "Greater Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Command",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Greater Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Greater Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Greater Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Perfect Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Perfect Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Perfect Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of Command",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Perfect Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Essence of the Abyss",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Essence of Insanity",
+          "scanKind": "have",
+          "stackSize": 1
+        },
+        {
+          "name": "Essence of Hysteria",
+          "scanKind": "have",
+          "stackSize": 1
+        }
+      ],
+      "id": "have-20260629T130132-390509852-partial-essence-quantities",
+      "image": "images/have-20260629T130132-390509852-partial-essence-quantities.webp",
+      "reason": "Temporary partial Have regression: user verified Perfect Essence of Flames x9, Perfect Essence of Alacrity x5, and Perfect Essence of Battle x5; other rows are held to current observed stacks but are not permanent Level 3 corpus truth.",
+      "resolution": {
+        "height": 2116,
+        "width": 3840
+      },
+      "sourceScanId": "scan-20260629T130132-390509852",
+      "status": "active",
+      "verifiedCorrections": [
+        {
+          "name": "Perfect Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 5
+        }
+      ]
+    },
+    {
+      "assumedUnverifiedBaseline": true,
+      "category": "have",
+      "expected": "have",
+      "expectedMatches": [
+        {
+          "name": "Greater Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Greater Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Greater Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 1
+        },
+        {
+          "name": "Greater Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Greater Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 24
+        },
+        {
+          "name": "Greater Essence of Thawing",
+          "scanKind": "have",
+          "stackSize": 27
+        },
+        {
+          "name": "Greater Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Greater Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 17
+        },
+        {
+          "name": "Greater Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Greater Essence of Command",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Greater Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Greater Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Perfect Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Perfect Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Perfect Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of Command",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Perfect Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Essence of the Abyss",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Essence of Hysteria",
+          "scanKind": "have",
+          "stackSize": 1
+        },
+        {
+          "name": "Essence of Insanity",
+          "scanKind": "have",
+          "stackSize": 1
+        }
+      ],
+      "id": "have-20260629T133508-956305927-partial-essence-edge-digits",
+      "image": "images/have-20260629T133508-956305927-partial-essence-edge-digits.webp",
+      "reason": "Temporary partial Have regression: user verified Greater Essence of the Body x12, Perfect Essence of the Mind x16, and Perfect Essence of Enhancement x12; other rows are held to current observed stacks but are not permanent Level 3 corpus truth.",
+      "resolution": {
+        "height": 2116,
+        "width": 3840
+      },
+      "sourceScanId": "scan-20260629T133508-956305927",
+      "status": "active",
+      "verifiedCorrections": [
+        {
+          "name": "Greater Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Perfect Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Perfect Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 12
+        }
+      ]
+    },
+    {
+      "assumedUnverifiedBaseline": true,
+      "category": "have",
+      "expected": "have",
+      "expectedMatches": [
+        {
+          "name": "Lesser Essence of Grounding",
+          "scanKind": "have"
+        },
+        {
+          "name": "Greater Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Greater Essence of the Mind",
+          "scanKind": "have"
+        },
+        {
+          "name": "Greater Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Greater Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Greater Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 24
+        },
+        {
+          "name": "Greater Essence of Thawing",
+          "scanKind": "have",
+          "stackSize": 27
+        },
+        {
+          "name": "Greater Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Greater Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 17
+        },
+        {
+          "name": "Greater Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Greater Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Greater Essence of Command",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Greater Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Perfect Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Perfect Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Perfect Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of Command",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Perfect Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 7
+        }
+      ],
+      "id": "have-20260629T141528-092227123-partial-essence-count-noise",
+      "image": "images/have-20260629T141528-092227123-partial-essence-count-noise.webp",
+      "reason": "Temporary partial Have regression: user reported Greater Essence of Flames being inflated by a bare M OCR suffix; this image also exercises punctuated leading counts and mask-only icon hallucinations. Other visible rows are held as provisional, not managed Level 3 corpus truth.",
+      "resolution": {
+        "height": 2116,
+        "width": 3840
+      },
+      "sourceScanId": "scan-20260629T141528-092227123",
+      "status": "active",
+      "verifiedCorrections": [
+        {
+          "name": "Greater Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 6
+        }
+      ]
+    },
+    {
+      "assumedUnverifiedBaseline": true,
+      "category": "have",
+      "expected": "have",
+      "expectedMatches": [
+        {
+          "name": "Greater Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Greater Essence of the Mind",
+          "scanKind": "have"
+        },
+        {
+          "name": "Greater Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Greater Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Greater Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 24
+        },
+        {
+          "name": "Greater Essence of Thawing",
+          "scanKind": "have",
+          "stackSize": 27
+        },
+        {
+          "name": "Greater Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Greater Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 17
+        },
+        {
+          "name": "Greater Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Greater Essence of Command",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Greater Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Greater Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Perfect Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Perfect Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Perfect Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of Command",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Perfect Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Essence of Hysteria",
+          "scanKind": "have"
+        },
+        {
+          "name": "Essence of the Abyss",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Essence of Insanity",
+          "scanKind": "have"
+        },
+        {
+          "name": "Essence of the Breach",
+          "scanKind": "have",
+          "stackSize": 3
+        }
+      ],
+      "id": "have-20260629T153932-397222080-partial-essence-edge-artifacts",
+      "image": "images/have-20260629T153932-397222080-partial-essence-edge-artifacts.webp",
+      "reason": "Temporary partial Have regression: user verified Perfect Essence of Ruin x4 and Perfect Essence of Opulence x3 after mask-only edge artifacts were read as inflated two-digit counts; other visible rows are held as provisional, not managed Level 3 corpus truth.",
+      "resolution": {
+        "height": 2116,
+        "width": 3840
+      },
+      "sourceScanId": "scan-20260629T153932-397222080",
+      "status": "active",
+      "verifiedCorrections": [
+        {
+          "name": "Perfect Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 3
+        }
+      ]
+    },
+    {
+      "assumedUnverifiedBaseline": true,
+      "category": "have",
+      "expected": "have",
+      "expectedMatches": [
+        {
+          "name": "Greater Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Greater Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 24
+        },
+        {
+          "name": "Greater Essence of Thawing",
+          "scanKind": "have",
+          "stackSize": 27
+        },
+        {
+          "name": "Greater Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Greater Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 17
+        },
+        {
+          "name": "Greater Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Greater Essence of Command",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Greater Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Greater Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Perfect Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Perfect Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Perfect Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of Command",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Perfect Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Perfect Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Essence of the Abyss",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Essence of Insanity",
+          "scanKind": "have"
+        },
+        {
+          "name": "Essence of Hysteria",
+          "scanKind": "have"
+        },
+        {
+          "name": "Essence of the Breach",
+          "scanKind": "have",
+          "stackSize": 3
+        }
+      ],
+      "id": "have-20260629T161326-553893788-partial-essence-mask-only-fallback",
+      "image": "images/have-20260629T161326-553893788-partial-essence-mask-only-fallback.webp",
+      "reason": "Temporary partial Have regression: user verified Perfect Essence of Haste x7 after a mask-only OCR artifact was read as x72, and stated the rest of the latest Have scan was correct; this is still held outside the managed corpus.",
+      "resolution": {
+        "height": 2116,
+        "width": 3840
+      },
+      "sourceScanId": "scan-20260629T161326-553893788",
+      "status": "active",
+      "verifiedCorrections": [
+        {
+          "name": "Perfect Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 7
+        }
+      ]
+    },
+    {
+      "assumedUnverifiedBaseline": true,
+      "category": "have",
+      "expected": "have",
+      "expectedMatches": [
+        {
+          "name": "Greater Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 24
+        },
+        {
+          "name": "Greater Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Greater Essence of Thawing",
+          "scanKind": "have",
+          "stackSize": 27
+        },
+        {
+          "name": "Greater Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Greater Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 17
+        },
+        {
+          "name": "Greater Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Greater Essence of Command",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Greater Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Greater Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Perfect Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Perfect Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Perfect Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of Command",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Perfect Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Perfect Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Essence of the Abyss",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Essence of Hysteria",
+          "scanKind": "have"
+        },
+        {
+          "name": "Essence of Insanity",
+          "scanKind": "have"
+        },
+        {
+          "name": "Essence of the Breach",
+          "scanKind": "have",
+          "stackSize": 3
+        }
+      ],
+      "id": "have-20260629T163208-885456516-partial-essence-verification-fallback",
+      "image": "images/have-20260629T163208-885456516-partial-essence-verification-fallback.webp",
+      "reason": "Temporary partial Have regression: user verified Perfect Essence of Ruin x4 after a mask-only OCR artifact was read as x44, and stated the rest of the latest Have scan was correct; this is held outside the managed corpus.",
+      "resolution": {
+        "height": 2116,
+        "width": 3840
+      },
+      "sourceScanId": "scan-20260629T163208-885456516",
+      "status": "active",
+      "verifiedCorrections": [
+        {
+          "name": "Perfect Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 4
+        }
+      ]
+    },
+    {
+      "assumedUnverifiedBaseline": true,
+      "category": "have",
+      "expected": "have",
+      "expectedMatches": [
+        {
+          "name": "Lesser Essence of Grounding",
+          "scanKind": "have"
+        },
+        {
+          "name": "Greater Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 12
+        },
+        {
+          "name": "Greater Essence of the Mind",
+          "scanKind": "have"
+        },
+        {
+          "name": "Greater Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Greater Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Greater Essence of the Infinite",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 24
+        },
+        {
+          "name": "Greater Essence of Thawing",
+          "scanKind": "have",
+          "stackSize": 27
+        },
+        {
+          "name": "Greater Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Greater Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 17
+        },
+        {
+          "name": "Greater Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Greater Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Greater Essence of Command",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Greater Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Greater Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Greater Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 10
+        },
+        {
+          "name": "Greater Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of the Mind",
+          "scanKind": "have",
+          "stackSize": 16
+        },
+        {
+          "name": "Perfect Essence of the Body",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Enhancement",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Flames",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Abrasion",
+          "scanKind": "have",
+          "stackSize": 2
+        },
+        {
+          "name": "Perfect Essence of Insulation",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Electricity",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Grounding",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Ice",
+          "scanKind": "have",
+          "stackSize": 3
+        },
+        {
+          "name": "Perfect Essence of Command",
+          "scanKind": "have",
+          "stackSize": 6
+        },
+        {
+          "name": "Perfect Essence of Ruin",
+          "scanKind": "have",
+          "stackSize": 4
+        },
+        {
+          "name": "Perfect Essence of Battle",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Alacrity",
+          "scanKind": "have",
+          "stackSize": 5
+        },
+        {
+          "name": "Perfect Essence of Sorcery",
+          "scanKind": "have",
+          "stackSize": 9
+        },
+        {
+          "name": "Perfect Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 7
+        },
+        {
+          "name": "Perfect Essence of Seeking",
+          "scanKind": "have",
+          "stackSize": 8
+        },
+        {
+          "name": "Perfect Essence of Opulence",
+          "scanKind": "have",
+          "stackSize": 3
+        }
+      ],
+      "id": "have-20260629T194258-733580630-partial-essence-mask-single-conflict",
+      "image": "images/have-20260629T194258-733580630-partial-essence-mask-single-conflict.webp",
+      "reason": "Temporary partial Have regression: user verified Perfect Essence of Haste x7. The original failure selected a mask-only 2 while a raw crop saw a conflicting 17; other rows are held to current observed stacks but are not permanent Level 3 corpus truth.",
+      "resolution": {
+        "height": 2116,
+        "width": 3840
+      },
+      "sourceScanId": "scan-20260629T194258-733580630",
+      "status": "active",
+      "verifiedCorrections": [
+        {
+          "name": "Perfect Essence of Haste",
+          "scanKind": "have",
+          "stackSize": 7
+        }
+      ]
+    }
+  ],
+  "description": "Temporary partial scanner regressions. These are not managed corpus cases and do not establish permanent Level 3 truth. They pin reviewed fixes while reporting contradictions in unverified baseline rows for manual review.",
+  "version": 1
+}

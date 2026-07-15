@@ -1,0 +1,466 @@
+{
+  "cases": [
+    {
+      "addedUtc": "2026-06-27T19:17:47Z",
+      "category": "multi-rune",
+      "expected": "runeshape",
+      "expectedCounts": {
+        "runeshape": 2
+      },
+      "expectedMatches": [
+        {
+          "name": "Regal Orb",
+          "scanKind": "runeshape",
+          "stackSize": 3
+        },
+        {
+          "name": "Vorana's Saga",
+          "scanKind": "runeshape",
+          "stackSize": 1
+        }
+      ],
+      "expectedRuneshapeRuneCounts": [
+        3,
+        6
+      ],
+      "expectedRuneshapeRuneSequences": [
+        [
+          "RemnantRareRuneEarth",
+          "RemnantRuneArcane",
+          "RemnantRuneTidal"
+        ],
+        [
+          "RemnantRuneMoon",
+          "RemnantRuneVision",
+          "RemnantRareRuneBond",
+          "RemnantRareRuneTime",
+          "RemnantRuneWisdom",
+          "RemnantRuneToxic"
+        ]
+      ],
+      "graduatedUtc": "2026-06-27T20:59:30Z",
+      "id": "multi-rune-20260627T191540-753468550",
+      "image": "images/multi-rune-20260627T191540-753468550.webp",
+      "observedAtAdmission": "runeshape",
+      "reason": "reviewed multi-rune runeshape scan",
+      "resolution": {
+        "height": 2160,
+        "width": 3840
+      },
+      "reviewedCurrentScannerUtc": "2026-06-27T19:17:47Z",
+      "sourceScanId": "scan-20260627T191540-753468550",
+      "status": "graduated",
+      "tags": [],
+      "verificationLevel": 3
+    },
+    {
+      "addedUtc": "2026-06-27T19:29:39Z",
+      "category": "combination",
+      "expected": "combination",
+      "expectedCounts": {
+        "expedition": 7,
+        "runeshape": 2
+      },
+      "expectedMatches": [
+        {
+          "name": "Cyclonic Alloy",
+          "scanKind": "expedition"
+        },
+        {
+          "name": "Orb of Alchemy",
+          "scanKind": "expedition"
+        },
+        {
+          "name": "Glassblower's Bauble",
+          "scanKind": "expedition",
+          "stackSize": 3
+        },
+        {
+          "name": "Expansive Alloy",
+          "scanKind": "expedition"
+        },
+        {
+          "name": "Glassblower's Bauble",
+          "scanKind": "expedition",
+          "stackSize": 2
+        },
+        {
+          "name": "Regal Orb",
+          "scanKind": "expedition",
+          "stackSize": 3
+        },
+        {
+          "name": "Exalted Orb",
+          "scanKind": "expedition",
+          "stackSize": 2
+        },
+        {
+          "name": "Regal Orb",
+          "scanKind": "runeshape",
+          "stackSize": 3
+        },
+        {
+          "name": "Vorana's Saga",
+          "scanKind": "runeshape",
+          "stackSize": 1
+        }
+      ],
+      "expectedRuneshapeRuneCounts": [
+        3,
+        6
+      ],
+      "expectedRuneshapeRuneSequences": [
+        [
+          "RemnantRareRuneEarth",
+          "RemnantRuneArcane",
+          "RemnantRuneTidal"
+        ],
+        [
+          "RemnantRuneMoon",
+          "RemnantRuneVision",
+          "RemnantRareRuneBond",
+          "RemnantRareRuneTime",
+          "RemnantRuneWisdom",
+          "RemnantRuneToxic"
+        ]
+      ],
+      "graduatedUtc": "2026-06-27T20:59:30Z",
+      "id": "combination-20260627T192731-010106121",
+      "image": "images/combination-20260627T192731-010106121.webp",
+      "observedAtAdmission": "combination",
+      "reason": "reviewed expedition plus multi-rune combination scan",
+      "resolution": {
+        "height": 2160,
+        "width": 3840
+      },
+      "reviewedCurrentScannerUtc": "2026-06-27T19:29:39Z",
+      "sourceScanId": "scan-20260627T192731-010106121",
+      "status": "graduated",
+      "tags": [],
+      "verificationLevel": 3
+    },
+    {
+      "addedUtc": "2026-06-27T19:55:52Z",
+      "category": "ritual",
+      "expected": "ritual",
+      "expectedCounts": {
+        "ritual": 8
+      },
+      "expectedMatches": [
+        {
+          "name": "Blood of the Warrior",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Resurgence",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Arakaali's Gift",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Midnight Braid",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Arakaali's Gift",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Briskwrap",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Midnight Braid",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Valako's Roar",
+          "scanKind": "ritual"
+        }
+      ],
+      "graduatedUtc": "2026-06-27T20:59:30Z",
+      "id": "ritual-20260627T195350-782627217",
+      "image": "images/ritual-20260627T195350-782627217.webp",
+      "observedAtAdmission": "ritual",
+      "reason": "verified latest ritual rewards after unmatched 1x1 fallback fix",
+      "resolution": {
+        "height": 2160,
+        "width": 3840
+      },
+      "reviewedCurrentScannerUtc": "2026-06-27T19:55:52Z",
+      "sourceScanId": "scan-20260627T195350-782627217",
+      "status": "graduated",
+      "tags": [],
+      "verificationLevel": 3
+    },
+    {
+      "addedUtc": "2026-06-27T20:15:57Z",
+      "category": "ritual",
+      "expected": "ritual",
+      "expectedCounts": {
+        "ritual": 10
+      },
+      "expectedMatches": [
+        {
+          "name": "Surefooted Sigil",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Breath of the Mountains",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Cracklecreep",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Igniferis",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Arakaali's Gift",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Greater Exaltation",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Breath of the Mountains",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Luminous Pace",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Oaksworn",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Birthright Buckle",
+          "scanKind": "ritual"
+        }
+      ],
+      "graduatedUtc": "2026-06-27T20:59:30Z",
+      "id": "ritual-20260627T201336-232091468",
+      "image": "images/ritual-20260627T201336-232091468.webp",
+      "observedAtAdmission": "ritual",
+      "reason": "verified ritual multi-slot shield and Igniferis recognition",
+      "resolution": {
+        "height": 2160,
+        "width": 3840
+      },
+      "reviewedCurrentScannerUtc": "2026-06-27T20:15:57Z",
+      "sourceScanId": "scan-20260627T201336-232091468",
+      "status": "graduated",
+      "tags": [],
+      "verificationLevel": 3
+    },
+    {
+      "addedUtc": "2026-06-27T20:58:34Z",
+      "category": "ritual",
+      "expected": "ritual",
+      "expectedCounts": {
+        "ritual": 26
+      },
+      "expectedMatches": [
+        {
+          "name": "Idol of the Sycophant",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Cracklecreep",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Chaotic Effectiveness",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Valako's Roar",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Resurgence",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of the Ancients",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Font of Power",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Chaotic Monsters",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Refreshment",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Umbilicus Immortalis",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Greater Exaltation",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Luminous Pace",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Gambling",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Bartering",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Carrion Call",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Ezomyte Peak",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Sinistral Exaltation",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Dextral Exaltation",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Refreshment",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Cursecarver",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Amelioration",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Icefang Orbit",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Resurgence",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Chaotic Effectiveness",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Chaotic Rarity",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of Gambling",
+          "scanKind": "ritual"
+        }
+      ],
+      "graduatedUtc": "2026-07-02T04:45:15Z",
+      "id": "ritual-20260627T204800-332645430",
+      "image": "images/ritual-20260627T204800-332645430.webp",
+      "observedAtAdmission": "ritual",
+      "reason": "reviewed ritual scan with scepter and Origin Spark false-positive fix",
+      "resolution": {
+        "height": 2160,
+        "width": 3840
+      },
+      "reviewedCurrentScannerUtc": "2026-06-27T20:58:34Z",
+      "sourceScanId": "scan-20260627T204800-332645430",
+      "status": "graduated",
+      "tags": [],
+      "verificationLevel": 3
+    },
+    {
+      "addedUtc": "2026-06-28T01:00:57Z",
+      "category": "ritual",
+      "expected": "ritual",
+      "expectedCounts": {
+        "ritual": 10
+      },
+      "expectedMatches": [
+        {
+          "name": "Meginord's Girdle",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "The Searing Touch",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Midnight Braid",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Omen of the Ancients",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Lifesprig",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Keelhaul",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Coward's Legacy",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Beira's Anguish",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Soul Tether",
+          "scanKind": "ritual"
+        },
+        {
+          "name": "Blood of the Warrior",
+          "scanKind": "ritual"
+        }
+      ],
+      "graduatedUtc": "2026-07-02T04:45:15Z",
+      "id": "ritual-20260628T004150-636611912",
+      "image": "images/ritual-20260628T004150-636611912.webp",
+      "observedAtAdmission": "ritual",
+      "reason": "fixed sparse long ritual item",
+      "resolution": {
+        "height": 2160,
+        "width": 3840
+      },
+      "reviewedCurrentScannerUtc": "2026-06-28T01:00:57Z",
+      "sourceScanId": "scan-20260628T004150-636611912",
+      "status": "graduated",
+      "tags": [],
+      "verificationLevel": 3
+    }
+  ],
+  "maxActivePerCategory": 16,
+  "maxActivePerCategoryOverrides": {
+    "ritual": 50
+  },
+  "probationRuns": 5,
+  "retentionFloorsByLevel": {
+    "1": 3,
+    "2": 3,
+    "3": 10
+  },
+  "version": 2
+}

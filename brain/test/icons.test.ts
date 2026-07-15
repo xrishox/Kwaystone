@@ -12,12 +12,22 @@ beforeEach(() => {
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
   delete process.env.POE2_ICON_CACHE;
+  delete process.env.XDG_CACHE_HOME;
   vi.unstubAllGlobals();
 });
 
 const URL1 = "https://web.poecdn.com/gen/image/abc/Foo.png";
 
 describe("resolveIcon", () => {
+  it("uses XDG_CACHE_HOME when no explicit icon cache is configured", async () => {
+    delete process.env.POE2_ICON_CACHE;
+    process.env.XDG_CACHE_HOME = dir;
+    vi.resetModules();
+    const { iconCachePath } = await import("../src/icons");
+
+    expect(iconCachePath(URL1).startsWith(path.join(dir, "waystone", "icons"))).toBe(true);
+  });
+
   it("downloads and caches on miss", async () => {
     const fetchSpy = vi.fn(async () => new Response(Buffer.from("png-bytes")));
     vi.stubGlobal("fetch", fetchSpy);

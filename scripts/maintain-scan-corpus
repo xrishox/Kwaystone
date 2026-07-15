@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+"""Graduate probation cases and enforce managed scanner corpus limits."""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _common  # noqa: E402
+
+_common.bootstrap()
+ROOT = _common.ROOT
+
+from poed import scan_corpus  # noqa: E402
+
+
+def _default_corpus_root() -> Path:
+    return ROOT / "poed/tests/fixtures/scanner-corpus"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--corpus-root", type=Path, default=_default_corpus_root())
+    parser.add_argument("--history", type=Path, default=scan_corpus.history_path())
+    parser.add_argument(
+        "--keep-archived-images",
+        action="store_true",
+        help="archive metadata but leave evicted image files on disk",
+    )
+    args = parser.parse_args()
+
+    index = scan_corpus.load_index(args.corpus_root)
+    history = scan_corpus.load_history(args.history)
+    graduated = scan_corpus.graduate_probation(index, history)
+    archived = scan_corpus.enforce_graduated_limits(
+        args.corpus_root,
+        index,
+        history,
+        delete_images=not args.keep_archived_images,
+    )
+    scan_corpus.write_index(args.corpus_root, index)
+    for case_id in graduated:
+        print(f"graduated {case_id}")
+    for case_id in archived:
+        print(f"archived {case_id}")
+    deficits = scan_corpus.retention_deficits(index)
+    for category, by_level in sorted(deficits.items()):
+        missing = ", ".join(
+            f"level {level}: {count}"
+            for level, count in sorted(by_level.items())
+        )
+        print(f"deficit {category}: {missing}")
+    if not graduated and not archived and not deficits:
+        print("corpus already within policy")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

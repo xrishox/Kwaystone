@@ -1,9 +1,9 @@
 {
-  "name": "poe2-overlay-brain",
+  "name": "kwaystone-brain",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "PoE brains: item parser, trade-query builder, trade2/bulk API client. Vendored from Exiled Exchange 2 (MIT).",
+  "description": "Kwaystone brain: scanner pricing, cached game data, and embedded Exiled Exchange 2 price-check host.",
   "scripts": {
     "build": "esbuild src/server.ts --bundle --platform=node --format=esm --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\" --outfile=dist/server.mjs",
     "make-index-files": "cd vendor/ee2 && node tools/make-index-files.mjs",
@@ -20,12 +20,12 @@
     "vue": "^3.5.38"
   },
   "devDependencies": {
-    "@types/luxon": "^3.0.0",
-    "@types/node": "^20.0.0",
+    "@types/luxon": "^3.7.2",
+    "@types/node": "^22.19.21",
     "@types/object-hash": "^3.0.0",
     "esbuild": "^0.28.1",
-    "typescript": "^6.0.3",
     "tsx": "^4.7.0",
-    "vitest": "^4.1.8"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   }
 }

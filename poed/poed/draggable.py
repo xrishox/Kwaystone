@@ -51,6 +51,59 @@ def monitor_geometry() -> tuple[int, int]:
     return (1920, 1080)
 
 
+def monitor_for_rect(rect):
+    """Return the GDK monitor matching a compositor output rect, if known."""
+    if rect is None:
+        return None
+    try:
+        monitors = Gdk.Display.get_default().get_monitors()
+        for i in range(monitors.get_n_items()):
+            mon = monitors.get_item(i)
+            if mon is None:
+                continue
+            geo = mon.get_geometry()
+            if (
+                int(geo.x) == int(rect.x)
+                and int(geo.y) == int(rect.y)
+                and int(geo.width) == int(rect.w)
+                and int(geo.height) == int(rect.h)
+            ):
+                return mon
+    except Exception:
+        return None
+    return None
+
+
+def set_monitor_for_rect(win, rect) -> bool:
+    """Pin a layer-shell window to the monitor matching a compositor rect.
+
+    Layer-shell margins are relative to one output, not the whole workspace.
+    Matching the game output before applying saved margins prevents a coordinate
+    from a 2160p output from placing the panel off-screen on a 1440p output.
+    """
+    mon = monitor_for_rect(rect)
+    if mon is None:
+        return False
+    try:
+        LayerShell.set_monitor(win, mon)
+        return True
+    except Exception:
+        return False
+
+
+def window_monitor_size(win) -> tuple[int, int]:
+    """Size of the output currently backing a layer-shell window."""
+    try:
+        mon = LayerShell.get_monitor(win)
+        if mon is not None:
+            geo = mon.get_geometry()
+            if geo.width > 0 and geo.height > 0:
+                return int(geo.width), int(geo.height)
+    except Exception:
+        pass
+    return monitor_geometry()
+
+
 def _parse_cursorpos(raw: str) -> tuple[int, int] | None:
     """Parse `hyprctl cursorpos` output ("x, y", e.g. "2314, 880"); None on garbage."""
     parts = raw.strip().split(",")
@@ -104,6 +157,32 @@ def clamp_position(x, y, mon_w, mon_h, win_w, win_h):
     return (max(0, min(int(x), max_x)), max(0, min(int(y), max_y)))
 
 
+def clamp_window_position(
+    win,
+    x: int,
+    y: int,
+    *,
+    default_size: tuple[int, int] = (400, 300),
+    monitor_size: tuple[int, int] | None = None,
+) -> tuple[int, int]:
+    """Clamp a layer-shell margin position to its actual output.
+
+    GTK reports 0/1px dimensions before a surface has been measured. In that
+    phase, use a caller-provided conservative default size so stale saved
+    coordinates still get moved back onto the visible output before present().
+    """
+    try:
+        win_w, win_h = int(win.get_width()), int(win.get_height())
+    except Exception:
+        win_w, win_h = 0, 0
+    if win_w <= 1:
+        win_w = int(default_size[0])
+    if win_h <= 1:
+        win_h = int(default_size[1])
+    mon_w, mon_h = monitor_size if monitor_size is not None else window_monitor_size(win)
+    return clamp_position(x, y, mon_w, mon_h, win_w, win_h)
+
+
 def anchor_top_left(win, x: int, y: int) -> None:
     """Anchor the surface to TOP+LEFT and place it via margins (x=LEFT, y=TOP)."""
     LayerShell.set_anchor(win, LayerShell.Edge.TOP, True)
@@ -118,7 +197,7 @@ def set_position(win, x: int, y: int) -> None:
     LayerShell.set_margin(win, LayerShell.Edge.TOP, int(y))
 
 
-def make_drag_handle(win, get_xy, on_moved) -> Gtk.Widget:
+def make_drag_handle(win, get_xy, on_moved, desktop=None) -> Gtk.Widget:
     """A grab strip; dragging it moves `win` via margins.
 
     get_xy() -> (x, y) current committed position.
@@ -149,13 +228,16 @@ def make_drag_handle(win, get_xy, on_moved) -> Gtk.Widget:
         live["mon"] = monitor_geometry()
         live["wh"] = (win.get_width(), win.get_height())
         live["last_poll"] = 0
-        c = cursor_pos()
+        c = desktop.cursor_pos() if desktop is not None else cursor_pos()
         if c is None:
             live["ox"] = None                # no compositor cursor; will fall back
             return
         # output origin = top-left of the monitor the surface sits on (the one
         # under the cursor at grab). margin is relative to that origin.
-        live["ox"], live["oy"] = monitor_origin_at(*c)
+        if desktop is not None:
+            live["ox"], live["oy"] = desktop.monitor_origin_at(*c)
+        else:
+            live["ox"], live["oy"] = monitor_origin_at(*c)
 
     def on_update(_g, off_x, off_y):
         now = GLib.get_monotonic_time()
@@ -167,7 +249,7 @@ def make_drag_handle(win, get_xy, on_moved) -> Gtk.Widget:
             # half-works on non-Hypr compositors.
             nx, ny = live["x"] + off_x, live["y"] + off_y
         else:
-            c = cursor_pos()
+            c = desktop.cursor_pos() if desktop is not None else cursor_pos()
             if c is None:
                 return
             # Absolute frame: panel's top-left should sit at cursor minus where

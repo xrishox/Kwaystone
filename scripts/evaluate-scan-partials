@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+"""Evaluate temporary partial scanner regressions outside the managed corpus."""
+
+from __future__ import annotations
+
+import argparse
+import sys
+import time
+from collections import Counter
+from pathlib import Path
+from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _common  # noqa: E402
+
+_common.bootstrap()
+ROOT = _common.ROOT
+
+import cv2  # noqa: E402
+
+from poed import expeditionscan, scan_corpus, scan_review  # noqa: E402
+from poed.scanners import core  # noqa: E402
+
+
+def _match_key(match: dict[str, Any], fallback: str) -> tuple[str, str, int]:
+    try:
+        stack = int(match.get("stackSize") or 1)
+    except (TypeError, ValueError):
+        stack = 1
+    return (
+        str(match.get("scanKind") or fallback),
+        str(match.get("name") or ""),
+        max(1, stack),
+    )
+
+
+def _counter_delta(
+    expected: Counter[tuple[str, str, int]],
+    actual: Counter[tuple[str, str, int]],
+) -> tuple[Counter[tuple[str, str, int]], Counter[tuple[str, str, int]]]:
+    return expected - actual, actual - expected
+
+
+def _format_key(key: tuple[str, str, int], count: int) -> str:
+    kind, name, stack = key
+    suffix = f" ({count} copies)" if count > 1 else ""
+    return f"{kind} {name} x{stack}{suffix}"
+
+
+def _evaluate_exact_matches(
+    case: dict[str, Any],
+    actual: str,
+    matches: list[dict[str, Any]],
+) -> list[str]:
+    expected = str(case.get("expected") or "")
+    reasons = []
+    if actual != expected:
+        reasons.append(f"routing: expected {expected}, actual {actual}")
+
+    expected_matches = case.get("expectedMatches") or []
+    if not isinstance(expected_matches, list):
+        return [*reasons, "schema: expectedMatches must be a list"]
+
+    expected_counter = Counter(
+        _match_key(item if isinstance(item, dict) else {}, expected)
+        for item in expected_matches
+    )
+    actual_counter = Counter(_match_key(match, actual) for match in matches)
+    missing, unexpected = _counter_delta(expected_counter, actual_counter)
+    for key, count in sorted(missing.items()):
+        reasons.append(f"missing: {_format_key(key, count)}")
+    for key, count in sorted(unexpected.items()):
+        reasons.append(f"unexpected: {_format_key(key, count)}")
+    return reasons
+
+
+def _scan(image, cfg: dict[str, Any], rows: dict[str, Any]) -> tuple[str, list[dict[str, Any]]]:
+    actual, selections, ctx = scan_review.scan_route(image, cfg, rows)
+    if not selections:
+        return actual, []
+    result = core._combined_result([
+        selection.scanner.scan(ctx, selection.detection)
+        for selection in selections
+    ])
+    return actual, result.matches
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--partial-root",
+        type=Path,
+        default=ROOT / "poed/tests/fixtures/scanner-partials",
+        help="temporary partial regression root",
+    )
+    parser.add_argument(
+        "--case",
+        dest="case_id",
+        help="evaluate only one partial case id",
+    )
+    parser.add_argument(
+        "--repeat",
+        type=int,
+        default=1,
+        help="repeat each selected case this many times with one warmed OCR worker",
+    )
+    args = parser.parse_args()
+    if args.repeat < 1:
+        raise SystemExit("--repeat must be at least 1")
+
+    # scan_corpus.load_index only adds corpus-policy defaults the partials
+    # evaluator never reads; the shared "cases" list shape is identical.
+    index = scan_corpus.load_index(args.partial_root)
+    cases = [
+        case for case in index.get("cases", [])
+        if isinstance(case, dict)
+        and case.get("status") == "active"
+        and (args.case_id is None or case.get("id") == args.case_id)
+    ]
+    if not cases:
+        print("checked=0 failures=0")
+        return 0
+
+    cfg, rows, _source = scan_review.review_context()
+    failures = 0
+    checked = 0
+    expeditionscan.warm()
+    try:
+        for iteration in range(1, args.repeat + 1):
+            for case in cases:
+                checked += 1
+                image_path = args.partial_root / str(case.get("image") or "")
+                image = cv2.imread(str(image_path))
+                started = time.perf_counter()
+                if image is None:
+                    failures += 1
+                    print(
+                        f"FAIL {case.get('id') or image_path} repeat={iteration} "
+                        "reasons=read: unreadable image"
+                    )
+                    continue
+                try:
+                    actual, matches = _scan(image, cfg, rows)
+                    reasons = _evaluate_exact_matches(case, actual, matches)
+                except Exception as e:  # noqa: BLE001 - evaluator must report scanner failures
+                    actual = "error"
+                    matches = []
+                    reasons = [f"scan: {type(e).__name__}: {e}"]
+                elapsed = time.perf_counter() - started
+                reason_text = " reasons=" + " | ".join(reasons) if reasons else ""
+                status = "FAIL" if reasons else "PASS"
+                print(
+                    f"{status} {case.get('id') or image_path} repeat={iteration} "
+                    f"expected={case.get('expected')} actual={actual} "
+                    f"matches={len(matches)} {elapsed:.3f}s{reason_text}",
+                    flush=True,
+                )
+                if reasons:
+                    failures += 1
+    finally:
+        expeditionscan.stop()
+
+    print(f"checked={checked} failures={failures}")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

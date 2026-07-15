@@ -1,5 +1,5 @@
 name: Feature request
-description: Something Waystone should do but doesn't
+description: Something Kwaystone should do but doesn't
 labels: [enhancement]
 body:
   - type: textarea

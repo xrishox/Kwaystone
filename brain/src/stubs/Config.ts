@@ -24,7 +24,8 @@ let current: BrainConfig = {
   sessionId: process.env.POE2_SESSID || undefined,
 };
 
-// In-place mutation so vendored code that holds a live reference to AppConfig() (e.g. Leagues.ts) sees updates.
+// Test seam: tests mutate the live config in place (e.g. sessionId) between
+// Host.proxy calls. No production code calls this.
 export function setBrainConfig(c: Partial<BrainConfig>) { Object.assign(current, c); }
 
 export function AppConfig(): BrainConfig;

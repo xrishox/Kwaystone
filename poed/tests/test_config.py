@@ -41,14 +41,22 @@ def test_load_existing_file_not_overwritten(tmp_path):
 
 
 def test_default_path_is_waystone(tmp_path, monkeypatch):
+    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
     monkeypatch.setattr(config.pathlib.Path, "home", lambda: tmp_path)
 
     assert config.default_path() == tmp_path / ".config/waystone/config.toml"
 
 
+def test_default_path_honors_xdg_config_home(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    assert config.default_path() == tmp_path / "config/waystone/config.toml"
+
+
 def test_default_path_migrates_old_dir(tmp_path, monkeypatch):
     """Pre-rename installs keep their config: poe2-overlay/ moves to waystone/."""
     monkeypatch.setattr(config.pathlib.Path, "home", lambda: tmp_path)
+    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
     old = tmp_path / ".config/poe2-overlay"
     old.mkdir(parents=True)
     (old / "config.toml").write_text('league = "Standard"\n')
@@ -96,9 +104,79 @@ def test_save_league_creates_template_when_no_file(tmp_path):
     assert p.stat().st_mode & 0o777 == 0o600
 
 
+def test_save_ocr_settings_replaces_lines_keeps_comments(tmp_path):
+    p = tmp_path / "config.toml"
+    p.write_text(
+        "# my settings\n"
+        'ocr_device = "auto"  # hardware default\n'
+        'ocr_model_size = "auto"\n'
+        'ocr_quantity_model_size = "auto"\n'
+    )
+
+    config.save_ocr_settings(
+        p,
+        device="cuda",
+        model_size="small",
+        quantity_model_size="medium",
+    )
+
+    assert p.read_text() == (
+        "# my settings\n"
+        'ocr_device = "cuda"  # hardware default\n'
+        'ocr_model_size = "small"\n'
+        'ocr_quantity_model_size = "medium"\n'
+    )
+
+
+def test_load_validates_ocr_settings(tmp_path):
+    p = tmp_path / "config.toml"
+    p.write_text('ocr_device = "vulkan"\n')
+
+    with pytest.raises(SystemExit, match="ocr_device"):
+        config.load(p)
+
+
+def test_apply_ocr_environment_sets_helper_env(monkeypatch):
+    monkeypatch.delenv("WAYSTONE_PADDLE_DEVICE", raising=False)
+    monkeypatch.delenv("WAYSTONE_PADDLE_RECOGNITION_MODEL_SIZE", raising=False)
+    monkeypatch.delenv("WAYSTONE_PADDLE_QUANTITY_MODEL_SIZE", raising=False)
+    cfg = config.AppConfig.from_mapping(
+        {
+            "ocr_device": "cuda",
+            "ocr_model_size": "small",
+            "ocr_quantity_model_size": "medium",
+        }
+    )
+
+    config.apply_ocr_environment(cfg)
+
+    assert config.os.environ["WAYSTONE_PADDLE_DEVICE"] == "gpu:0"
+    assert config.os.environ["WAYSTONE_PADDLE_RECOGNITION_MODEL_SIZE"] == "small"
+    assert config.os.environ["WAYSTONE_PADDLE_QUANTITY_MODEL_SIZE"] == "medium"
+
+
 def test_load_invalid_toml_exits(tmp_path):
     p = tmp_path / "config.toml"
     p.write_text("league = [unclosed\n")
 
     with pytest.raises(SystemExit):
         config.load(p)
+
+
+def test_load_validates_known_value_types(tmp_path):
+    p = tmp_path / "config.toml"
+    p.write_text('unique_min_exalted = "many"\n')
+
+    with pytest.raises(SystemExit, match="unique_min_exalted must be a number"):
+        config.load(p)
+
+
+def test_config_keeps_mapping_compatibility_and_validates_mutation():
+    cfg = config.AppConfig.from_mapping({"league": "Standard", "custom": True})
+
+    assert cfg["league"] == "Standard"
+    assert cfg["custom"] is True
+    cfg["league"] = "Hardcore"
+    assert cfg.league == "Hardcore"
+    with pytest.raises(ValueError):
+        cfg["unique_scan_min_price"] = -1

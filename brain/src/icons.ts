@@ -5,7 +5,11 @@ import path from "node:path";
 
 const cacheDir = () =>
   process.env.POE2_ICON_CACHE ??
-  path.join(homedir(), ".cache", "waystone", "icons");
+  path.join(
+    process.env.XDG_CACHE_HOME ?? path.join(homedir(), ".cache"),
+    "waystone",
+    "icons",
+  );
 
 const inflight = new Map<string, Promise<string | null>>();
 let warnedOnce = false;
@@ -77,31 +81,4 @@ async function download(url: string, file: string): Promise<string | null> {
     }
     return null;
   }
-}
-
-/**
- * Trade tag (e.g. "divine") -> poecdn icon URL via vendored data.
- * PRECONDITION: initBrainData() must have run (server.ts awaits it before
- * listening); the vendored lookups are empty no-ops until then and every
- * tag would silently resolve to undefined.
- */
-export async function currencyIconUrl(tag: string): Promise<string | undefined> {
-  const { TRADE_TAG_TO_REF, ITEM_BY_REF } = await import("@/assets/data");
-  const ref = TRADE_TAG_TO_REF.get(tag);
-  if (!ref) return undefined;
-  return ITEM_BY_REF("ITEM", ref)?.[0]?.icon;
-}
-
-/**
- * Trade tag -> local cached icon path, or null. The common idiom: resolve the
- * tag to its poecdn url, then cache that url to disk. Same initBrainData
- * precondition as currencyIconUrl.
- */
-export async function resolveCurrencyIcon(tag: string): Promise<string | null> {
-  return resolveIcon(await currencyIconUrl(tag));
-}
-
-/** Round to 1 decimal place. */
-export function round1(n: number): number {
-  return Math.round(n * 10) / 10;
 }

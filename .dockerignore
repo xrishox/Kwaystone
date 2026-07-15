@@ -1,0 +1,13 @@
+.git
+.github
+.cache
+.venv
+brain/node_modules
+brain/dist
+poed/.pytest_cache
+poed/dist
+poed/*.egg-info
+dist
+packaging/src
+packaging/pkg
+packaging/waystone-git

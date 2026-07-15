@@ -61,17 +61,19 @@ def test_ping_roundtrip(tmp_path):
         assert b.request({"cmd": "ping"}) == "pong"
     finally:
         b.stop()
+    assert not os.path.exists(sock)
 
 
-def test_parse_error_is_clean(tmp_path):
+def test_error_roundtrip_is_clean(tmp_path):
+    """Socket protocol test: after a good ping, a brain-side error surfaces
+    as a clean RuntimeError (not a hang or a broken connection)."""
     sock = str(tmp_path / "b.sock")
     brain_dir = os.path.join(os.path.dirname(__file__), "../../brain")
     b = Brain(brain_dir=brain_dir, socket_path=sock)
     b.start()
     try:
-        b.request({"cmd": "parse", "clipboard": "garbage"})
-        assert False, "should raise"
-    except RuntimeError as e:
-        assert "not an item" in str(e)
+        assert b.request({"cmd": "ping"}) == "pong"
+        with pytest.raises(RuntimeError, match="unknown cmd"):
+            b.request({"cmd": "no-such-cmd"})
     finally:
         b.stop()

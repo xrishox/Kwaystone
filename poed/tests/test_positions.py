@@ -1,25 +1,12 @@
-import json
-
 from poed.positions import PositionStore, default_path
 
 
 def test_default_path_is_waystone(tmp_path, monkeypatch):
+    """Positions-specific path only; the poe2-overlay->waystone dir migration
+    mechanics are config.migrate_dir's job, covered by test_config.py."""
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
 
     assert default_path() == tmp_path / "waystone/positions.json"
-
-
-def test_default_path_migrates_old_dir(tmp_path, monkeypatch):
-    """Pre-rename installs keep saved positions: poe2-overlay/ moves to waystone/."""
-    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
-    old = tmp_path / "poe2-overlay"
-    old.mkdir()
-    (old / "positions.json").write_text(json.dumps({"panel": {"x": 7, "y": 9}}))
-
-    s = PositionStore(default_path())
-
-    assert s.get("panel") == (7, 9)
-    assert not old.exists()
 
 
 def test_missing_file_returns_none(tmp_path):
@@ -39,9 +26,9 @@ def test_set_then_get_roundtrip(tmp_path):
 def test_independent_keys(tmp_path):
     s = PositionStore(tmp_path / "positions.json")
     s.set("panel", 10, 20)
-    s.set("login", 30, 40)
+    s.set("secondary", 30, 40)
     assert s.get("panel") == (10, 20)
-    assert s.get("login") == (30, 40)
+    assert s.get("secondary") == (30, 40)
 
 
 def test_corrupt_file_degrades_to_empty(tmp_path):

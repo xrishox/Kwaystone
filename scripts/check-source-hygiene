@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""Check that release-critical source is tracked and generated output is not.
+
+The AppImage build context is the working tree, so untracked source files can
+silently make a local artifact work while a fresh clone is missing code/data.
+This script catches that before release builds.
+"""
+
+from __future__ import annotations
+
+import argparse
+import fnmatch
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+SOURCE_PATTERNS = (
+    ".dockerignore",
+    ".github/workflows/*",
+    ".gitignore",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "README.md",
+    "brain/package.json",
+    "brain/package-lock.json",
+    "brain/src/*.ts",
+    "brain/src/**/*.ts",
+    "brain/test/*.ts",
+    "brain/test/**/*.ts",
+    "docs/*.md",
+    "docs/**/*.md",
+    "packaging/**/*",
+    "poed/pyproject.toml",
+    "poed/poed/*.py",
+    "poed/poed/**/*.py",
+    "poed/poed/data/**/*",
+    "poed/tests/*.py",
+    "poed/tests/**/*.py",
+    "poed/tests/*.json",
+    "poed/tests/**/*.json",
+    "poed/tests/fixtures/**/*",
+    "requirements/**/*",
+    "scripts/*",
+)
+
+MIRRORED_FILES = (
+    ("AGENTS.md", "CLAUDE.md"),
+)
+
+GENERATED_TRACKED_PATTERNS = (
+    "*.AppImage",
+    "*.pyc",
+    "*.pyo",
+    "*.whl",
+    "**/__pycache__/**",
+    "**/.pytest_cache/**",
+    "**/.ruff_cache/**",
+    "**/*.egg-info/**",
+    ".cache/**",
+    ".venv/**",
+    "brain/node_modules/**",
+    # fnmatch is not path-aware: "*" crosses "/" freely, so "*/build/*"
+    # matches a build/ directory at any nested depth while "build/*" covers
+    # one at the repository root. Together they catch tracked build/dist
+    # trees anywhere in the repo without enumerating parent directories.
+    "build/*",
+    "*/build/*",
+    "dist/*",
+    "*/dist/*",
+)
+
+
+def git_lines(*args: str) -> list[str]:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise SystemExit(result.stderr.strip() or f"git {' '.join(args)} failed")
+    return [line for line in result.stdout.splitlines() if line]
+
+
+def matches_any(path: str, patterns: tuple[str, ...]) -> bool:
+    return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
+
+
+def mirrored_file_problems() -> list[str]:
+    problems = []
+    for left, right in MIRRORED_FILES:
+        left_path = ROOT / left
+        right_path = ROOT / right
+        if not left_path.exists() or not right_path.exists():
+            missing = [
+                path
+                for path, file_path in ((left, left_path), (right, right_path))
+                if not file_path.exists()
+            ]
+            problems.append(f"{left} and {right} mirror missing file(s): {', '.join(missing)}")
+            continue
+        if left_path.read_bytes() != right_path.read_bytes():
+            problems.append(f"{left} and {right} must be byte-identical")
+    return problems
+
+
+def readme_screenshot_problems() -> list[str]:
+    """Every screenshots/ path referenced by README.md must exist on disk."""
+    readme = ROOT / "README.md"
+    if not readme.exists():
+        return ["README.md is missing"]
+    references = sorted(
+        set(re.findall(r"screenshots/[A-Za-z0-9._-]+", readme.read_text(encoding="utf-8")))
+    )
+    if not references:
+        return ["README.md references no screenshots/ images; expected at least one"]
+    return [
+        f"README.md references missing image: {reference}"
+        for reference in references
+        if not (ROOT / reference).is_file()
+    ]
+
+
+def brain_lock_problems() -> list[str]:
+    """Every brain dependency must appear in the lockfile with the same spec."""
+    package = json.loads((ROOT / "brain" / "package.json").read_text(encoding="utf-8"))
+    lock = json.loads((ROOT / "brain" / "package-lock.json").read_text(encoding="utf-8"))
+    lock_packages = lock.get("packages", {})
+    lock_root = lock_packages.get("", {})
+    problems = []
+    for section in ("dependencies", "devDependencies"):
+        for name, spec in (package.get(section) or {}).items():
+            if f"node_modules/{name}" not in lock_packages:
+                problems.append(
+                    f"brain/package-lock.json packages section is missing {name}"
+                )
+                continue
+            lock_spec = (lock_root.get(section) or {}).get(name)
+            if lock_spec != spec:
+                problems.append(
+                    f"brain lock pins {name} as {lock_spec!r}, "
+                    f"but package.json wants {spec!r}"
+                )
+    return problems
+
+
+PYTHON_PIN_SOURCES = (
+    ("scripts/bootstrap", re.compile(r'^PYTHON_VERSION="?([0-9]+\.[0-9]+\.[0-9]+)"?', re.M)),
+    (
+        "packaging/appimage/inner-build.sh",
+        re.compile(r'^PYTHON_VERSION="?([0-9]+\.[0-9]+\.[0-9]+)"?', re.M),
+    ),
+    (
+        ".github/workflows/test.yml",
+        re.compile(
+            r"(?:python-version:|uv python install|uv venv --python)\s*"
+            r"([0-9]+\.[0-9]+\.[0-9]+)"
+        ),
+    ),
+)
+
+
+def python_pin_problems() -> list[str]:
+    """The Python version pinned by bootstrap, AppImage, and CI must agree."""
+    problems = []
+    pins: dict[str, str] = {}
+    for rel_path, pattern in PYTHON_PIN_SOURCES:
+        path = ROOT / rel_path
+        if not path.exists():
+            problems.append(f"{rel_path} is missing; cannot verify its Python pin")
+            continue
+        versions = sorted(set(pattern.findall(path.read_text(encoding="utf-8"))))
+        if not versions:
+            problems.append(f"{rel_path} declares no pinned Python version")
+        elif len(versions) > 1:
+            problems.append(
+                f"{rel_path} pins conflicting Python versions: {', '.join(versions)}"
+            )
+        else:
+            pins[rel_path] = versions[0]
+    if len(set(pins.values())) > 1:
+        detail = ", ".join(f"{path}={version}" for path, version in sorted(pins.items()))
+        problems.append(f"Python version pins disagree: {detail}")
+    return problems
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="return non-zero when hygiene problems are found",
+    )
+    args = parser.parse_args()
+
+    untracked = [
+        path
+        for path in git_lines("ls-files", "--others", "--exclude-standard")
+        if matches_any(path, SOURCE_PATTERNS)
+    ]
+    tracked_generated = [
+        path
+        for path in git_lines("ls-files")
+        if matches_any(path, GENERATED_TRACKED_PATTERNS)
+    ]
+    sections = (
+        ("untracked release-critical files", untracked),
+        ("tracked generated/build files", tracked_generated),
+        ("mirrored file problems", mirrored_file_problems()),
+        ("README screenshot problems", readme_screenshot_problems()),
+        ("brain lockfile problems", brain_lock_problems()),
+        ("Python pin problems", python_pin_problems()),
+    )
+
+    if not any(problems for _, problems in sections):
+        print("source hygiene ok")
+        return 0
+
+    for title, problems in sections:
+        if problems:
+            print(f"{title}:", file=sys.stderr)
+            for problem in problems:
+                print(f"  {problem}", file=sys.stderr)
+
+    if args.strict:
+        return 1
+    print("source hygiene issues reported; use --strict to fail", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

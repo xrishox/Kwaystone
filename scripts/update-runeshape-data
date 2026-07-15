@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+"""Refresh vendored Expedition runeshape data from poe2db.tw.
+
+Runtime scanning must not depend on the network. This script is a developer
+tool: it downloads the canonical rune icons and the first Runeshape
+Combinations table, then writes compact package data consumed by the app.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from html.parser import HTMLParser
+from pathlib import Path
+from urllib.parse import urljoin
+from urllib.request import Request, urlopen
+
+
+SOURCE_URL = "https://poe2db.tw/us/Runeshape_Combinations"
+OUTPUT_DIR = Path(__file__).resolve().parents[1] / "poed" / "poed" / "data"
+COMBINATION_COUNT = 321
+USER_AGENT = "Mozilla/5.0"
+
+
+class _TokenParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.tokens: list[dict] = []
+        self._in_anchor = False
+        self._anchor_text = ""
+        self._anchor_href = ""
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        data = dict(attrs)
+        if tag == "a":
+            self._in_anchor = True
+            self._anchor_text = ""
+            self._anchor_href = str(data.get("href") or "")
+        if tag == "img":
+            alt = str(data.get("alt") or "")
+            src = str(data.get("src") or data.get("data-src") or "")
+            if "RemnantRune" in alt or "RemnantRareRune" in alt:
+                self.tokens.append({
+                    "type": "rune",
+                    "alt": alt,
+                    "src": urljoin(SOURCE_URL, src),
+                })
+
+    def handle_data(self, data: str) -> None:
+        text = " ".join(data.split())
+        if self._in_anchor:
+            self._anchor_text += data
+        elif text:
+            self.tokens.append({"type": "text", "text": text})
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "a" and self._in_anchor:
+            text = " ".join(self._anchor_text.split())
+            if text:
+                self.tokens.append({
+                    "type": "anchor",
+                    "text": text,
+                    "href": self._anchor_href,
+                })
+            self._in_anchor = False
+            self._anchor_text = ""
+            self._anchor_href = ""
+
+
+def _fetch_text(url: str) -> str:
+    request = Request(url, headers={"User-Agent": USER_AGENT})
+    with urlopen(request, timeout=30) as response:
+        return response.read().decode("utf-8", "replace")
+
+
+def _fetch_bytes(url: str) -> bytes:
+    request = Request(
+        url,
+        headers={
+            "Referer": SOURCE_URL,
+            "User-Agent": USER_AGENT,
+        },
+    )
+    with urlopen(request, timeout=30) as response:
+        return response.read()
+
+
+def _parse_level(text: str) -> tuple[int | None, int | None]:
+    match = re.fullmatch(r"Lv(\d+)(?:-(\d+)|\+)?", text)
+    if not match:
+        return None, None
+    start = int(match.group(1))
+    end = int(match.group(2)) if match.group(2) else None
+    return start, end
+
+
+def _parse_entries(tokens: list[dict]) -> list[dict]:
+    ignored_anchors = {
+        "Act",
+        "Ascendancy Classes",
+        "Crafting",
+        "Desecrated Modifiers",
+        "Economy",
+        "Gem",
+        "Item",
+        "Keywords",
+        "Lineage Supports",
+        "Modifiers",
+        "Passive Skill Tree",
+        "Patreon",
+        "PoE DB",
+        "Quest",
+        "Skill Gems",
+        "Spirit Gems",
+        "Support Gems",
+        "US English",
+        "Waystones",
+    }
+    entries: list[dict] = []
+    current: dict | None = None
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if token["type"] == "anchor":
+            text = str(token["text"]).strip()
+            href = str(token.get("href") or "")
+            if (
+                text
+                and text not in ignored_anchors
+                and not text.startswith("Image")
+                and "Rune" not in href
+                and "Economy" not in href
+                and "Runeshape_Combinations" not in href
+            ):
+                current = {
+                    "name": text,
+                    "href": href,
+                    "stackSize": 1,
+                    "level": "",
+                }
+        elif token["type"] == "text":
+            text = str(token["text"])
+            if current is not None:
+                stack = re.search(r"\bx\s*(\d+)\b", text, re.IGNORECASE)
+                if stack:
+                    current["stackSize"] = int(stack.group(1))
+                level = re.search(r"Lv\s*([0-9+\-]+)", text)
+                if level:
+                    current["level"] = "Lv" + level.group(1)
+
+            # Some generic rewards are text-only instead of linked item names.
+            inline = re.fullmatch(r"(?:(\d+)x\s+)?(.+?)\s+Lv\s*([0-9+\-]+)", text)
+            if inline and not text.startswith("Lv"):
+                name = inline.group(2).strip()
+                if name and not re.fullmatch(r"[0-9.]+", name):
+                    current = {
+                        "name": name,
+                        "href": "",
+                        "stackSize": int(inline.group(1) or 1),
+                        "level": "Lv" + inline.group(3),
+                    }
+        elif token["type"] == "rune":
+            sequence = []
+            rune_sources = []
+            next_index = index
+            while next_index < len(tokens) and tokens[next_index]["type"] == "rune":
+                sequence.append(str(tokens[next_index]["alt"]))
+                rune_sources.append(str(tokens[next_index]["src"]))
+                next_index += 1
+            if current is not None and current.get("level") and 2 <= len(sequence) <= 10:
+                level_min, level_max = _parse_level(str(current["level"]))
+                entries.append({
+                    **current,
+                    "levelMin": level_min,
+                    "levelMax": level_max,
+                    "runes": sequence,
+                    "runeSources": rune_sources,
+                })
+            index = next_index
+            continue
+        index += 1
+    return entries[:COMBINATION_COUNT]
+
+
+def main() -> None:
+    html = _fetch_text(SOURCE_URL)
+    parser = _TokenParser()
+    parser.feed(html)
+    entries = _parse_entries(parser.tokens)
+    if len(entries) != COMBINATION_COUNT:
+        raise SystemExit(f"expected {COMBINATION_COUNT} entries, got {len(entries)}")
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    icon_dir = OUTPUT_DIR / "runeshape_runes"
+    icon_dir.mkdir(parents=True, exist_ok=True)
+
+    rune_sources = {}
+    for entry in entries:
+        for rune, source in zip(entry["runes"], entry.pop("runeSources"), strict=True):
+            rune_sources.setdefault(rune, source)
+
+    for rune, source in sorted(rune_sources.items()):
+        suffix = Path(source).suffix or ".webp"
+        target = icon_dir / f"{rune}{suffix}"
+        target.write_bytes(_fetch_bytes(source))
+
+    payload = {
+        "source": SOURCE_URL,
+        "entryCount": len(entries),
+        "runes": {
+            rune: f"runeshape_runes/{rune}{Path(source).suffix or '.webp'}"
+            for rune, source in sorted(rune_sources.items())
+        },
+        "entries": entries,
+    }
+    (OUTPUT_DIR / "runeshape_combinations.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    print(f"wrote {len(entries)} combinations and {len(rune_sources)} rune icons")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,56 +1,58 @@
 import net from "node:net";
-import { unlink } from "node:fs/promises";
+import { mkdir, unlink } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { startBackgroundRefresh } from "./backgroundRefresh";
 import { initBrainData } from "./bootstrap";
+import {
+  ee2ConfigSummary,
+  ee2RuntimeState,
+  sendEe2ItemText,
+  startEe2Host,
+  stopEe2Host,
+} from "./ee2-host";
 
 type Emit = (stage: string) => void;
 type Handler = (req: any, emit: Emit) => Promise<unknown>;
+
+let activeLeague = process.env.POE2_LEAGUE ?? "Standard";
+
+function requestLeague(req: any): string {
+  const league = String(req.league ?? activeLeague ?? "Standard");
+  activeLeague = league;
+  return league;
+}
+
 const handlers: Record<string, Handler> = {
   ping: async () => "pong",
-  parse: async (req) => {
-    const { parseClipboard } = await import("@/parser");
-    const r = parseClipboard(req.clipboard ?? "");
-    // r.error is a plain string code from EE2 (e.g. "item.parse_error",
-    // "item.unknown"). It surfaces verbatim in a Python toast, so keep it
-    // as the readable suffix.
-    if (r.isErr()) throw new Error(`not an item: ${r.error}`);
-    return r.value;
-  },
-  price: async (req, emit) => {
-    const { priceCheck } = await import("./price");
-    return priceCheck(
-      req.clipboard ?? "",
-      req.league ?? process.env.POE2_LEAGUE ?? "Standard",
-      [],
-      emit,
-    );
-  },
-  requery: async (req, emit) => {
-    const { priceCheck } = await import("./price");
-    return priceCheck(
-      req.clipboard ?? "",
-      req.league ?? process.env.POE2_LEAGUE ?? "Standard",
-      Array.isArray(req.overrides) ? req.overrides : [],
-      emit,
-    );
-  },
-  bulk: async (req) => {
-    if (!req.have || !req.want) {
-      throw new Error("bulk requires 'have' and 'want' currency tags");
-    }
-    const { bulkSearch } = await import("./bulk");
-    return bulkSearch(
-      req.have,
-      req.want,
-      req.league ?? process.env.POE2_LEAGUE ?? "Standard",
-    );
-  },
   uniqueprices: async (req) => {
+    if (req.ifVersion !== undefined) {
+      // Versioned handshake: an unchanged snapshot skips serializing and
+      // shipping the multi-megabyte row dict to the client.
+      const { scanCorpusVersioned } = await import("./uniques");
+      const { version, rows } = await scanCorpusVersioned(requestLeague(req));
+      if (req.ifVersion === version) {
+        return { version, unchanged: true };
+      }
+      return { version, rows };
+    }
     const { scanCorpus } = await import("./uniques");
-    return scanCorpus(req.league ?? process.env.POE2_LEAGUE ?? "Standard");
+    return scanCorpus(requestLeague(req));
   },
-  leagues: async () => (await import("./leagues")).leagues(),
-  login: async (req) => (await import("./session")).login(String(req.sessionId ?? "")),
-  logout: async () => (await import("./session")).logout(),
+  ee2host: async (req) => startEe2Host({
+    league: requestLeague(req),
+    accountName: String(req.accountName ?? process.env.POE2_ACCOUNT ?? ""),
+    sessionId: String(req.sessionId ?? process.env.POE2_SESSID ?? ""),
+  }),
+  ee2itemtext: async (req) => {
+    sendEe2ItemText(String(req.clipboard ?? ""), {
+      x: Number(req.x ?? 1),
+      y: Number(req.y ?? 1),
+    }, Boolean(req.focusOverlay));
+    return { ok: true };
+  },
+  ee2config: async () => ee2ConfigSummary(),
+  ee2state: async () => ee2RuntimeState(),
 };
 
 async function handleLine(conn: net.Socket, line: string): Promise<void> {
@@ -60,7 +62,9 @@ async function handleLine(conn: net.Socket, line: string): Promise<void> {
     const req = JSON.parse(line);
     id = req.id;
     cmd = String(req.cmd);
-    if (process.env.WAYSTONE_DEBUG) console.error(`cmd=${cmd} id=${id} start`);
+    if (process.env.WAYSTONE_DEBUG && cmd !== "ee2state") {
+      console.error(`cmd=${cmd} id=${id} start`);
+    }
     const h = handlers[req.cmd];
     if (!h) throw new Error(`unknown cmd: ${req.cmd}`);
     // Progress lines stream before the final response, tagged with the same
@@ -124,23 +128,11 @@ export async function startServer(
     });
   });
   await new Promise<void>((res) => server.listen(sockPath, res));
-  // Warm the poe2scout price snapshot in the background once the server is up.
-  // The overlay launches with the game, so there are minutes of lead time
-  // before the first currency lookup; this just front-loads the bulk pull.
-  // Fire-and-forget, errors swallowed — a failed warm leaves an empty/stale map
-  // and lookups degrade gracefully (currencyCheck falls back to the exchange).
-  // League mirrors the per-request default (POE2_LEAGUE / "Standard").
-  void (async () => {
-    const league = process.env.POE2_LEAGUE ?? "Standard";
-    const { priceMap } = await import("./poe2scout");
-    await priceMap(league);
-    // Unique-scan corpus warm: pulls the uniques snapshot AND resolves all
-    // ~1000 icons to disk, so the first Alt+X pays neither.
-    const { scanCorpus } = await import("./uniques");
-    await scanCorpus(league);
-  })().catch(() => {});
+  const stopBackgroundRefresh = startBackgroundRefresh(() => activeLeague);
   return () =>
     new Promise((res) => {
+      stopBackgroundRefresh();
+      void stopEe2Host();
       server.close(() => res());
       for (const conn of connections) conn.destroy();
     });
@@ -148,9 +140,11 @@ export async function startServer(
 
 // server.ts when run via tsx (dev), server.mjs as the esbuild bundle (release).
 if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.mjs")) {
-  const sock =
-    process.env.BRAIN_SOCKET ??
-    `${process.env.XDG_RUNTIME_DIR ?? "/tmp"}/waystone-brain.sock`;
+  const runtimeDir =
+    process.env.XDG_RUNTIME_DIR ??
+    path.join(tmpdir(), `waystone-${process.getuid?.() ?? "user"}`);
+  const sock = process.env.BRAIN_SOCKET ?? path.join(runtimeDir, "brain.sock");
+  await mkdir(path.dirname(sock), { recursive: true, mode: 0o700 });
   startServer(sock)
     .then(() => console.error(`brain listening on ${sock}`))
     .catch((e) => { console.error(e); process.exit(1); });
