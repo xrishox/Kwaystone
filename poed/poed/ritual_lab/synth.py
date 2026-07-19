@@ -27,7 +27,10 @@ from .stages import Lattice
 TINT_BGR = (70.0, 38.0, 16.0)
 TINT_ALPHA = 0.45
 EMPTY_QUANTILE = 0.35
-FOOTPRINT_MARGIN = 0.06
+# Web icons already carry their own internal margins; the game renders them at
+# one slot per icon-canvas slot, so pasting must fill the footprint exactly or
+# template scale no longer matches the measured pitch.
+FOOTPRINT_MARGIN = 0.0
 
 
 def donors_dir() -> Path:
@@ -86,13 +89,18 @@ def build_donor(
     donor_id: str,
     frame: np.ndarray,
     panel: Rect,
+    lattice: Lattice | None = None,
 ) -> tuple[Donor, np.ndarray]:
     """Empty the panel of a real ritual frame and persist donor metadata.
 
     Returns the donor and a review overlay that must be inspected visually
     before the donor is used (lattice lines + cells judged occupied)."""
-    gray = estimate.to_gray(frame[panel.y:panel.y + panel.h, panel.x:panel.x + panel.w])
-    lattice, stats = estimate.lattice_from_region(gray, panel.x, panel.y)
+    stats: dict = {}
+    if lattice is None:
+        gray = estimate.to_gray(
+            frame[panel.y:panel.y + panel.h, panel.x:panel.x + panel.w]
+        )
+        lattice, stats = estimate.lattice_from_region(gray, panel.x, panel.y)
     if lattice is None:
         raise RuntimeError(f"could not estimate donor lattice: {stats}")
     side = max(16, int(round(min(lattice.pitch_x, lattice.pitch_y))))
@@ -234,6 +242,22 @@ def _draw_sparse_art(
         cv2.line(frame, (x0 + 4, y0 + 4), (x0 + w - 5, y0 + h - 5), color, thickness, cv2.LINE_AA)
 
 
+def _restore_gridlines(frame: np.ndarray, base: np.ndarray, lattice: Lattice) -> None:
+    """The game renders gridlines over item backdrops; pasting erased them, so
+    copy thin line strips back from the pre-paste donor frame."""
+    bounds = lattice.frame_rect()
+    y0, y1 = max(0, bounds.y), min(frame.shape[0], bounds.y + bounds.h)
+    x0, x1 = max(0, bounds.x), min(frame.shape[1], bounds.x + bounds.w)
+    for col in range(lattice.cols + 1):
+        x = int(round(lattice.x0 + col * lattice.pitch_x))
+        lo, hi = max(0, x - 1), min(frame.shape[1], x + 2)
+        frame[y0:y1, lo:hi] = base[y0:y1, lo:hi]
+    for row in range(lattice.rows + 1):
+        y = int(round(lattice.y0 + row * lattice.pitch_y))
+        lo, hi = max(0, y - 1), min(frame.shape[0], y + 2)
+        frame[lo:hi, x0:x1] = base[lo:hi, x0:x1]
+
+
 def _place_items(
     lattice: Lattice,
     entries: list[dict],
@@ -318,6 +342,7 @@ def generate(
                     "stackSize": 1,
                 }
             )
+        _restore_gridlines(frame, base, donor.lattice)
         gamma = float(rng.uniform(0.94, 1.06))
         lut = np.clip(((np.arange(256) / 255.0) ** gamma) * 255.0, 0, 255).astype(np.uint8)
         frame = lut[frame]

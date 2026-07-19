@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -44,6 +45,7 @@ def _cmd_snapshot_rows(args: argparse.Namespace) -> int:
 
 
 def _cmd_donor(args: argparse.Namespace) -> int:
+    from poed import config as poed_config
     from poed import scan_review
 
     from . import synth
@@ -54,9 +56,25 @@ def _cmd_donor(args: argparse.Namespace) -> int:
     if frame is None:
         print(f"could not read {frame_path}", file=sys.stderr)
         return 1
-    x, y, w, h = (int(v) for v in args.panel.split(","))
     donor_id = args.id or scan_dir.name
-    donor, _overlay = synth.build_donor(donor_id, frame, Rect(x, y, w, h))
+    lattice = None
+    if args.panel:
+        x, y, w, h = (int(v) for v in args.panel.split(","))
+        panel_rect = Rect(x, y, w, h)
+    else:
+        try:
+            poed_config.apply_ocr_environment(poed_config.load())
+        except Exception:  # noqa: BLE001
+            pass
+        os.environ["WAYSTONE_PADDLE_DEVICE"] = "cpu"
+        from .s2_chrome import locate_panel
+
+        panel, lattice, notes = locate_panel(frame)
+        if panel is None:
+            print(f"could not locate Favours panel: {notes}", file=sys.stderr)
+            return 1
+        panel_rect = panel.rect
+    donor, _overlay = synth.build_donor(donor_id, frame, panel_rect, lattice)
     root = synth.donors_dir() / donor_id
     print(f"donor {donor_id}: lattice pitch=({donor.lattice.pitch_x:.2f}, "
           f"{donor.lattice.pitch_y:.2f}) cols={donor.lattice.cols} rows={donor.lattice.rows}")
@@ -92,9 +110,19 @@ def _cmd_fp_crops(args: argparse.Namespace) -> int:
 
 
 def _cmd_run(args: argparse.Namespace) -> int:
+    from poed import config as poed_config
+
     from . import report, scoring
     from .datasets import load_rows, resolve_datasets
     from .systems import build_systems
+
+    try:
+        poed_config.apply_ocr_environment(poed_config.load())
+    except Exception as e:  # noqa: BLE001 - OCR is optional for geometry-only runs
+        print(f"ocr environment not applied: {e}", file=sys.stderr)
+    # The game may own the GPU while the lab runs; CPU recognition is plenty
+    # for plaque strips and keeps lab runs reproducible on any host.
+    os.environ["WAYSTONE_PADDLE_DEVICE"] = "cpu"
 
     datasets = args.datasets.split(",")
     samples = resolve_datasets(datasets)
@@ -171,7 +199,7 @@ def main(argv: list[str] | None = None) -> int:
 
     donor = sub.add_parser("donor")
     donor.add_argument("--scan", default="latest")
-    donor.add_argument("--panel", required=True, help="X,Y,W,H of the grid interior")
+    donor.add_argument("--panel", default=None, help="X,Y,W,H grid interior override")
     donor.add_argument("--id", default=None)
 
     synth = sub.add_parser("synth")

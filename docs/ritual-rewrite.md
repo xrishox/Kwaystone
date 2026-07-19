@@ -91,12 +91,55 @@ grid, and emits half-cell-misaligned rects. Root causes, verified 2026-07-19:
   frames + inventory-only crops) must never fire; metamorphic invariants (translate k px
   => boxes shift k; downscale => same name multiset; determinism).
 
+## Empirical doctrine (hard-won facts; trust these before re-deriving)
+
+- The Favours grid is a fixed 12x10 block; pitch is a constant fraction of
+  frame height (105/2160 = 0.0486; bounds 0.038-0.060 exclude octave errors).
+- The grid background is partially TRANSLUCENT (scene shows through empty
+  cells); empty cells carry a quatrefoil ornament pattern; occupied footprints
+  carry a smooth navy backdrop tint. Darkness/residual thresholds are
+  unreliable; per-cell features (sat/edge/navy) robust-z + 2-means with
+  separation gate work; deep inset 0.22 because ART OVERFLOWS CELLS.
+- Item ART OVERFLOWS its footprint into neighbours (sceptre horns intrude into
+  the cell above). Boundary-local pixel evidence CANNOT partition items; the
+  partition authority is identification itself (footprint-hypothesis exact
+  cover, branch&bound, objective = score*area - 0.05 per footprint,
+  uncovered-core penalty 0.35; full-score repair of weak components).
+- Gridlines are drawn over backdrops; separator visibility is a DEAD END
+  (measured equal for empty-empty and internal-item boundaries).
+- Unmasked template correlation dies on translucency; masked ZNCC over art
+  pixels (mask = template pixels differing from the 12-gray flatten) with
+  mean-centering works; COLOR must be scored as ONE joint vector across
+  channels or omen-variant hues cancel out.
+- The TRIBUTE plaque reads perfectly via recognition-only OCR, but frames can
+  contain 30+ gold bands; 'OFFER TRIBUTE TO THE KING' (below the panel) also
+  matches /TRIBUTE/ — candidate ranking must be by GRID QUALITY under the
+  band (autocorr score sum, min 0.22), not band order.
+- OCR helper: WAYSTONE_PADDLE_DEVICE=cpu required in lab runs (config
+  auto-selects gpu:0 which crashes while the game owns the GPU).
+- Row metadata (w,h) matches icon-file shape (e.g. Blood of the Warrior 1x2,
+  file 47x94); remaining corpus misses are cover arbitration between
+  confidently-wrong claims (Head of the King vs Blood of the Warrior) and
+  omen-variant discrimination.
+- Production ritual latency baseline: extraction 2.5-15.7s; probe accepts any
+  regular line run (23/112 FP fires; inventory match-storms).
+
 ## Status
 
 - M0 done: branch created, research logged, memory anchor written.
 - M1 done: `poed/poed/ritual_lab/` scaffolding (stages/estimate/datasets/synth/scoring/
   report/systems/CLI), rows snapshot (3164 rows, all with icons), 10 inventory fp-crops.
-- M2 done: s0 baseline measured (below). Next: M3 S2 chrome-anchored localizer.
+- M2 done: s0 baseline measured (below).
+- M3 done: S2 chrome-anchored system working end to end: gold-band OCR anchor +
+  quality-ranked gridline lattice (13/11-line capped windows + weighted LSQ
+  refit) + feature occupancy + expansion candidates + identification-driven
+  exact cover with full-score repair. Corpus 4/4 L1, 1/4 L2 (26-item case
+  exact), synth recall 0.871 / precision 0.748 / IoU 0.985 / names 0.811.
+  Overcounts of +1..+2 phantom markers and omen-variant swaps remain (M7).
+  Latency unoptimized (p50 ~4.2s — full-score repair is the hot spot; masked
+  ZNCC loops are pure Python, no caching/vectorization yet).
+- Next: M4-M6 (S1/S5/S3/S4 variants over shared stages), then M7 ablation +
+  arbitration/omen iteration + latency work.
 
 ## Lab usage
 
