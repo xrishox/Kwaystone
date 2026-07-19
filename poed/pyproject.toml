@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["poed", "poed.desktop", "poed.have_scan", "poed.scanners"]
+packages = ["poed", "poed.desktop", "poed.have_scan", "poed.ritual_lab", "poed.scanners"]
 
 [tool.setuptools.package-data]
 poed = [
