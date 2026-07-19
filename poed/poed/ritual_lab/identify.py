@@ -99,28 +99,32 @@ def _masked_zncc_best(
     if max_dy < 0 or max_dx < 0 or len(vec) < 8:
         return -1.0, (0, 0)
     if center is not None and radius is not None:
-        dy_range = range(
+        dys = np.arange(
             max(0, center[0] - radius), min(max_dy, center[0] + radius) + 1, stride
         )
-        dx_range = range(
+        dxs = np.arange(
             max(0, center[1] - radius), min(max_dx, center[1] + radius) + 1, stride
         )
     else:
-        dy_range = range(0, max_dy + 1, stride)
-        dx_range = range(0, max_dx + 1, stride)
-    best = (-1.0, (0, 0))
-    for dy in dy_range:
-        rows = ys + dy
-        for dx in dx_range:
-            sample = window[rows, xs + dx].astype(np.float32)
-            sample -= sample.mean()
-            norm = float(np.linalg.norm(sample))
-            if norm <= 1e-6:
-                continue
-            score = float(np.dot(sample, vec) / norm)
-            if score > best[0]:
-                best = (score, (dy, dx))
-    return best
+        dys = np.arange(0, max_dy + 1, stride)
+        dxs = np.arange(0, max_dx + 1, stride)
+    if len(dys) == 0 or len(dxs) == 0:
+        return -1.0, (0, 0)
+    flat = np.ascontiguousarray(window, dtype=np.float32).reshape(-1)
+    base = (ys.astype(np.int64) * window.shape[1] + xs.astype(np.int64))[None, :]
+    offsets = (
+        dys.astype(np.int64)[:, None] * window.shape[1] + dxs.astype(np.int64)[None, :]
+    ).reshape(-1)[:, None]
+    samples = flat[base + offsets]
+    samples -= samples.mean(axis=1, keepdims=True)
+    norms = np.linalg.norm(samples, axis=1)
+    scores = samples @ vec
+    with np.errstate(divide="ignore", invalid="ignore"):
+        scores = np.where(norms > 1e-6, scores / norms, -1.0)
+    index = int(np.argmax(scores))
+    dy = int(dys[index // len(dxs)])
+    dx = int(dxs[index % len(dxs)])
+    return float(scores[index]), (dy, dx)
 
 
 def _masked_color_score(

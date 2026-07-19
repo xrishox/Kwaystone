@@ -120,18 +120,20 @@ def locate_panel(
             int(band.x / scale), int(band.y / scale),
             int(band.w / scale), int(band.h / scale),
         )
-        normalized, raw = _read_band_text(frame, band_frame)
-        ocr_ok = normalized is not None
-        if ocr_ok and not TITLE_PATTERN.search(normalized):
-            notes.append(f"band-rejected: {raw!r}")
-            continue
+        # Geometry gate first: OCR only runs on bands that actually have a
+        # qualifying grid below them, so negative frames cost zero OCR calls.
         lattice, stats = _grid_below_band(frame, band_frame)
         if lattice is None:
             notes.append(f"no-grid-below-band ({stats})")
             continue
         quality = float(stats.get("score_x", 0.0)) + float(stats.get("score_y", 0.0))
         if quality < GRID_QUALITY_MIN:
-            notes.append(f"weak-grid-below-band ({raw!r} quality={quality:.2f})")
+            notes.append(f"weak-grid-below-band (quality={quality:.2f})")
+            continue
+        normalized, raw = _read_band_text(frame, band_frame)
+        ocr_ok = normalized is not None
+        if ocr_ok and not TITLE_PATTERN.search(normalized):
+            notes.append(f"band-rejected: {raw!r}")
             continue
         evidence = (
             "plaque+gridlines",

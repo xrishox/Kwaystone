@@ -64,7 +64,7 @@ def identification_cover(
             if candidates[row, col]
         }
 
-    hypotheses: list[tuple[float, Footprint]] = []
+    proposals: list[Footprint] = []
     for col, row in extended:
         for w, h in legal:
             block = {(col + dc, row + dr) for dc in range(w) for dr in range(h)}
@@ -73,14 +73,23 @@ def identification_cover(
             core_cells = len(block & core)
             if core_cells < max(1, int(np.ceil(w * h * CORE_BLOCK_FRACTION))):
                 continue
-            footprint = Footprint(col, row, w, h)
-            score = identifier.quick_footprint_score(
-                _window(frame, lattice, footprint, pad), (w, h), pitch
-            )
-            if score < QUICK_ACCEPT_FLOOR and (w, h) != (1, 1):
-                continue
-            hypotheses.append((score, footprint))
+            proposals.append(Footprint(col, row, w, h))
 
+    from poed import uniquescan
+
+    def quick(footprint: Footprint) -> float:
+        return identifier.quick_footprint_score(
+            _window(frame, lattice, footprint, pad),
+            (footprint.w, footprint.h),
+            pitch,
+        )
+
+    scores = list(uniquescan._pool().map(quick, proposals))
+    hypotheses = [
+        (score, footprint)
+        for score, footprint in zip(scores, proposals)
+        if score >= QUICK_ACCEPT_FLOOR or (footprint.w, footprint.h) == (1, 1)
+    ]
     chosen = _solve_cover(core, extended, hypotheses)
     return sorted(chosen, key=lambda f: (f.row, f.col))
 
@@ -175,7 +184,7 @@ def refined_cover(
             comp_core = component & core
             if not comp_core:
                 continue
-            scored: list[tuple[float, Footprint]] = []
+            proposals: list[Footprint] = []
             for col, row in sorted(component, key=lambda cr: (cr[1], cr[0])):
                 for w, h in legal:
                     block = {(col + dc, row + dr) for dc in range(w) for dr in range(h)}
@@ -184,9 +193,14 @@ def refined_cover(
                     core_count = len(block & comp_core)
                     if core_count < max(1, int(np.ceil(w * h * CORE_BLOCK_FRACTION))):
                         continue
-                    footprint = Footprint(col, row, w, h)
-                    _, score = full_result(footprint)
-                    scored.append((max(score, 0.0), footprint))
+                    proposals.append(Footprint(col, row, w, h))
+            from poed import uniquescan
+
+            list(uniquescan._pool().map(full_result, proposals))
+            scored = [
+                (max(full_result(footprint)[1], 0.0), footprint)
+                for footprint in proposals
+            ]
             resolved = _solve_cover(comp_core, component, scored)
             footprints = [
                 fp for fp in footprints if not (set(_block(fp)) & component)

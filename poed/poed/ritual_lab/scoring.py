@@ -164,6 +164,97 @@ def score_sample(
     return record, output, frame, matches
 
 
+METAMORPHIC_SHIFT = (23, 11)
+METAMORPHIC_TOLERANCE_PX = 4
+
+
+def _name_multiset(matches: list[dict]) -> dict[str, int]:
+    out: dict[str, int] = {}
+    for match in matches:
+        name = str(match.get("name") or "")
+        out[name] = out.get(name, 0) + 1
+    return out
+
+
+def metamorphic_record(
+    system: RitualSystem,
+    sample: Sample,
+    rows: dict,
+) -> SampleRecord:
+    """Invariance checks that need no stored truth: translating the frame must
+    translate every match by the same amount, downscaling must preserve the
+    name multiset, and repeated runs must be identical."""
+    frame = sample.load()
+    base = system.analyze(frame, rows)
+    record = SampleRecord(
+        sample_id=f"{sample.id}#meta",
+        kind="metamorphic",
+        system=system.id,
+        fired=base.fired,
+        expected_route=sample.expected_route,
+        match_count=len(base.matches),
+        elapsed_ms=0.0,
+    )
+    if not base.fired:
+        record.l1 = False
+        record.reasons.append("base run did not fire")
+        return record
+
+    repeat = system.analyze(frame, rows)
+    base_set = sorted(
+        (m.get("name"), m.get("x"), m.get("y")) for m in base.matches
+    )
+    repeat_set = sorted(
+        (m.get("name"), m.get("x"), m.get("y")) for m in repeat.matches
+    )
+    deterministic = base_set == repeat_set
+    if not deterministic:
+        record.reasons.append("non-deterministic output")
+
+    dx, dy = METAMORPHIC_SHIFT
+    shifted = frame[dy:, dx:]
+    moved = system.analyze(shifted, rows)
+    shift_ok = moved.fired and len(moved.matches) == len(base.matches)
+    if shift_ok:
+        base_sorted = sorted(base.matches, key=lambda m: (m.get("y"), m.get("x")))
+        moved_sorted = sorted(moved.matches, key=lambda m: (m.get("y"), m.get("x")))
+        for a, b in zip(base_sorted, moved_sorted):
+            if a.get("name") != b.get("name"):
+                shift_ok = False
+                record.reasons.append(
+                    f"shift name change: {a.get('name')} -> {b.get('name')}"
+                )
+                break
+            if (
+                abs((a.get("x") - dx) - b.get("x")) > METAMORPHIC_TOLERANCE_PX
+                or abs((a.get("y") - dy) - b.get("y")) > METAMORPHIC_TOLERANCE_PX
+            ):
+                shift_ok = False
+                record.reasons.append(
+                    f"shift moved {a.get('name')} by unexpected offset"
+                )
+                break
+    else:
+        record.reasons.append(
+            f"shifted run fired={moved.fired} matches={len(moved.matches)} "
+            f"(base {len(base.matches)})"
+        )
+
+    import cv2
+
+    scaled = cv2.resize(frame, None, fx=2 / 3, fy=2 / 3, interpolation=cv2.INTER_AREA)
+    down = system.analyze(scaled, rows)
+    scale_ok = down.fired and _name_multiset(down.matches) == _name_multiset(base.matches)
+    if not scale_ok:
+        record.reasons.append(
+            f"downscale fired={down.fired} matches={len(down.matches)} "
+            f"names_equal={_name_multiset(down.matches) == _name_multiset(base.matches)}"
+        )
+
+    record.l1 = deterministic and shift_ok and scale_ok
+    return record
+
+
 def summarize(records: list[SampleRecord]) -> dict[str, Any]:
     by_system: dict[str, dict[str, Any]] = {}
     for record in records:
@@ -180,6 +271,7 @@ def summarize(records: list[SampleRecord]) -> dict[str, Any]:
                 "synth_iou": [],
                 "synth_name_acc": [],
                 "debug_fired": [0, 0],
+                "meta_pass": [0, 0],
                 "latency_ms": [],
             },
         )
@@ -207,6 +299,9 @@ def summarize(records: list[SampleRecord]) -> dict[str, Any]:
             summary["debug_fired"][1] += 1
             summary["debug_fired"][0] += int(record.fired)
             summary["latency_ms"].append(record.elapsed_ms)
+        elif record.kind == "metamorphic":
+            summary["meta_pass"][1] += 1
+            summary["meta_pass"][0] += int(bool(record.l1))
 
     def _fraction(pair: list[int]) -> str:
         return f"{pair[0]}/{pair[1]}" if pair[1] else "-"
@@ -229,6 +324,7 @@ def summarize(records: list[SampleRecord]) -> dict[str, Any]:
             "synth_iou": _mean(summary["synth_iou"]),
             "synth_name_acc": _mean(summary["synth_name_acc"]),
             "debug_fired": _fraction(summary["debug_fired"]),
+            "meta_pass": _fraction(summary["meta_pass"]),
             "latency_p50_ms": round(latencies[len(latencies) // 2], 1) if latencies else None,
             "latency_p95_ms": round(latencies[int(len(latencies) * 0.95)], 1)
             if latencies

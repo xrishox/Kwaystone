@@ -158,6 +158,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
                 f"matches={record.match_count} {record.elapsed_ms:.0f}ms",
                 flush=True,
             )
+            if args.metamorphic and sample.kind == "corpus":
+                meta = scoring.metamorphic_record(system, sample, rows)
+                records.append(meta)
+                print(
+                    f"[{system.id}] {meta.sample_id} pass={meta.l1} "
+                    + "; ".join(meta.reasons[:2]),
+                    flush=True,
+                )
 
     summary = scoring.summarize(records)
     scoring.save_results(run_dir, records, summary, datasets=datasets)
@@ -216,6 +224,7 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--datasets", default="corpus,fp")
     run.add_argument("--limit", type=int, default=0)
     run.add_argument("--overlays", choices=("none", "failures", "all"), default="failures")
+    run.add_argument("--metamorphic", action="store_true")
 
     rep = sub.add_parser("report")
     rep.add_argument("--run", default=None)

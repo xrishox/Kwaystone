@@ -88,6 +88,7 @@ def format_scoreboard(summary: dict[str, Any], datasets: list[str]) -> str:
         ("synth_iou", "syn IoU"),
         ("synth_name_acc", "syn names"),
         ("debug_fired", "debug fired"),
+        ("meta_pass", "meta"),
         ("latency_p50_ms", "p50 ms"),
         ("latency_p95_ms", "p95 ms"),
     )
