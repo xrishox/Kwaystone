@@ -197,10 +197,6 @@ class SceneAnalysis:
             )
         )
 
-    @cached_property
-    def ritual(self) -> LayoutEvidence | None:
-        """Find the strongest dense grid independently of screen position."""
-        return self.grid_candidates[0] if self.grid_candidates else None
 
 
 def _card_components(

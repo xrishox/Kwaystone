@@ -411,9 +411,9 @@ def test_scene_reports_grid_candidates_independently_of_merchant_title():
     generic_grid = SceneAnalysis(_synthetic_grid_panel(merchant_title=False))
 
     assert titled_grid.grid_candidates
-    assert titled_grid.ritual is not None
+    assert titled_grid.grid_candidates
     assert generic_grid.grid_candidates
-    assert generic_grid.ritual is not None
+    assert generic_grid.grid_candidates
 
 
 def test_merchant_title_match_is_semantic():
@@ -696,10 +696,10 @@ def test_retained_debug_scans_have_unambiguous_visual_routing():
             assert scene.have is not None, manifest_path.parent.name
         elif expected == "ritual":
             assert scene.have is None, manifest_path.parent.name
-            assert scene.ritual is not None, manifest_path.parent.name
+            assert scene.grid_candidates, manifest_path.parent.name
         elif expected == "expedition":
             assert scene.have is None, manifest_path.parent.name
-            assert scene.ritual is None, manifest_path.parent.name
+            assert not scene.grid_candidates, manifest_path.parent.name
         else:
             continue
         checked += 1

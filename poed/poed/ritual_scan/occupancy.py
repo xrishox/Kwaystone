@@ -15,12 +15,9 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from .stages import Footprint, Lattice, OccupancyMap
+from .stages import Lattice, OccupancyMap
 
 CELL_SIDE = 48
-EMPTY_FLOOR_QUANTILE = 0.30
-RESIDUAL_RATIO = 2.1
-RESIDUAL_MIN = 5.0
 # Deep inset: reward art overflows up to ~20% into neighbouring cells and must
 # not inflate their occupancy features.
 CELL_INSET = 0.22
@@ -43,41 +40,11 @@ def cell_stack(frame: np.ndarray, lattice: Lattice, side: int = CELL_SIDE) -> np
     return cells
 
 
-def modal_residual_occupancy(frame: np.ndarray, lattice: Lattice) -> OccupancyMap:
-    cells = cell_stack(frame, lattice)
-    flat = cells.reshape(-1, *cells.shape[2:])
-    modal = np.median(flat, axis=0)
-    residual = np.abs(cells - modal[None, None]).mean(axis=(2, 3, 4))
-    floor = float(np.quantile(residual, EMPTY_FLOOR_QUANTILE))
-    threshold = max(RESIDUAL_MIN, floor * RESIDUAL_RATIO)
-    occupied = residual > threshold
-    return OccupancyMap(energy=residual, occupied=occupied)
-
-
 def _robust_z(values: np.ndarray) -> np.ndarray:
     median = float(np.median(values))
     mad = float(np.median(np.abs(values - median))) * 1.4826
     scale = max(mad, float(values.std()) * 0.3, 1e-3)
     return (values - median) / scale
-
-
-def _fill_holes(occupied: np.ndarray, passes: int = 2) -> np.ndarray:
-    """Dark item art can leave interior holes; a cell surrounded on 3+ sides
-    by occupied cells is part of an item."""
-    out = occupied.copy()
-    for _ in range(passes):
-        padded = np.pad(out, 1, constant_values=False)
-        neighbors = (
-            padded[:-2, 1:-1].astype(int)
-            + padded[2:, 1:-1].astype(int)
-            + padded[1:-1, :-2].astype(int)
-            + padded[1:-1, 2:].astype(int)
-        )
-        grown = out | (~out & (neighbors >= 3))
-        if np.array_equal(grown, out):
-            break
-        out = grown
-    return out
 
 
 def cell_features(frame: np.ndarray, lattice: Lattice) -> dict[str, np.ndarray]:
@@ -220,51 +187,3 @@ def legal_footprints(rows: dict) -> set[tuple[int, int]]:
     return legal
 
 
-def _components(occupied: np.ndarray) -> list[list[tuple[int, int]]]:
-    count, labels = cv2.connectedComponents(occupied.astype(np.uint8), connectivity=4)
-    components = []
-    for label in range(1, count):
-        ys, xs = np.nonzero(labels == label)
-        components.append([(int(col), int(row)) for row, col in zip(ys, xs)])
-    return components
-
-
-def _carve_component(
-    cells: set[tuple[int, int]],
-    legal: set[tuple[int, int]],
-) -> list[Footprint]:
-    """Partition an occupied component into legal footprints, largest first."""
-    ordered = sorted(legal, key=lambda wh: (wh[0] * wh[1], wh[1]), reverse=True)
-    out = []
-    remaining = set(cells)
-    while remaining:
-        col, row = min(remaining, key=lambda cr: (cr[1], cr[0]))
-        placed = False
-        for w, h in ordered:
-            block = {(col + dc, row + dr) for dc in range(w) for dr in range(h)}
-            if block <= remaining:
-                out.append(Footprint(col, row, w, h))
-                remaining -= block
-                placed = True
-                break
-        if not placed:
-            out.append(Footprint(col, row, 1, 1))
-            remaining.discard((col, row))
-    return out
-
-
-def footprints_from_occupancy(
-    occupancy: OccupancyMap,
-    legal: set[tuple[int, int]],
-) -> list[Footprint]:
-    out = []
-    for component in _components(occupancy.occupied):
-        cols = [c for c, _ in component]
-        rows = [r for _, r in component]
-        w = max(cols) - min(cols) + 1
-        h = max(rows) - min(rows) + 1
-        if len(component) == w * h and (w, h) in legal:
-            out.append(Footprint(min(cols), min(rows), w, h))
-            continue
-        out.extend(_carve_component(set(component), legal))
-    return sorted(out, key=lambda f: (f.row, f.col))
