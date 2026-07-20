@@ -16,7 +16,6 @@ from .identify import Identifier
 from .stages import Footprint, Lattice
 
 QUICK_ACCEPT_FLOOR = 0.12
-SINGLE_CELL_FALLBACK = 0.0
 INTERNAL_CROSS_BONUS = 0.05
 INTERNAL_GAP_PENALTY = 0.12
 PROMOTE_ACCEPT = 0.66

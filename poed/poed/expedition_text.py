@@ -302,6 +302,5 @@ def expedition_panel_present(lines: list[OcrLine]) -> bool:
 # Compatibility aliases for older private tests/callers.
 _normalize = normalize
 _stack_size = stack_size
-_strip_stack_prefix = strip_stack_prefix
 _row_groups = row_groups
 _expedition_panel_present = expedition_panel_present

@@ -43,7 +43,6 @@ _expedition_panel_present = _text.expedition_panel_present
 # Expedition text column. The vendor UI is anchored left and scales with screen
 # height, so x coordinates are height-relative instead of width-relative.
 TEXT_REGION = (0.158, 0.54, 0.119, 0.72)  # x0, x1, y0, y1 height fractions
-HAVE_REGION = (0.18, 0.84, 0.06, 0.90)  # x0, x1, y0, y1 frame fractions
 
 
 def expedition_crop(shot: np.ndarray) -> tuple[np.ndarray, int, int]:
@@ -54,14 +53,6 @@ def expedition_crop(shot: np.ndarray) -> tuple[np.ndarray, int, int]:
     y1 = int(h * TEXT_REGION[3])
     return shot[y0:y1, x0:x1], x0, y0
 
-
-def have_crop(shot: np.ndarray) -> tuple[np.ndarray, int, int]:
-    h, w = shot.shape[:2]
-    x0 = int(w * HAVE_REGION[0])
-    x1 = int(w * HAVE_REGION[1])
-    y0 = int(h * HAVE_REGION[2])
-    y1 = int(h * HAVE_REGION[3])
-    return shot[y0:y1, x0:x1], x0, y0
 
 def _base_match(
     *,
