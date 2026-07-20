@@ -14,15 +14,13 @@ def scan_unique_grid(
     *,
     scanner_id: str,
     title: str,
-    include_unknown: bool,
     stage_name: str,
     stage_label: str,
-    matching_mode: str = "cells",
     gray_thresh: float | None = None,
     color_thresh: float | None = None,
     row_filter: Callable[[dict], dict] | None = None,
 ) -> ScanResult:
-    """Scan a visually localized unique-item grid and return normalized matches."""
+    """Scan a visually localized stock grid and return normalized matches."""
     min_price = ctx.cfg.get("unique_scan_min_price", 0.0)
     rows = uniquescan.filter_rows(ctx.rows, min_price)
     if row_filter is not None:
@@ -32,8 +30,6 @@ def scan_unique_grid(
         rows,
         detection.region,
         float(detection.payload["cell"]),
-        include_unknown=include_unknown,
-        matching_mode=matching_mode,
         **_threshold_kwargs(gray_thresh, color_thresh),
     )
     matches = finalize_matches(

@@ -137,10 +137,8 @@ class MerchantScanner:
             detection,
             scanner_id=self.id,
             title=self.title,
-            include_unknown=False,
             stage_name="18-merchant-result.jpg",
             stage_label="merchant result",
-            matching_mode="shared",
             gray_thresh=0.70,
             color_thresh=0.73,
         )

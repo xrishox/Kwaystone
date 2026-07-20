@@ -103,12 +103,9 @@ Scanner internals are intentionally split by responsibility:
 - `poed.ritual_lab` is development tooling only (candidate systems,
   synthetic-composite datasets, scoring CLI via `python -m poed.ritual_lab`);
   production code must not import it.
-- `poed.unique_grid_geometry` owns generic item-grid geometry and occupancy.
-  With ritual on `poed.ritual_scan`, only the `matching_mode="cells"` path in
-  `poed.uniquescan` still references it; that pair is retained pending a
-  follow-up cleanup decision.
-- `poed.uniquescan` owns icon-corpus matching for unique/grid items; its
-  corpus loader also feeds `poed.ritual_scan` templates.
+- `poed.uniquescan` owns the market icon template corpus and the shared
+  coarse-to-fine matcher used by the merchant scanner; its corpus loader,
+  descriptors, and scan thread pool also feed `poed.ritual_scan`.
 - `poed.runeshape` owns visual rune-row detection and combination lookup.
 - `poed.match_fields` is the one place that copies market row fields into
   match dicts; scanners add only their scanner-specific keys.

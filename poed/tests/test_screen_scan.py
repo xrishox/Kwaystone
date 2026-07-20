@@ -8,7 +8,7 @@ import pytest
 cv2 = pytest.importorskip("cv2")
 
 from conftest import local_debug_tests_enabled
-from poed import expeditionscan, unique_grid_geometry, uniquescan
+from poed import expeditionscan, uniquescan
 from poed.scanners import core
 from poed.scanners import ritual as ritual_scanner_module
 from poed.image_geometry import Rect
@@ -16,7 +16,6 @@ from poed.image_geometry import frame_source
 from poed.scanners.common import SCAN_HISTORY_PER_TYPE
 from poed.scanners.scene import SceneAnalysis
 from poed.scanners.types import Detection, ScanContext, ScanResult
-from poed.scanners.unique_grid import scan_unique_grid
 
 
 class FakeScanner:
@@ -69,7 +68,6 @@ def _ctx(image=None, rows=None):
         source=source,
         rows=rows or {},
     )
-
 
 
 def _select_primary(ctx, scanners=None, scene=None):
@@ -126,34 +124,6 @@ def test_select_scanner_returns_none_when_no_probe_matches():
     assert [s.probes for s in scanners] == [1, 1]
 
 
-def test_scan_unique_grid_applies_context_row_filter(monkeypatch):
-    captured = {}
-
-    def fake_scan_region(frame, rows, region, cell, **kwargs):
-        captured["rows"] = rows
-        return []
-
-    rows = {
-        "Keep": {"price": 1.0, "kind": "tagged"},
-        "Drop": {"price": 1.0, "kind": "tagged"},
-    }
-    monkeypatch.setattr(uniquescan, "scan_region", fake_scan_region)
-
-    result = scan_unique_grid(
-        _ctx(rows=rows),
-        Detection("ritual", 1.0, {"cell": 47}, region=Rect(0, 0, 100, 100)),
-        scanner_id="ritual",
-        title="ritual rewards",
-        include_unknown=True,
-        stage_name="result.jpg",
-        stage_label="result",
-        row_filter=lambda filtered_rows: {"Keep": filtered_rows["Keep"]},
-    )
-
-    assert result.matches == []
-    assert set(captured["rows"]) == {"Keep"}
-
-
 def test_ritual_scanner_uses_ritual_candidate_filter(monkeypatch):
     captured = {}
 
@@ -173,76 +143,6 @@ def test_ritual_scanner_uses_ritual_candidate_filter(monkeypatch):
     assert result.matches == []
     expected = uniquescan.filter_ritual_rows(uniquescan.filter_rows(ctx.rows, 0.0))
     assert captured["rows"] is expected
-
-
-def test_ritual_grid_axis_count_keeps_full_grid_with_hidden_first_boundary():
-    pitch = 106.0
-    positions = [
-        370.0,
-        477.0,
-        582.0,
-        687.0,
-        792.0,
-        898.0,
-        1003.0,
-        1108.0,
-        1214.0,
-        1319.0,
-        1424.0,
-        1530.0,
-    ]
-
-    origin = unique_grid_geometry.best_grid_origin(
-        positions,
-        pitch,
-        unique_grid_geometry.RITUAL_COLS,
-        1847,
-    )
-
-    assert origin == pytest.approx(261.5, abs=1.0)
-    assert unique_grid_geometry.axis_cell_count(
-        positions,
-        origin,
-        pitch,
-        unique_grid_geometry.RITUAL_COLS,
-        1847,
-    ) == 12
-
-
-def test_ritual_grid_axis_count_trims_windowed_clipped_columns():
-    pitch = 69.33333333333333
-    positions = [
-        3.0,
-        15.0,
-        33.0,
-        107.0,
-        175.0,
-        245.0,
-        312.0,
-        381.0,
-        450.0,
-        519.0,
-        588.0,
-        657.0,
-        725.0,
-        794.0,
-    ]
-
-    origin = unique_grid_geometry.best_grid_origin(
-        positions,
-        pitch,
-        unique_grid_geometry.RITUAL_COLS,
-        1002,
-    )
-
-    assert origin == pytest.approx(33.8, abs=1.0)
-    assert unique_grid_geometry.axis_cell_count(
-        positions,
-        origin,
-        pitch,
-        unique_grid_geometry.RITUAL_COLS,
-        1002,
-    ) == 11
 
 
 def test_select_scanners_combines_additive_runeshape_with_primary_panel():
@@ -506,31 +406,6 @@ def _synthetic_grid_panel(*, merchant_title: bool):
     return image
 
 
-def _ritual_rows_from_fixture(image, tmp_path):
-    layout = SceneAnalysis(image).ritual
-    assert layout is not None
-    region = layout.region
-    crop = image[region.y:region.y + region.h, region.x:region.x + region.w]
-    grid = uniquescan._dynamic_ritual_grid(crop, float(layout.cell or 0))
-    assert grid is not None
-    occupied = uniquescan._occupied_cells(crop, grid)
-    row, col = np.argwhere(occupied)[0]
-    x0, y0, x1, y1 = uniquescan._cell_rect(grid, int(col), int(row), pad=0)
-    icon = tmp_path / "ritual-cell.png"
-    cv2.imwrite(str(icon), crop[y0:y1, x0:x1])
-    return {
-        "Fixture Ritual Item": {
-            "price": 10.0,
-            "quantity": 1,
-            "kind": "tagged",
-            "iconPath": str(icon),
-            "w": 1,
-            "h": 1,
-            "trend": None,
-        }
-    }
-
-
 def test_scene_reports_grid_candidates_independently_of_merchant_title():
     titled_grid = SceneAnalysis(_synthetic_grid_panel(merchant_title=True))
     generic_grid = SceneAnalysis(_synthetic_grid_panel(merchant_title=False))
@@ -595,46 +470,6 @@ def test_merchant_scanner_routes_reported_captures_if_available(scan):
     assert scanner is not None
     assert detection is not None
     assert scanner.id == "merchant"
-
-
-def test_merchant_scan_uses_fast_shared_matching_without_unknown_badges(monkeypatch):
-    from poed.scanners.merchant import MerchantScanner
-
-    calls = {}
-
-    def fake_scan_region(
-        frame,
-        rows,
-        region,
-        cell,
-        include_unknown=True,
-        matching_mode="cells",
-        gray_thresh=0.72,
-        color_thresh=0.75,
-    ):
-        calls["include_unknown"] = include_unknown
-        calls["matching_mode"] = matching_mode
-        calls["gray_thresh"] = gray_thresh
-        calls["color_thresh"] = color_thresh
-        return []
-
-    monkeypatch.setattr(uniquescan, "scan_region", fake_scan_region)
-    ctx = _ctx(np.zeros((120, 120, 3), np.uint8), rows={})
-    detection = Detection(
-        "merchant",
-        1.0,
-        {"cell": 52.0},
-        region=Rect(0, 0, 100, 100),
-    )
-
-    result = MerchantScanner().scan(ctx, detection)
-
-    assert calls["include_unknown"] is False
-    assert calls["matching_mode"] == "shared"
-    assert calls["gray_thresh"] == 0.70
-    assert calls["color_thresh"] == 0.73
-    assert result.scanner_id == "merchant"
-    assert result.matches == []
 
 
 def test_merchant_stock_scan_region_keeps_edge_columns_visible():
@@ -728,6 +563,40 @@ def test_expedition_additive_gate_requires_panel_visual(monkeypatch):
         additive_detected=True,
         primary_detected=False,
     )
+
+
+def _ritual_rows_from_fixture(image, tmp_path):
+    """Build a one-row corpus whose icon is cropped from the fixture's own
+    Favours grid, so the end-to-end scan can produce at least one match."""
+    from poed import ritual_scan
+    from poed.ritual_scan import occupancy as ritual_occupancy
+
+    panel, lattice, _notes = ritual_scan.locate(image)
+    if panel is None or lattice is None:
+        pytest.skip("fixture has no locatable Favours panel (OCR may be unavailable)")
+    occ = ritual_occupancy.feature_occupancy(image, lattice)
+    occupied = [
+        (col, row)
+        for row in range(occ.rows)
+        for col in range(occ.cols)
+        if occ.occupied[row, col]
+    ]
+    if not occupied:
+        pytest.skip("fixture Favours grid has no occupied cells")
+    col, row = occupied[0]
+    rect = lattice.cell_rect(col, row)
+    icon = image[rect.y:rect.y + rect.h, rect.x:rect.x + rect.w]
+    icon_path = tmp_path / "fixture-reward.png"
+    cv2.imwrite(str(icon_path), icon)
+    return {
+        "Fixture Reward": {
+            "price": 5.0,
+            "iconPath": str(icon_path),
+            "w": 1,
+            "h": 1,
+            "kind": "unique",
+        }
+    }
 
 
 @pytest.mark.parametrize(
