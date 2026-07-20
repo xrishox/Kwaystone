@@ -100,9 +100,10 @@ Scanner internals are intentionally split by responsibility:
   fidelity is validated on 4K captures; synthetic downscales keep routing
   and counts but degrade names, and native lower-resolution captures are
   needed before identification can be called resolution-independent.
-- `poed.ritual_lab` is development tooling only (candidate systems,
-  synthetic-composite datasets, scoring CLI via `python -m poed.ritual_lab`);
-  production code must not import it.
+- `poed.ritual_lab` is development tooling only (scoring datasets and CLI via
+  `python -m poed.ritual_lab`); production code must not import it. The
+  ritual design record, measured negative results, and lab guide live in
+  [`docs/ritual-scanner.md`](ritual-scanner.md).
 - `poed.uniquescan` owns the market icon template corpus and the shared
   coarse-to-fine matcher used by the merchant scanner; its corpus loader,
   descriptors, and scan thread pool also feed `poed.ritual_scan`.

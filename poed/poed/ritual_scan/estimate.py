@@ -335,53 +335,6 @@ def grid_from_roi(
     )
 
 
-def periodic_region(
-    gray: np.ndarray,
-    min_pitch: float,
-    max_pitch: float,
-    tiles: tuple[int, int] = (8, 5),
-) -> tuple[tuple[int, int, int, int] | None, float]:
-    """Find the strongest grid-periodic region: score coarse tiles by ACF
-    harmonic quality in the pitch band and return the bbox of the best
-    connected high-quality cluster (x0, y0, x1, y1)."""
-    height, width = gray.shape[:2]
-    cols, rows = tiles
-    tile_w = width // cols
-    tile_h = height // rows
-    if tile_w < max_pitch * 2 or tile_h < max_pitch * 2:
-        return None, 0.0
-    quality = np.zeros((rows, cols))
-    for ty in range(rows):
-        for tx in range(cols):
-            tile = gray[ty * tile_h:(ty + 1) * tile_h, tx * tile_w:(tx + 1) * tile_w]
-            sx, sy = line_strength_signals(tile)
-            _, qx = estimate_pitch(sx, min_pitch, max_pitch, harmonics=3)
-            _, qy = estimate_pitch(sy, min_pitch, max_pitch, harmonics=3)
-            quality[ty, tx] = max(0.0, qx) + max(0.0, qy)
-    threshold = max(0.15, float(np.quantile(quality, 0.75)))
-    strong = quality >= threshold
-    if not strong.any():
-        return None, float(quality.max())
-    import cv2
-
-    count, labels = cv2.connectedComponents(strong.astype(np.uint8), connectivity=8)
-    best_label, best_sum = 0, -1.0
-    for label in range(1, count):
-        total = float(quality[labels == label].sum())
-        if total > best_sum:
-            best_label, best_sum = label, total
-    ys, xs = np.nonzero(labels == best_label)
-    x0 = int(xs.min()) * tile_w
-    x1 = (int(xs.max()) + 1) * tile_w
-    y0 = int(ys.min()) * tile_h
-    y1 = (int(ys.max()) + 1) * tile_h
-    pad_x, pad_y = tile_w // 2, tile_h // 2
-    return (
-        (max(0, x0 - pad_x), max(0, y0 - pad_y), min(width, x1 + pad_x), min(height, y1 + pad_y)),
-        best_sum,
-    )
-
-
 def lattice_from_region(
     gray: np.ndarray,
     region_x: int,

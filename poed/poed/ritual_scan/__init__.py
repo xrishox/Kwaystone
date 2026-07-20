@@ -4,7 +4,7 @@ Pipeline: chrome-anchored panel localization (gold band verified by
 recognition-only OCR + quality-ranked gridline lattice), per-cell feature
 occupancy with expansion candidates, identification-driven footprint cover,
 and masked-ZNCC identification against the market icon corpus. Selected as
-the winner of the ritual-rewrite lab (see docs/ritual-rewrite.md): 0/112
+the winner of the ritual-rewrite lab (see docs/ritual-scanner.md): 0/112
 false fires on the negative suite, full corpus at verification Level 3.
 
 This package must not import poed.scanners or poed.desktop internals.

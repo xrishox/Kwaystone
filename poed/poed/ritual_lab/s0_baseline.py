@@ -1,4 +1,7 @@
-"""s0: the current production ritual pipeline, wrapped for reference scores."""
+"""s0: the production RitualScanner end-to-end (probe + scan), including
+the scanner-layer plumbing that s2 bypasses by calling locate/extract
+directly. Identical outputs between s0 and s2 are a regression check on
+that plumbing."""
 
 from __future__ import annotations
 

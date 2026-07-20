@@ -10,53 +10,9 @@ def available_systems() -> dict[str, type]:
 
     registry: dict[str, type] = {"s0": BaselineSystem}
     try:
-        from .s1_lattice import LatticeSystem
-
-        registry["s1"] = LatticeSystem
-    except ImportError:
-        pass
-    try:
         from .s2_chrome import ChromeSystem
 
         registry["s2"] = ChromeSystem
-    except ImportError:
-        pass
-    try:
-        from .s3_items import ItemFirstSystem
-
-        registry["s3"] = ItemFirstSystem
-    except ImportError:
-        pass
-    try:
-        from .s4_voting import VotingSystem
-
-        registry["s4"] = VotingSystem
-    except ImportError:
-        pass
-    try:
-        from .s5_generative import GenerativeSystem
-
-        registry["s5"] = GenerativeSystem
-    except ImportError:
-        pass
-    try:
-        from .s2_variants import (
-            BlendOrientSystem,
-            BlendSharpSystem,
-            BlendSystem,
-            OrientSystem,
-            SharpSystem,
-        )
-
-        registry["s2b"] = BlendSystem
-        registry["s2o"] = OrientSystem
-        registry["s2bo"] = BlendOrientSystem
-        registry["s2s"] = SharpSystem
-        registry["s2bs"] = BlendSharpSystem
-        from .s2_variants import BlendOrientSharpSystem, OrientSharpSystem
-
-        registry["s2os"] = OrientSharpSystem
-        registry["s2bos"] = BlendOrientSharpSystem
     except ImportError:
         pass
     return registry
