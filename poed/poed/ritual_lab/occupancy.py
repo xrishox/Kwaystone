@@ -203,7 +203,10 @@ def feature_occupancy(frame: np.ndarray, lattice: Lattice) -> OccupancyMap:
     occupied = np.zeros_like(combined, dtype=bool)
     high = _two_means_high(combined.reshape(-1).astype(np.float64))
     if high is not None:
-        occupied = _fill_holes(high.reshape(combined.shape))
+        # No hole filling: a genuinely empty cell enclosed by items is a
+        # normal layout, and true dark-art holes are recovered by the
+        # expansion-candidate + identification-cover path instead.
+        occupied = high.reshape(combined.shape)
     return OccupancyMap(energy=combined, occupied=occupied)
 
 

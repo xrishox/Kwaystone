@@ -17,6 +17,67 @@ from .stages import Footprint, Lattice
 
 QUICK_ACCEPT_FLOOR = 0.12
 SINGLE_CELL_FALLBACK = 0.0
+INTERNAL_CROSS_BONUS = 0.05
+INTERNAL_GAP_PENALTY = 0.12
+PROMOTE_ACCEPT = 0.66
+
+
+def internal_boundary_term(
+    frame: np.ndarray,
+    lattice: Lattice,
+    footprint: Footprint,
+) -> float:
+    """Per-cell score adjustment from the footprint's INTERNAL boundaries.
+
+    One item's art crosses its own internal gridlines; two stacked lookalikes
+    leave a clean gap there. Internal boundaries are immune to the
+    neighbour-overflow problem that makes OUTER boundary evidence unusable.
+    Returns a bonus when every internal boundary is crossed, a penalty when
+    all of them are clean gaps, else 0."""
+    if footprint.w == 1 and footprint.h == 1:
+        return 0.0
+    import cv2
+
+    rect = footprint.rect(lattice)
+    x0 = max(0, rect.x)
+    y0 = max(0, rect.y)
+    x1 = min(frame.shape[1], rect.x + rect.w)
+    y1 = min(frame.shape[0], rect.y + rect.h)
+    window = frame[y0:y1, x0:x1]
+    if window.size == 0:
+        return 0.0
+    gray = cv2.cvtColor(window, cv2.COLOR_BGR2GRAY).astype(np.float32)
+    grad = cv2.magnitude(
+        cv2.Scharr(gray, cv2.CV_32F, 1, 0), cv2.Scharr(gray, cv2.CV_32F, 0, 1)
+    )
+    threshold = float(np.quantile(grad, 0.75))
+    if threshold <= 1e-3:
+        return 0.0
+    art = grad > threshold
+    scale = (lattice.pitch_x + lattice.pitch_y) / (2.0 * 105.0)
+    tight = max(3, int(round(scale * 4)))
+    fractions = []
+    for k in range(1, footprint.w):
+        x = int(round(lattice.x0 + (footprint.col + k) * lattice.pitch_x)) - x0
+        span0 = int(round(lattice.pitch_y * 0.15))
+        left = art[span0:art.shape[0] - span0, max(0, x - tight - 2):max(0, x - 2)]
+        right = art[span0:art.shape[0] - span0, x + 3:x + tight + 3]
+        if left.size and right.size:
+            fractions.append(float((left.any(axis=1) & right.any(axis=1)).mean()))
+    for k in range(1, footprint.h):
+        y = int(round(lattice.y0 + (footprint.row + k) * lattice.pitch_y)) - y0
+        span0 = int(round(lattice.pitch_x * 0.15))
+        top = art[max(0, y - tight - 2):max(0, y - 2), span0:art.shape[1] - span0]
+        bottom = art[y + 3:y + tight + 3, span0:art.shape[1] - span0]
+        if top.size and bottom.size:
+            fractions.append(float((top.any(axis=0) & bottom.any(axis=0)).mean()))
+    if not fractions:
+        return 0.0
+    if min(fractions) >= 0.10:
+        return INTERNAL_CROSS_BONUS
+    if max(fractions) <= 0.02:
+        return -INTERNAL_GAP_PENALTY
+    return 0.0
 
 
 def _window(frame: np.ndarray, lattice: Lattice, footprint: Footprint, pad: int) -> np.ndarray:
@@ -82,7 +143,7 @@ def identification_cover(
             _window(frame, lattice, footprint, pad),
             (footprint.w, footprint.h),
             pitch,
-        )
+        ) + internal_boundary_term(frame, lattice, footprint)
 
     scores = list(uniquescan._pool().map(quick, proposals))
     hypotheses = [
@@ -138,6 +199,30 @@ def refined_cover(
                 )
             full_cache[footprint] = cached
         return cached
+
+    # Identification-confirmed occupancy: a candidate cell where a full 1x1
+    # identification ACCEPTS holds a real item and must be covered like core —
+    # otherwise a spanning hypothesis is the only thing allowed to explain it
+    # and wins by default.
+    if candidates is not None and candidates.any():
+        occupied = occupied.copy()
+        promote = [
+            Footprint(col, row, 1, 1)
+            for row in range(candidates.shape[0])
+            for col in range(candidates.shape[1])
+            if candidates[row, col]
+        ]
+        from poed import uniquescan
+
+        list(uniquescan._pool().map(full_result, promote))
+        for footprint in promote:
+            template, score = full_result(footprint)
+            # Candidate cells carry a strong empty prior (gray-stone icons can
+            # score ~0.6 against the bare ornament pattern), so promotion
+            # demands more than the ordinary accept bar.
+            if template is not None and score >= PROMOTE_ACCEPT:
+                occupied[footprint.row, footprint.col] = True
+                candidates[footprint.row, footprint.col] = False
 
     footprints = identification_cover(
         frame, lattice, occupied, legal, identifier, candidates=candidates
@@ -198,7 +283,11 @@ def refined_cover(
 
             list(uniquescan._pool().map(full_result, proposals))
             scored = [
-                (max(full_result(footprint)[1], 0.0), footprint)
+                (
+                    max(full_result(footprint)[1], 0.0)
+                    + internal_boundary_term(frame, lattice, footprint),
+                    footprint,
+                )
                 for footprint in proposals
             ]
             resolved = _solve_cover(comp_core, component, scored)
@@ -326,11 +415,16 @@ def _solve_cover(
             ][:BRANCH_LIMIT]
             for score, footprint in options:
                 block = _block(footprint)
+                # Candidate (non-core) cells carry reduced evidence weight so
+                # a spanning hypothesis cannot buy area from possibly-empty
+                # cells; sparse items still win because their tinted corners
+                # add weight while fragments pay per-footprint costs.
+                effective = len(block & core) + 0.3 * len(block - core)
                 picked.append(footprint)
                 dfs(
                     remaining_core - block,
                     used | block,
-                    total + score * len(block) - 0.05,
+                    total + score * effective - 0.05,
                     picked,
                 )
                 picked.pop()

@@ -22,7 +22,7 @@ from poed.match_fields import match_row_fields
 
 MARKER_NAME = "Unrecognized reward"
 PAD_SLOTS = 0.25
-PREFILTER_1X1 = 40
+PREFILTER_1X1 = 64
 PREFILTER_MULTI = 25
 COARSE_KEEP = 10
 ACCEPT_COLOR = 0.50
@@ -127,6 +127,54 @@ def _masked_zncc_best(
     return float(scores[index]), (dy, dx)
 
 
+DISCRIMINATE_MARGIN = 0.06
+DISCRIMINATE_DIFF = 24
+DISCRIMINATE_MIN_PIXELS = 40
+
+
+def _discriminate(
+    scaled: np.ndarray,
+    tpl_a: dict,
+    off_a: tuple[int, int],
+    tpl_b: dict,
+    off_b: tuple[int, int],
+) -> dict:
+    """Lookalike tiebreak: rescore two close candidates on ONLY the pixels
+    where their templates differ, so a shared golden ring (omen coins) cannot
+    drown the discriminating center art. Returns the winning template."""
+    if tpl_a["color"].shape != tpl_b["color"].shape:
+        return tpl_a
+    both = _template_mask(tpl_a) & _template_mask(tpl_b)
+    diff = np.abs(
+        tpl_a["color"].astype(np.int16) - tpl_b["color"].astype(np.int16)
+    ).max(axis=2)
+    dmask = both & (diff > DISCRIMINATE_DIFF)
+    if int(dmask.sum()) < DISCRIMINATE_MIN_PIXELS:
+        return tpl_a
+    ys, xs = np.nonzero(dmask)
+
+    def diff_score(template: dict, offset: tuple[int, int]) -> float:
+        dy, dx = offset
+        if (
+            dy + template["color"].shape[0] > scaled.shape[0]
+            or dx + template["color"].shape[1] > scaled.shape[1]
+            or dy < 0
+            or dx < 0
+        ):
+            return -1.0
+        tvec = template["color"][ys, xs, :].astype(np.float32).reshape(-1)
+        tvec -= tvec.mean()
+        tnorm = float(np.linalg.norm(tvec))
+        wvec = scaled[ys + dy, xs + dx, :].astype(np.float32).reshape(-1)
+        wvec -= wvec.mean()
+        wnorm = float(np.linalg.norm(wvec))
+        if tnorm <= 1e-6 or wnorm <= 1e-6:
+            return -1.0
+        return float(np.dot(tvec, wvec) / (tnorm * wnorm))
+
+    return tpl_a if diff_score(tpl_a, off_a) >= diff_score(tpl_b, off_b) else tpl_b
+
+
 def _masked_color_score(
     window: np.ndarray,
     template: dict,
@@ -163,6 +211,8 @@ class Identifier:
             key = (int(template["slots_w"]), int(template["slots_h"]))
             self.groups.setdefault(key, []).append(template)
         self._descriptor_matrices: dict[tuple[int, int], np.ndarray] = {}
+        self._half_prefilter: tuple | None = None
+        self._families: dict[int, list[dict]] | None = None
 
     def _descriptor_matrix(self, key: tuple[int, int]) -> np.ndarray:
         matrix = self._descriptor_matrices.get(key)
@@ -171,6 +221,84 @@ class Identifier:
             matrix = np.stack([template["descriptor"] for template in group])
             self._descriptor_matrices[key] = matrix
         return matrix
+
+    def _half_prefilter_matrix(self) -> tuple[np.ndarray, list[dict], tuple[int, int]]:
+        """Dense masked-centered half-res template matrix for 1x1 ranking.
+
+        The 18x18 visual descriptor was measured to EXCLUDE correct omens from
+        its top-40 (backdrop + stack numerals swamp it); ranking by actual
+        masked correlation at half resolution is faithful and still one matmul
+        per window offset."""
+        if self._half_prefilter is None:
+            group = self.groups.get((1, 1), [])
+            shapes: dict[tuple[int, int], list[dict]] = {}
+            for template in group:
+                shapes.setdefault(template["gray_half"].shape, []).append(template)
+            shape, members = max(shapes.items(), key=lambda kv: len(kv[1]))
+            extras = [t for s, ts in shapes.items() if s != shape for t in ts]
+            length = shape[0] * shape[1]
+            matrix = np.zeros((len(members), length), dtype=np.float32)
+            correction = np.ones(len(members), dtype=np.float32)
+            for index, template in enumerate(members):
+                ys, xs, vec = _masked_half_vectors(template)
+                matrix[index, ys * shape[1] + xs] = vec
+                # Window patches are normalized by their FULL-patch energy but
+                # each template only scores within its mask; compact-mask
+                # templates (omen coins) would be systematically suppressed
+                # without this energy-fraction correction.
+                correction[index] = float(np.sqrt(length / max(1, len(vec))))
+            self._half_prefilter = (matrix, members, shape, extras, correction)
+        return self._half_prefilter
+
+    FAMILY_SIMILARITY = 0.55
+    FAMILY_CAP = 60
+
+    def family_of(self, template: dict) -> list[dict]:
+        """Lookalike family: 1x1 templates whose masked half-res art
+        correlates strongly with this one (omen coins, essence bottles...).
+        Whenever a family member wins, the whole family must be verified —
+        prefilters cannot rank within a family."""
+        if self._families is None:
+            matrix, members, _shape, _extras, _correction = self._half_prefilter_matrix()
+            similarity = matrix @ matrix.T
+            families: dict[int, list[dict]] = {}
+            for index in range(len(members)):
+                close = np.nonzero(similarity[index] >= self.FAMILY_SIMILARITY)[0]
+                if len(close) > 1:
+                    families[id(members[index])] = [
+                        members[int(j)] for j in close[: self.FAMILY_CAP]
+                    ]
+            self._families = families
+        return self._families.get(id(template), [])
+
+    def rank_1x1(self, gray_half: np.ndarray, limit: int) -> list[dict]:
+        matrix, members, shape, extras, correction = self._half_prefilter_matrix()
+        th, tw = shape
+        max_dy = gray_half.shape[0] - th
+        max_dx = gray_half.shape[1] - tw
+        if max_dy < 0 or max_dx < 0 or not members:
+            return []
+        best = np.full(len(members), -1.0, dtype=np.float32)
+        for dy in range(0, max_dy + 1, 2):
+            for dx in range(0, max_dx + 1, 2):
+                patch = gray_half[dy:dy + th, dx:dx + tw].astype(np.float32).reshape(-1)
+                patch -= patch.mean()
+                norm = float(np.linalg.norm(patch))
+                if norm <= 1e-6:
+                    continue
+                scores = (matrix @ (patch / norm)) * correction
+                np.maximum(best, scores, out=best)
+        scored = [(float(best[i]), members[i]) for i in range(len(members))]
+        for template in extras:
+            ys, xs, vec = _masked_half_vectors(template)
+            score, _ = _masked_zncc_best(
+                gray_half, ys, xs, vec,
+                template["gray_half"].shape[0], template["gray_half"].shape[1],
+                stride=2,
+            )
+            scored.append((score, template))
+        scored.sort(key=lambda item: -item[0])
+        return [template for _, template in scored[:limit]]
 
     def quick_footprint_score(
         self,
@@ -190,14 +318,15 @@ class Identifier:
             cv2.cvtColor(scaled, cv2.COLOR_BGR2GRAY),
             None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA,
         )
-        limit = PREFILTER_1X1 if footprint_wh == (1, 1) else PREFILTER_MULTI
-        if len(group) > limit:
+        if footprint_wh == (1, 1) and len(group) > top:
+            candidates = self.rank_1x1(gray_half, top)
+        elif len(group) > top:
             descriptor = uniquescan._visual_descriptor(scaled)
             matrix = self._descriptor_matrix(footprint_wh)
             ranked = np.argsort(matrix @ descriptor)[::-1][:top]
             candidates = [group[int(index)] for index in ranked]
         else:
-            candidates = group[:top] if len(group) > top else group
+            candidates = group
         best = -1.0
         for template in candidates:
             ys, xs, vec = _masked_half_vectors(template)
@@ -233,7 +362,25 @@ class Identifier:
         gray_half = cv2.resize(gray, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
 
         limit = PREFILTER_1X1 if footprint_wh == (1, 1) else PREFILTER_MULTI
-        if len(group) > limit:
+        if footprint_wh == (1, 1) and len(group) > limit:
+            # Union of two prefilters with complementary blind spots: masked
+            # half-res correlation (shape-faithful) and the interior visual
+            # descriptor (texture/color-gradient) — verification arbitrates.
+            candidates = self.rank_1x1(gray_half, limit)
+            probe = interior if interior is not None else window
+            descriptor = uniquescan._visual_descriptor(
+                cv2.resize(probe, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+                if probe is not window
+                else scaled
+            )
+            matrix = self._descriptor_matrix(footprint_wh)
+            ranked = np.argsort(matrix @ descriptor)[::-1][:20]
+            known = {id(t) for t in candidates}
+            for index in ranked:
+                template = group[int(index)]
+                if id(template) not in known:
+                    candidates.append(template)
+        elif len(group) > limit:
             probe = interior if interior is not None else window
             descriptor = uniquescan._visual_descriptor(
                 cv2.resize(probe, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
@@ -262,10 +409,7 @@ class Identifier:
                 coarse.append((score, template, offset))
         coarse.sort(key=lambda item: -item[0])
 
-        best_label = None
-        best_score = -1.0
-        best_template = None
-        runner_up = -1.0
+        finalists: list[tuple[float, dict, tuple[int, int]]] = []
         for _, template, half_offset in coarse[:COARSE_KEEP]:
             ys, xs, vec = _masked_vectors(template)
             gray_score, offset = _masked_zncc_best(
@@ -282,18 +426,60 @@ class Identifier:
             if gray_score <= 0:
                 continue
             color_score = _masked_color_score(scaled, template, offset)
-            if color_score > best_score:
-                if best_label is not None and template["label"] != best_label:
-                    runner_up = best_score
-                best_score = color_score
-                best_label = template["label"]
-                best_template = template
-            elif best_label is not None and template["label"] != best_label:
-                runner_up = max(runner_up, color_score)
+            finalists.append((color_score, template, offset))
+
+        def pick_best(entries):
+            top, top_score, top_offset, second = None, -1.0, (0, 0), -1.0
+            for color_score, template, offset in entries:
+                if color_score > top_score:
+                    if top is not None and template["label"] != top["label"]:
+                        second = top_score
+                    top, top_score, top_offset = template, color_score, offset
+                elif top is not None and template["label"] != top["label"]:
+                    second = max(second, color_score)
+            return top, top_score, top_offset, second
+
+        best_template, best_score, best_offset, runner_up = pick_best(finalists)
+
+        if best_template is not None and footprint_wh == (1, 1):
+            seen_ids = {id(template) for _, template, _ in finalists}
+            for template in self.family_of(best_template):
+                if id(template) in seen_ids:
+                    continue
+                ys, xs, vec = _masked_vectors(template)
+                gray_score, offset = _masked_zncc_best(
+                    gray,
+                    ys,
+                    xs,
+                    vec,
+                    template["gray"].shape[0],
+                    template["gray"].shape[1],
+                    stride=1,
+                    center=best_offset,
+                    radius=2,
+                )
+                if gray_score <= 0:
+                    continue
+                finalists.append(
+                    (_masked_color_score(scaled, template, offset), template, offset)
+                )
+            best_template, best_score, best_offset, runner_up = pick_best(finalists)
 
         accept = ACCEPT_COLOR_1X1 if footprint_wh == (1, 1) else ACCEPT_COLOR
         if best_template is None or best_score < accept:
             return None, max(best_score, 0.0)
+        contested = [
+            (score, template, offset)
+            for score, template, offset in finalists
+            if template["label"] != best_template["label"]
+            and best_score - score < DISCRIMINATE_MARGIN
+        ]
+        for score, template, offset in contested:
+            winner = _discriminate(
+                scaled, best_template, best_offset, template, offset
+            )
+            if winner is template:
+                best_template, best_score, best_offset = template, score, offset
         if runner_up > 0 and best_score - runner_up < AMBIGUOUS_MARGIN:
             best_template = dict(best_template, ambiguous=True)
         return best_template, best_score
