@@ -157,24 +157,22 @@ def test_scan_unique_grid_applies_context_row_filter(monkeypatch):
 def test_ritual_scanner_uses_ritual_candidate_filter(monkeypatch):
     captured = {}
 
-    def fake_scan_unique_grid(ctx, detection, **kwargs):
-        captured.update(kwargs)
-        return ScanResult("ritual", "ritual rewards", [])
+    def fake_extract(frame, lattice, rows):
+        captured["rows"] = rows
+        return [], [], None
 
-    monkeypatch.setattr(
-        ritual_scanner_module,
-        "scan_unique_grid",
-        fake_scan_unique_grid,
-    )
+    monkeypatch.setattr(ritual_scanner_module.ritual_scan, "extract", fake_extract)
 
+    ctx = _ctx()
     scanner = ritual_scanner_module.RitualScanner()
     result = scanner.scan(
-        _ctx(),
-        Detection("ritual", 1.0, {"cell": 47}, region=Rect(0, 0, 100, 100)),
+        ctx,
+        Detection("ritual", 1.0, {"lattice": object()}, region=Rect(0, 0, 100, 100)),
     )
 
     assert result.matches == []
-    assert captured["row_filter"] is uniquescan.filter_ritual_rows
+    expected = uniquescan.filter_ritual_rows(uniquescan.filter_rows(ctx.rows, 0.0))
+    assert captured["rows"] is expected
 
 
 def test_ritual_grid_axis_count_keeps_full_grid_with_hidden_first_boundary():

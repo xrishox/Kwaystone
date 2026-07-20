@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import logging
 
-from poed import uniquescan
+from poed import ritual_scan, uniquescan
 
 from .common import (
+    finalize_matches,
     update_debug_manifest,
     write_debug_image,
 )
 from .types import Detection, ScanContext, ScanResult
-from .unique_grid import scan_unique_grid
 
 _LOG = logging.getLogger("waystone.scanners.ritual")
 
@@ -20,55 +20,55 @@ class RitualScanner:
     priority = 10.0
 
     def probe(self, ctx: ScanContext, scene) -> Detection | None:
-        # A visible Have panel can coexist with inventory grids. Its repeated
-        # cards are more specific than a generic square lattice.
-        if scene.have is not None:
-            update_debug_manifest(ctx.debug_dir, ritual_probe="have-layout-present")
+        panel, lattice, notes = ritual_scan.locate(ctx.frame)
+        if panel is None or lattice is None:
+            update_debug_manifest(
+                ctx.debug_dir,
+                ritual_probe={"accepted": False, "notes": notes[:6]},
+            )
             return None
-        layout = scene.ritual
-        if layout is None:
-            update_debug_manifest(ctx.debug_dir, ritual_probe="no-grid-layout")
+        rect = panel.rect.clipped(ctx.frame.shape[1], ctx.frame.shape[0])
+        if rect is None:
+            update_debug_manifest(ctx.debug_dir, ritual_probe="degenerate-panel")
             return None
-        rect = layout.region
-        crop = ctx.frame[rect.y:rect.y + rect.h, rect.x:rect.x + rect.w]
-        x0, y0 = rect.x, rect.y
         if ctx.debug_dir:
-            write_debug_image(ctx.debug_dir / "10-ritual-probe-crop.jpg", crop)
+            crop = ctx.frame[rect.y:rect.y + rect.h, rect.x:rect.x + rect.w]
+            write_debug_image(ctx.debug_dir / "10-ritual-probe-crop.jpg", crop.copy())
         update_debug_manifest(
             ctx.debug_dir,
             ritual_probe={
                 "accepted": True,
-                "layout_score": layout.score,
-                "cell": layout.cell,
-                "evidence": list(layout.details),
+                "evidence": list(panel.evidence),
+                "pitch": round(lattice.pitch_x, 2),
+                "cols": lattice.cols,
+                "rows": lattice.rows,
             },
         )
         return Detection(
             self.id,
-            layout.confidence,
-            {
-                "crop": crop,
-                "x0": x0,
-                "y0": y0,
-                "cell": layout.cell,
-            },
+            panel.confidence,
+            {"lattice": lattice},
             region=rect,
-            evidence=layout.details,
+            evidence=panel.evidence,
         )
 
     def scan(self, ctx: ScanContext, detection: Detection) -> ScanResult:
-        result = scan_unique_grid(
-            ctx,
-            detection,
-            scanner_id=self.id,
-            title=self.title,
-            include_unknown=True,
-            stage_name="19-ritual-result.jpg",
-            stage_label="ritual result",
-            row_filter=uniquescan.filter_ritual_rows,
+        rows = uniquescan.filter_rows(
+            ctx.rows, ctx.cfg.get("unique_scan_min_price", 0.0)
         )
-        _LOG.info("ritual scan matches=%d", len(result.matches))
-        return result
+        rows = uniquescan.filter_ritual_rows(rows)
+        _footprints, matches, _occupancy = ritual_scan.extract(
+            ctx.frame, detection.payload["lattice"], rows
+        )
+        matches = finalize_matches(
+            ctx,
+            matches,
+            self.id,
+            stage="19-ritual-result.jpg",
+            title=f"ritual result: matches={len(matches)}",
+        )
+        _LOG.info("ritual scan matches=%d", len(matches))
+        return ScanResult(self.id, self.title, matches)
 
     def warm(self, brain, cfg: dict) -> None:
         uniquescan.warm(brain, cfg, row_filter=uniquescan.filter_ritual_rows)

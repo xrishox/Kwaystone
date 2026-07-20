@@ -10,7 +10,7 @@ import numpy as np
 
 from .datasets import Sample, lab_state_dir
 from .scoring import SampleRecord
-from .stages import RitualScanOutput
+from .stages_output import RitualScanOutput
 
 
 def render_overlay(

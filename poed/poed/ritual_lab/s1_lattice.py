@@ -14,9 +14,12 @@ import time
 
 import numpy as np
 
-from . import cover, estimate, identify, occupancy
-from .s2_chrome import PITCH_HEIGHT_BOUNDS
-from .stages import RitualScanOutput, PanelHypothesis
+from poed import ritual_scan
+from poed.ritual_scan import estimate
+from poed.ritual_scan.panel import PITCH_HEIGHT_BOUNDS
+from poed.ritual_scan.stages import PanelHypothesis
+
+from .stages_output import RitualScanOutput
 
 GRID_QUALITY_MIN = 0.30
 
@@ -24,15 +27,6 @@ GRID_QUALITY_MIN = 0.30
 class LatticeSystem:
     id = "s1"
 
-    def __init__(self) -> None:
-        self._identifier: identify.Identifier | None = None
-        self._identifier_rows: int | None = None
-
-    def _get_identifier(self, rows: dict) -> identify.Identifier:
-        if self._identifier is None or self._identifier_rows != id(rows):
-            self._identifier = identify.Identifier(rows)
-            self._identifier_rows = id(rows)
-        return self._identifier
 
     def analyze(self, frame: np.ndarray, rows: dict) -> RitualScanOutput:
         timings: dict[str, float] = {}
@@ -69,19 +63,8 @@ class LatticeSystem:
             )
 
         started = time.perf_counter()
-        occ = occupancy.feature_occupancy(frame, lattice)
-        legal = occupancy.legal_footprints(rows)
-        candidates = occupancy.expansion_candidates(
-            occupancy.cell_stack(frame, lattice), occ.occupied
-        )
-        timings["occupancy"] = round((time.perf_counter() - started) * 1000.0, 2)
-
-        started = time.perf_counter()
-        identifier = self._get_identifier(rows)
-        footprints, matches = cover.refined_cover(
-            frame, lattice, occ.occupied, legal, identifier, candidates=candidates
-        )
-        timings["cover+identify"] = round((time.perf_counter() - started) * 1000.0, 2)
+        footprints, matches, occ = ritual_scan.extract(frame, lattice, rows)
+        timings["extract"] = round((time.perf_counter() - started) * 1000.0, 2)
         panel = PanelHypothesis(
             rect=lattice.frame_rect(),
             confidence=1.0,

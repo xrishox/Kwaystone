@@ -10,7 +10,9 @@ from poed.scanners.ritual import RitualScanner
 from poed.scanners.scene import SceneAnalysis
 from poed.scanners.types import ScanContext
 
-from .stages import PanelHypothesis, RitualScanOutput
+from poed.ritual_scan.stages import PanelHypothesis
+
+from .stages_output import RitualScanOutput
 
 
 class BaselineSystem:

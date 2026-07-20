@@ -1,4 +1,4 @@
-"""Shared stage types for ritual candidate systems.
+"""Geometry and occupancy types for the ritual scanning pipeline.
 
 Every candidate system produces the same artifacts (panel hypothesis, lattice,
 occupancy, footprints, matches) so systems can be scored uniformly and their
@@ -7,9 +7,7 @@ stages recombined during ablation.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Protocol
-
+from dataclasses import dataclass
 import numpy as np
 
 from poed.image_geometry import Rect
@@ -79,25 +77,3 @@ class Footprint:
 
     def rect(self, lattice: Lattice) -> Rect:
         return lattice.cell_rect(self.col, self.row, self.w, self.h)
-
-
-@dataclass
-class RitualScanOutput:
-    """Everything a candidate system produces for one frame."""
-
-    fired: bool
-    matches: list[dict] = field(default_factory=list)
-    panel: PanelHypothesis | None = None
-    lattice: Lattice | None = None
-    occupancy: OccupancyMap | None = None
-    footprints: list[Footprint] = field(default_factory=list)
-    evidence: list[str] = field(default_factory=list)
-    timings_ms: dict[str, float] = field(default_factory=dict)
-    extra: dict[str, Any] = field(default_factory=dict)
-
-
-class RitualSystem(Protocol):
-    id: str
-
-    def analyze(self, frame: np.ndarray, rows: dict) -> RitualScanOutput:
-        ...

@@ -67,7 +67,7 @@ def _cmd_donor(args: argparse.Namespace) -> int:
         except Exception:  # noqa: BLE001
             pass
         os.environ["WAYSTONE_PADDLE_DEVICE"] = "cpu"
-        from .s2_chrome import locate_panel
+        from poed.ritual_scan import locate_panel
 
         panel, lattice, notes = locate_panel(frame)
         if panel is None:

@@ -20,7 +20,7 @@ from poed import scan_corpus
 from poed.scanners.common import normalize_matches
 
 from .datasets import Sample, lab_state_dir
-from .stages import RitualScanOutput, RitualSystem
+from .stages_output import RitualScanOutput, RitualSystem
 
 IOU_THRESHOLD = 0.5
 

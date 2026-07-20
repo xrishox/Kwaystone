@@ -20,9 +20,10 @@ import numpy as np
 
 from poed.image_geometry import Rect
 
-from . import estimate
+from poed.ritual_scan import estimate
+from poed.ritual_scan.stages import Lattice
+
 from .datasets import synth_dir
-from .stages import Lattice
 
 TINT_BGR = (70.0, 38.0, 16.0)
 TINT_ALPHA = 0.45

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .stages import RitualSystem
+from .stages_output import RitualSystem
 
 
 def available_systems() -> dict[str, type]:

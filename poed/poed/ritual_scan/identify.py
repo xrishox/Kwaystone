@@ -17,7 +17,7 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from poed import uniquescan
+from poed import scan_cache, uniquescan
 from poed.match_fields import match_row_fields
 
 MARKER_NAME = "Unrecognized reward"
@@ -211,9 +211,11 @@ class Identifier:
         eligible = uniquescan.filter_ritual_rows(uniquescan.filter_rows(rows, 0.0))
         self.templates = uniquescan._load_corpus(eligible)
         self.groups: dict[tuple[int, int], list[dict]] = {}
+        self.by_label: dict[str, dict] = {}
         for template in self.templates:
             key = (int(template["slots_w"]), int(template["slots_h"]))
             self.groups.setdefault(key, []).append(template)
+            self.by_label[template["label"]] = template
         self._descriptor_matrices: dict[tuple[int, int], np.ndarray] = {}
         self._half_prefilter: tuple | None = None
         self._families: dict[int, list[dict]] | None = None
@@ -393,6 +395,41 @@ class Identifier:
         group = self.groups.get(footprint_wh)
         if not group:
             return None, 0.0
+        # Cross-press reuse keyed by the exact pixels the identification
+        # consumed; only identity is cached — prices are rebuilt from current
+        # rows by the caller (two-generation rotation in poed.scan_cache).
+        cache_key = scan_cache.digest(
+            np.ascontiguousarray(window),
+            extra=f"ritual2:{footprint_wh[0]}x{footprint_wh[1]}:{pitch:.2f}",
+        )
+        cached = scan_cache.lookup("ritual-cell-v2", cache_key)
+        if cached is not None:
+            label, score, ambiguous = cached
+            if label is None:
+                return None, score
+            template = self.by_label.get(label)
+            if template is not None:
+                return (dict(template, ambiguous=True) if ambiguous else template), score
+        template, score = self._identify_uncached(window, footprint_wh, pitch, interior)
+        scan_cache.store(
+            "ritual-cell-v2",
+            cache_key,
+            (
+                template["label"] if template is not None else None,
+                score,
+                bool(template.get("ambiguous")) if template is not None else False,
+            ),
+        )
+        return template, score
+
+    def _identify_uncached(
+        self,
+        window: np.ndarray,
+        footprint_wh: tuple[int, int],
+        pitch: float,
+        interior: np.ndarray | None = None,
+    ) -> tuple[dict | None, float]:
+        group = self.groups.get(footprint_wh)
         scale = uniquescan.PXSLOT / max(pitch, 1e-6)
         scaled = cv2.resize(window, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
         gray = cv2.cvtColor(scaled, cv2.COLOR_BGR2GRAY)
