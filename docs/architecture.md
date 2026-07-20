@@ -55,12 +55,11 @@ The current routes are:
 2. `merchant` — Buy/Sell stock grid, detected from grid layout plus the gold
    title plaque; the located plaque strip is read recognition-only, with a
    full detection+recognition pass as fallback authority.
-3. `ritual` — the Favours reward grid, chrome-anchored: a gold text band
-   (FAVOURS/TRIBUTE/Rituals Remaining) is geometry-gated by a qualifying
-   12x10 gridline lattice below it, then verified with a recognition-only
-   OCR read. Geometry-only acceptance is forbidden (measured 52/112 false
-   fires vs 0/112 with chrome verification), so an unavailable OCR helper
-   rejects the probe.
+3. `ritual` — the Favours reward grid, chrome-anchored: a gold text band is
+   geometry-gated by a qualifying 12x10 lattice below it, then verified with
+   a recognition-only OCR read. Geometry-only acceptance is forbidden, so an
+   unavailable OCR helper rejects the probe (rationale and measurements in
+   [`docs/ritual-scanner.md`](ritual-scanner.md)).
 4. `runeshape` — in-world remnant rune rows; additive and can combine with a
    primary scanner. Strict slot classification is precomputed with a bounded
    thread pool (half the cores; `WAYSTONE_RUNESHAPE_WORKERS` overrides).
@@ -89,17 +88,11 @@ Scanner internals are intentionally split by responsibility:
   downscales degrade below ~1440p, and native lower-resolution captures
   are needed before that path can be called resolution-independent.
 - `poed.ritual_scan` owns the ritual pipeline: chrome-anchored panel
-  localization, occlusion-tolerant fixed-window lattice fitting (weighted
-  least squares over detected line peaks; pitch prior 0.038-0.060 of frame
-  height), translucency-safe per-cell feature occupancy with
-  identification-confirmed expansion candidates, an identification-driven
-  branch-and-bound footprint cover (item art overflows cells, so boundary
-  pixels cannot partition items — identification is the partition
-  authority), and masked-ZNCC identification with lookalike-family
-  expansion and difference-mask discrimination. Known limitation: name
-  fidelity is validated on 4K captures; synthetic downscales keep routing
-  and counts but degrade names, and native lower-resolution captures are
-  needed before identification can be called resolution-independent.
+  localization, occlusion-tolerant lattice fitting, translucency-safe
+  feature occupancy, an identification-driven footprint cover, and
+  masked-ZNCC identification. Design facts, measured negative results, and
+  the known sub-4K name-fidelity limitation are recorded in
+  [`docs/ritual-scanner.md`](ritual-scanner.md).
 - `poed.ritual_lab` is development tooling only (scoring datasets and CLI via
   `python -m poed.ritual_lab`); production code must not import it. The
   ritual design record, measured negative results, and lab guide live in
@@ -204,8 +197,8 @@ Runtime and tuning knobs read by the Python process:
 | `WAYSTONE_PADDLE_DETECTION_MODEL_SIZE` / `WAYSTONE_PADDLE_RECOGNITION_MODEL_SIZE` / `WAYSTONE_PADDLE_QUANTITY_MODEL_SIZE` | Per-model size overrides (`WAYSTONE_PADDLE_MODEL_SIZE` is the deprecated fallback). |
 | `WAYSTONE_PADDLE_RECOGNITION_BATCH_SIZE` | Recognition batch size override. |
 | `WAYSTONE_RUNESHAPE_WORKERS` | Runeshape slot-classification pool size. |
-| `WAYSTONE_RITUAL_CELL_WORKERS` | Ritual/merchant cell-matching pool size. |
-| `WAYSTONE_SCAN_REVIEW_FIXTURE_ROWS` | Fixture rows JSON for offline scan review. |
+| `WAYSTONE_RITUAL_CELL_WORKERS` | Shared scan worker-pool size (merchant matching and ritual hypothesis scoring). |
+| `WAYSTONE_SCAN_REVIEW_FIXTURE_ROWS` | Set to `1` to use the tiny deterministic fixture catalog for offline scan review. |
 | `WAYSTONE_TEST_FIXTURES` / `WAYSTONE_RUN_LOCAL_DEBUG_TESTS` | Opt-in local test suites. |
 | `WAYSTONE_SKIP_SOURCE_HYGIENE` | Bypass release hygiene for local experiments. |
 

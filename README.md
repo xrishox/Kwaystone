@@ -144,38 +144,11 @@ Optional local debug-image pytest checks are off by default. Enable them only fo
 manual investigation with `WAYSTONE_TEST_FIXTURES=/path/to/pngs` or
 `WAYSTONE_RUN_LOCAL_DEBUG_TESTS=1`; they are not part of corpus validation.
 
-When a real scan failure should become a future regression case, first inspect
-the retained debug frame:
-
-```sh
-./scripts/latest-scan-data
-```
-
-After the output has been manually reviewed, promote only the level that was
-confirmed:
-
-```sh
-./scripts/promote-scan-case latest \
-  --verification-level 3 \
-  --from-current-output \
-  --reason "reviewed multi-rune scan"
-./scripts/evaluate-scan-corpus --record-history
-./scripts/maintain-scan-corpus
-```
-
-Accidental `Alt+X` scans that correctly produce `none` are not promoted unless
-they are explicitly marked as intentional negative cases. Verification levels
-are hierarchical: Level 1 checks route/category, Level 2 adds exact counts, and
-Level 3 adds exact names, stack sizes, and rune sequences.
-
-Kwaystone retains the latest 20 completed debug scans per saved scanner route
-under `${XDG_STATE_HOME:-~/.local/state}/waystone/debug/scans`. Those files are
-for diagnosis and latest-scan review only; full regression validation uses only
-the curated managed corpus.
-
-The managed corpus keeps a 16-case active cap for most categories and a
-50-case active cap for `ritual`, which intentionally has a larger regression
-set because its grid/icon recognition has been the most sensitive.
+To turn a real scan failure into a permanent regression case, review the
+retained frame with `./scripts/latest-scan-data`, then promote it at the
+manually confirmed level with `./scripts/promote-scan-case`. The corpus
+workflow, hierarchical verification levels, and retention policy are
+documented in [`docs/architecture.md`](docs/architecture.md#corpus-and-verification-levels).
 
 Build release artifacts in the pinned Debian 13 container:
 
