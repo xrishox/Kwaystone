@@ -340,7 +340,7 @@ async function snapshot(
 }
 
 /** A market map plus whether the backing pull was fully fresh. */
-export interface MarketData<T> {
+interface MarketData<T> {
   map: Map<string, T>;
   complete: boolean;
 }
