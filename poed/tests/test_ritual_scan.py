@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from poed.ritual_scan import cover, estimate, occupancy
-from poed.ritual_scan.stages import Footprint, Lattice
+from poed.ritual_scan.stages import Lattice
 
 PITCH = 40.0
 PHASE = 13.0

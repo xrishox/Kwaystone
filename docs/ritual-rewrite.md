@@ -1,10 +1,9 @@
-# Ritual scanner rewrite — living lab log
+# Ritual scanner rewrite — lab record and final report
 
-Branch `ritual-rewrite`. This is the working log for the ground-up ritual scanner rebuild.
-It is pruned as work progresses; superseded claims are deleted, not struck through. At the
-end of the effort it is condensed into the final report and `docs/architecture.md`.
-
-Plan reference: `~/.claude/plans/i-am-having-a-witty-lynx.md` (approved). Tasks M0-M9.
+Branch `ritual-rewrite`, 2026-07-19. Ground-up rebuild of the ritual (Favours)
+scanner. Production result lives in `poed/poed/ritual_scan/` (architecture in
+`docs/architecture.md`); `poed/poed/ritual_lab/` holds the five candidate
+systems and the scoring harness used to choose it.
 
 ## Why (problem statement)
 
@@ -124,22 +123,37 @@ grid, and emits half-cell-misaligned rects. Root causes, verified 2026-07-19:
 - Production ritual latency baseline: extraction 2.5-15.7s; probe accepts any
   regular line run (23/112 FP fires; inventory match-storms).
 
-## Status
+## Outcome
 
-- M0 done: branch created, research logged, memory anchor written.
-- M1 done: `poed/poed/ritual_lab/` scaffolding (stages/estimate/datasets/synth/scoring/
-  report/systems/CLI), rows snapshot (3164 rows, all with icons), 10 inventory fp-crops.
-- M2 done: s0 baseline measured (below).
-- M3 done: S2 chrome-anchored system working end to end: gold-band OCR anchor +
-  quality-ranked gridline lattice (13/11-line capped windows + weighted LSQ
-  refit) + feature occupancy + expansion candidates + identification-driven
-  exact cover with full-score repair. Corpus 4/4 L1, 1/4 L2 (26-item case
-  exact), synth recall 0.871 / precision 0.748 / IoU 0.985 / names 0.811.
-  Overcounts of +1..+2 phantom markers and omen-variant swaps remain (M7).
-  Latency unoptimized (p50 ~4.2s — full-score repair is the hot spot; masked
-  ZNCC loops are pure Python, no caching/vectorization yet).
-- Next: M4-M6 (S1/S5/S3/S4 variants over shared stages), then M7 ablation +
-  arbitration/omen iteration + latency work.
+- Winner: S2 (chrome-anchored) composition, graduated into `poed.ritual_scan`
+  and wired into `poed.scanners.ritual`. Selection basis (five-system
+  comparison over corpus + synthetic-truth + 112-frame negative suite +
+  retained scans):
+
+| system | corpus L3 | FP fires | syn recall | syn names | verdict |
+|---|---|---|---|---|---|
+| s0 (old) | 4/4* | 23/112 | - | - | baseline; inventory match-storms, p95 19s |
+| s1 lattice-only | ~ | 52/112 | 0.87 | 0.81 | pitch prior alone unsafe |
+| s2 chrome | 4/4 | 0/112 | 0.94 | 0.89 | WINNER |
+| s3 blobs | - | 112/112 | ~0 | 0 | killed: densest-window latches on any grid |
+| s4 retrieval-vote | - | 112/112 | ~0 | 0 | killed: inventory items are known icons too |
+| s5 generative | - | 80/112 | 0.79 | 0.73 | killed: membership extent not selective |
+
+  (*s0 passed the 4-case corpus while failing badly on live frames — the
+  corpus alone was too easy, which is why the lab added synthetic position
+  truth and the negative suite.)
+- Final gates: full managed corpus 6/6 PASS (all ritual cases Level 3;
+  combination/multi-rune untouched), poed pytest 301 passed, metamorphic
+  shift/determinism pass.
+- Latency: ritual corpus scans 1.1-3.1 s end-to-end (probe 120-520 ms with
+  CPU OCR) vs old extraction 2.5-15.7 s; the unbounded match-storm failure
+  class is structurally gone (work bounded by the 12x10 panel).
+- Known limitation (documented in architecture.md): name fidelity validated
+  at 4K; synthetic downscales keep routing/counts but degrade names; native
+  sub-4K captures are needed before identification is resolution-independent.
+- Deferred cleanup: `matching_mode="cells"` in `poed.uniquescan` +
+  `poed.unique_grid_geometry` are production-orphaned (merchant uses the
+  "shared" mode) but still test-covered; removal is a follow-up decision.
 
 ## Lab usage
 
@@ -148,24 +162,3 @@ grid, and emits half-cell-misaligned rects. Root causes, verified 2026-07-19:
 - `.venv/bin/python -m poed.ritual_lab donor --scan <id> --panel X,Y,W,H` then
   `synth --count N --seed S` (verify donor-overlay.jpg visually before use)
 - Results + overlays under `~/.local/state/waystone/ritual-lab/results/<stamp>/`
-
-## Scoreboard
-
-M2 baseline (datasets corpus+debug+fp, run 20260719T221420):
-
-| system | corpus L1 | L2 | L3 | FP fires | debug fired | p50 ms | p95 ms |
-|---|---|---|---|---|---|---|---|
-| s0 | 4/4 | 4/4 | 4/4 | 23/112 | 15/15 | 1944 | 19161 |
-
-- s0 passes the whole 4-case corpus (corpus too easy) but fires on 20 merchant
-  frames and 3 `none` frames (17-18 garbage matches each — the stray-scan grabs).
-- Catastrophic frames observed live (scan-20260719T220654, 68 matches, 15.7s):
-  probe latched onto the PLAYER INVENTORY grid; every match painted over the
-  inventory while the fully stocked Favours panel got zero. Cause: inventory
-  yields more clean vertical Hough lines than the item-occluded Favours grid,
-  and `scene.ritual` takes the highest line-count candidate.
-- s0 does NOT fire on inventory-only right-crops (line length gate relative to
-  full frame height), so the fp-crop set alone is insufficient — full frames
-  with both panels open are the discriminating negative/positive cases.
-- Latency: corpus 0.5-1.1 s, retained frames 1-2.6 s typical, 8.8-15.7 s on
-  match explosions.

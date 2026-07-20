@@ -55,7 +55,12 @@ The current routes are:
 2. `merchant` — Buy/Sell stock grid, detected from grid layout plus the gold
    title plaque; the located plaque strip is read recognition-only, with a
    full detection+recognition pass as fallback authority.
-3. `ritual` — reward grid, detected from dense regular grid geometry.
+3. `ritual` — the Favours reward grid, chrome-anchored: a gold text band
+   (FAVOURS/TRIBUTE/Rituals Remaining) is geometry-gated by a qualifying
+   12x10 gridline lattice below it, then verified with a recognition-only
+   OCR read. Geometry-only acceptance is forbidden (measured 52/112 false
+   fires vs 0/112 with chrome verification), so an unavailable OCR helper
+   rejects the probe.
 4. `runeshape` — in-world remnant rune rows; additive and can combine with a
    primary scanner. Strict slot classification is precomputed with a bounded
    thread pool (half the cores; `WAYSTONE_RUNESHAPE_WORKERS` overrides).
@@ -83,8 +88,27 @@ Scanner internals are intentionally split by responsibility:
   verification is currently validated only against 4K captures; synthetic
   downscales degrade below ~1440p, and native lower-resolution captures
   are needed before that path can be called resolution-independent.
+- `poed.ritual_scan` owns the ritual pipeline: chrome-anchored panel
+  localization, occlusion-tolerant fixed-window lattice fitting (weighted
+  least squares over detected line peaks; pitch prior 0.038-0.060 of frame
+  height), translucency-safe per-cell feature occupancy with
+  identification-confirmed expansion candidates, an identification-driven
+  branch-and-bound footprint cover (item art overflows cells, so boundary
+  pixels cannot partition items — identification is the partition
+  authority), and masked-ZNCC identification with lookalike-family
+  expansion and difference-mask discrimination. Known limitation: name
+  fidelity is validated on 4K captures; synthetic downscales keep routing
+  and counts but degrade names, and native lower-resolution captures are
+  needed before identification can be called resolution-independent.
+- `poed.ritual_lab` is development tooling only (candidate systems,
+  synthetic-composite datasets, scoring CLI via `python -m poed.ritual_lab`);
+  production code must not import it.
 - `poed.unique_grid_geometry` owns generic item-grid geometry and occupancy.
-- `poed.uniquescan` owns icon-corpus matching for unique/grid items.
+  With ritual on `poed.ritual_scan`, only the `matching_mode="cells"` path in
+  `poed.uniquescan` still references it; that pair is retained pending a
+  follow-up cleanup decision.
+- `poed.uniquescan` owns icon-corpus matching for unique/grid items; its
+  corpus loader also feeds `poed.ritual_scan` templates.
 - `poed.runeshape` owns visual rune-row detection and combination lookup.
 - `poed.match_fields` is the one place that copies market row fields into
   match dicts; scanners add only their scanner-specific keys.
