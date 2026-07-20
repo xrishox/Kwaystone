@@ -39,6 +39,26 @@ def available_systems() -> dict[str, type]:
         registry["s5"] = GenerativeSystem
     except ImportError:
         pass
+    try:
+        from .s2_variants import (
+            BlendOrientSystem,
+            BlendSharpSystem,
+            BlendSystem,
+            OrientSystem,
+            SharpSystem,
+        )
+
+        registry["s2b"] = BlendSystem
+        registry["s2o"] = OrientSystem
+        registry["s2bo"] = BlendOrientSystem
+        registry["s2s"] = SharpSystem
+        registry["s2bs"] = BlendSharpSystem
+        from .s2_variants import BlendOrientSharpSystem, OrientSharpSystem
+
+        registry["s2os"] = OrientSharpSystem
+        registry["s2bos"] = BlendOrientSharpSystem
+    except ImportError:
+        pass
     return registry
 
 

@@ -123,6 +123,27 @@ grid, and emits half-cell-misaligned rects. Root causes, verified 2026-07-19:
 - Production ritual latency baseline: extraction 2.5-15.7s; probe accepts any
   regular line run (23/112 FP fires; inventory match-storms).
 
+## Upgrade experiments (post-ship, 2026-07-19)
+
+Research-driven candidates raced against the shipped s2 on the lab harness.
+Measured NEGATIVE results (do not retry without new evidence):
+
+- Global ambient-tint color calibration: UI chrome colors are scene-stable
+  (plaque/gridline medians within ~1-2 BGR units across all corpus frames) —
+  there is no global tint to correct. The weak-true-score cases (Blood of the
+  Warrior 0.55) are art-RENDITION mismatch, not color transform.
+- Channel-affine color scoring (ANCC-lite): separates worse than joint ZNCC
+  (true 0.369 vs wrong 0.370 on the BotW window).
+- opencv-contrib learned patch descriptors (VGG-120d, BEBLID): rank the true
+  template at #901/#224 on hard cells; natural-image patch training does not
+  transfer to tiny stylized icons (top-3 all ~0.92 generic circles). Fast
+  (37 ms / 120 cells) but not discriminative.
+
+Live candidates (flags in `poed.ritual_scan.identify`, defaults = shipped):
+blend gray+color acceptance scoring, LINE-2D-style orientation gate,
+small-pitch unsharp; aspect/offset corpus transforms added to the lab
+datasets ("aspect": ultrawide pad + horizontal crop).
+
 ## Outcome
 
 - Winner: S2 (chrome-anchored) composition, graduated into `poed.ritual_scan`

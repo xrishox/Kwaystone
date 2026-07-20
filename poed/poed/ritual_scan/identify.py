@@ -36,6 +36,18 @@ ACCEPT_COLOR_1X1 = 0.52
 # name (the production pipeline does the same).
 AMBIGUOUS_MARGIN = 0.04
 MASK_BG_DELTA = 14
+# Scoring configuration; the lab races variants by flipping these. Selected
+# composition (2026-07-19 race): orientation gate ON (best name fidelity, +0
+# false fires) and small-pitch sharpening ON (only activates below 4K pitches;
+# +1 L2/+1 L3 on the scaled suite). Blend scoring measured slightly worse on
+# names and stays off.
+SCORING_MODE = "color"  # "color" | "blend"
+BLEND_GRAY_WEIGHT = 0.45
+ORIENTATION_GATE = True
+ORIENTATION_MIN = 0.42
+ORIENTATION_OVERRIDE = 0.75
+SHARPEN_SMALL_PITCH = True
+SHARPEN_PITCH_BELOW = 90.0
 
 
 def _template_mask(template: dict) -> np.ndarray:
@@ -134,6 +146,64 @@ def _masked_zncc_best(
 DISCRIMINATE_MARGIN = 0.06
 DISCRIMINATE_DIFF = 24
 DISCRIMINATE_MIN_PIXELS = 40
+
+def _entry_score(color_score: float, gray_score: float) -> float:
+    if SCORING_MODE == "blend":
+        return (1.0 - BLEND_GRAY_WEIGHT) * color_score + BLEND_GRAY_WEIGHT * gray_score
+    return color_score
+
+
+ORIENT_BINS = 8
+ORIENT_GRAD_QUANTILE = 0.70
+
+
+def _orientation_features(template: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Strong-gradient template pixels with quantized orientations (mod 180deg,
+    LINE-2D style: contrast-flip invariant, tolerant matching via +-1 bin)."""
+    cached = template.get("_lab_orient")
+    if cached is None:
+        gray = template["gray"].astype(np.float32)
+        gx = cv2.Scharr(gray, cv2.CV_32F, 1, 0)
+        gy = cv2.Scharr(gray, cv2.CV_32F, 0, 1)
+        magnitude = cv2.magnitude(gx, gy)
+        mask = _template_mask(template)
+        threshold = float(np.quantile(magnitude[mask], ORIENT_GRAD_QUANTILE)) if mask.any() else 0.0
+        strong = mask & (magnitude >= max(threshold, 1e-3))
+        ys, xs = np.nonzero(strong)
+        theta = (np.arctan2(gy[ys, xs], gx[ys, xs]) % np.pi) / np.pi * ORIENT_BINS
+        bins = np.floor(theta).astype(np.int8) % ORIENT_BINS
+        cached = (ys, xs, bins)
+        template["_lab_orient"] = cached
+    return cached
+
+
+def _window_orientation_map(scaled_gray: np.ndarray) -> np.ndarray:
+    g = scaled_gray.astype(np.float32)
+    gx = cv2.Scharr(g, cv2.CV_32F, 1, 0)
+    gy = cv2.Scharr(g, cv2.CV_32F, 0, 1)
+    theta = (np.arctan2(gy, gx) % np.pi) / np.pi * ORIENT_BINS
+    return np.floor(theta).astype(np.int8) % ORIENT_BINS
+
+
+def orientation_score(
+    window_bins: np.ndarray,
+    template: dict,
+    offset: tuple[int, int],
+) -> float:
+    ys, xs, bins = _orientation_features(template)
+    if len(bins) < 20:
+        return 1.0
+    dy, dx = offset
+    if (
+        dy < 0 or dx < 0
+        or dy + template["gray"].shape[0] > window_bins.shape[0]
+        or dx + template["gray"].shape[1] > window_bins.shape[1]
+    ):
+        return -1.0
+    observed = window_bins[ys + dy, xs + dx]
+    delta = np.abs(observed.astype(np.int16) - bins.astype(np.int16))
+    delta = np.minimum(delta, ORIENT_BINS - delta)
+    return float((delta <= 1).mean())
 
 
 def _discriminate(
@@ -400,7 +470,10 @@ class Identifier:
         # rows by the caller (two-generation rotation in poed.scan_cache).
         cache_key = scan_cache.digest(
             np.ascontiguousarray(window),
-            extra=f"ritual2:{footprint_wh[0]}x{footprint_wh[1]}:{pitch:.2f}",
+            extra=(
+                f"ritual2:{footprint_wh[0]}x{footprint_wh[1]}:{pitch:.2f}"
+                f":{SCORING_MODE}:{int(ORIENTATION_GATE)}:{int(SHARPEN_SMALL_PITCH)}"
+            ),
         )
         cached = scan_cache.lookup("ritual-cell-v2", cache_key)
         if cached is not None:
@@ -432,6 +505,9 @@ class Identifier:
         group = self.groups.get(footprint_wh)
         scale = uniquescan.PXSLOT / max(pitch, 1e-6)
         scaled = cv2.resize(window, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+        if SHARPEN_SMALL_PITCH and pitch < SHARPEN_PITCH_BELOW:
+            blur = cv2.GaussianBlur(scaled, (0, 0), 1.0)
+            scaled = cv2.addWeighted(scaled, 1.5, blur, -0.5, 0)
         gray = cv2.cvtColor(scaled, cv2.COLOR_BGR2GRAY)
         gray_half = cv2.resize(gray, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
 
@@ -515,7 +591,7 @@ class Identifier:
             if gray_score <= 0:
                 continue
             color_score = _masked_color_score(scaled, template, offset)
-            finalists.append((color_score, template, offset))
+            finalists.append((_entry_score(color_score, gray_score), template, offset))
 
         def pick_best(entries):
             top, top_score, top_offset, second = None, -1.0, (0, 0), -1.0
@@ -548,7 +624,11 @@ class Identifier:
                 if gray_score <= 0:
                     continue
                 finalists.append(
-                    (_masked_color_score(scaled, template, offset), template, offset)
+                    (
+                        _entry_score(_masked_color_score(scaled, template, offset), gray_score),
+                        template,
+                        offset,
+                    )
                 )
             best_template, best_score, best_offset, runner_up = pick_best(finalists)
 
@@ -572,13 +652,22 @@ class Identifier:
                 if gray_score <= 0:
                     continue
                 finalists.append(
-                    (_masked_color_score(scaled, template, offset), template, offset)
+                    (
+                        _entry_score(_masked_color_score(scaled, template, offset), gray_score),
+                        template,
+                        offset,
+                    )
                 )
             best_template, best_score, best_offset, runner_up = pick_best(finalists)
+
 
         accept = ACCEPT_COLOR_1X1 if footprint_wh == (1, 1) else ACCEPT_COLOR
         if best_template is None or best_score < accept:
             return None, max(best_score, 0.0)
+        if ORIENTATION_GATE and best_score < ORIENTATION_OVERRIDE:
+            window_bins = _window_orientation_map(gray)
+            if orientation_score(window_bins, best_template, best_offset) < ORIENTATION_MIN:
+                return None, best_score
         contested = [
             (score, template, offset)
             for score, template, offset in finalists

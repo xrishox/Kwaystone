@@ -51,6 +51,7 @@ class Sample:
     expected_route: str
     metadata: dict[str, Any]
     scale: float = 1.0
+    transform: str | None = None
 
     def load(self) -> np.ndarray:
         image = cv2.imread(str(self.image_path))
@@ -60,6 +61,16 @@ class Sample:
             image = cv2.resize(
                 image, None, fx=self.scale, fy=self.scale, interpolation=cv2.INTER_AREA
             )
+        if self.transform == "ultrawide":
+            # Simulate 21:9: same height, extra world content left and right
+            # (mirrored edges), shifting the panel relative to a 16:9 center.
+            pad = image.shape[1] * 320 // 3840
+            left = cv2.flip(image[:, :pad], 1)
+            right = cv2.flip(image[:, -pad:], 1)
+            image = np.concatenate([left, image, right], axis=1)
+        elif self.transform == "offset":
+            crop = image.shape[1] * 200 // 3840
+            image = image[:, crop:]
         return image
 
 
@@ -246,7 +257,20 @@ def scaled_variants(samples: list[Sample], factors: tuple[float, ...]) -> list[S
     return out
 
 
+def aspect_samples() -> list[Sample]:
+    """Corpus frames under aspect/position transforms. Corpus truth is name
+    multisets and counts, so it stays valid under any translation."""
+    out = []
+    for sample in corpus_samples():
+        for transform in ("ultrawide", "offset"):
+            out.append(
+                replace(sample, id=f"{sample.id}~{transform}", transform=transform)
+            )
+    return out
+
+
 DATASET_BUILDERS = {
+    "aspect": aspect_samples,
     "corpus": corpus_samples,
     "debug": debug_samples,
     "synth": synth_samples,

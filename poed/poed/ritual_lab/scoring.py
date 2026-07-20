@@ -117,6 +117,9 @@ def score_sample(
     sample: Sample,
     rows: dict,
 ) -> tuple[SampleRecord, RitualScanOutput, np.ndarray, list[dict]]:
+    from poed import scan_cache
+
+    scan_cache.begin_scan()
     frame = sample.load()
     started = time.perf_counter()
     output = system.analyze(frame, rows)
