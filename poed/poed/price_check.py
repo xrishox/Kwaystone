@@ -77,6 +77,17 @@ class PriceCheckController:
         except (RuntimeError, OSError, TimeoutError) as e:
             _LOG.warning("EE2 price-check failed: %s", e)
 
+    def prewarm(self) -> None:
+        """Create the WebKit overlay at startup so first Alt+Z is instant and
+        any WebKit environment problem surfaces at launch, not mid-game."""
+        if self._overlay is not None:
+            return
+        try:
+            self._overlay = Ee2PriceOverlay(self._application)
+            _LOG.info("EE2 overlay prewarmed")
+        except RuntimeError as e:
+            _LOG.warning("EE2 overlay unavailable: %s", e)
+
     def hide(self) -> None:
         self._hide_overlay()
 

@@ -130,6 +130,10 @@ install -Dm644 "$ROOT/packaging/waystone.svg" "$APPDIR/waystone.svg"
 install -Dm644 "$ROOT/packaging/waystone.svg" \
   "$APPDIR/usr/share/icons/hicolor/scalable/apps/waystone.svg"
 
+gcc -shared -fPIC -O2 \
+  -o "$APPDIR/usr/lib/waystone/webkit-exec-redirect.so" \
+  "$ROOT/packaging/appimage/webkit-exec-redirect.c" -ldl
+
 cat > "$APPDIR/AppRun" <<EOF
 #!/bin/sh
 set -eu
@@ -159,10 +163,24 @@ export GI_TYPELIB_PATH="\$APPDIR/usr/lib/girepository-1.0\${GI_TYPELIB_PATH:+:\$
 export GSETTINGS_SCHEMA_DIR="\$APPDIR/usr/share/glib-2.0/schemas"
 export XDG_DATA_DIRS="\$APPDIR/usr/share:\${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 export GDK_BACKEND="\${GDK_BACKEND:-wayland}"
+# Release WebKitGTK ignores WEBKIT_EXEC_PATH and hard-codes its helper
+# directory, which does not exist outside the build distro. The preloaded
+# shim rewrites helper spawn/dlopen paths into the bundle; the sandbox is
+# disabled because it cannot start helpers from a relocated bundle either.
+webkit_bundle=""
+webkit_src=""
 if [ -d "\$APPDIR/usr/libexec/webkitgtk-6.0" ]; then
-  export WEBKIT_EXEC_PATH="\$APPDIR/usr/libexec/webkitgtk-6.0"
+  webkit_bundle="\$APPDIR/usr/libexec/webkitgtk-6.0"
+  webkit_src="/usr/libexec/webkitgtk-6.0/"
 elif [ -d "\$APPDIR/usr/lib/x86_64-linux-gnu/webkitgtk-6.0" ]; then
-  export WEBKIT_EXEC_PATH="\$APPDIR/usr/lib/x86_64-linux-gnu/webkitgtk-6.0"
+  webkit_bundle="\$APPDIR/usr/lib/x86_64-linux-gnu/webkitgtk-6.0"
+  webkit_src="/usr/lib/x86_64-linux-gnu/webkitgtk-6.0/"
+fi
+if [ -n "\$webkit_bundle" ] && [ -f "\$APPDIR/usr/lib/waystone/webkit-exec-redirect.so" ]; then
+  export WAYSTONE_WEBKIT_EXEC_SRC="\$webkit_src"
+  export WAYSTONE_WEBKIT_EXEC_REDIRECT="\$webkit_bundle"
+  export LD_PRELOAD="\$APPDIR/usr/lib/waystone/webkit-exec-redirect.so\${LD_PRELOAD:+:\$LD_PRELOAD}"
+  export WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1
 fi
 
 python_site="\$APPDIR/usr/python/lib/python\$PYTHON_MINOR/site-packages"

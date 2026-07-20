@@ -7,7 +7,6 @@ from poed import config
 from poed.desktop import create_backend
 from poed.desktop.hyprland import HyprlandBackend
 from poed.desktop.kwin import KWinBackend, _build_script
-from poed.desktop.base import Shortcut
 from poed.image_geometry import Rect
 
 
@@ -76,31 +75,25 @@ def test_kwin_shortcut_sync_scopes_game_and_panel_keys():
     assert backend._desired_shortcut_ids() == ("panel-close",)
 
 
-def test_kwin_script_contains_tracker_and_registered_shortcuts():
-    script = _build_script(
-        "steam_app_2694490",
-        [Shortcut("price-check", "PoE2 price check", "Alt+Z")],
-        3,
-    )
+def test_kwin_script_is_tracker_only():
+    script = _build_script("steam_app_2694490")
 
     assert "steam_app_2694490" in script
-    assert "registerShortcut" in script
-    assert "waystone-\" + GENERATION" in script
-    assert '"Kwaystone: " + shortcut.description' in script
-    assert '"sid": "price-check"' in script
+    # Shortcut registration moved to KGlobalAccel; script reloads must never
+    # create re-bind windows again.
+    assert "registerShortcut" not in script
+    assert "GENERATION" not in script
     assert "if (!w) return;" in script
     assert '"Geometry"' in script
 
 
-def test_kwin_reload_runs_loaded_script_at_kwin_script_path(tmp_path):
+def test_kwin_load_tracker_runs_loaded_script(tmp_path):
     class FakeBus:
         def __init__(self):
             self.calls = []
 
         def call_sync(self, bus, path, iface, method, params, *rest):
             self.calls.append((bus, path, iface, method))
-            if method == "shortcutNames":
-                return GLib.Variant("(as)", ([],))
             if method == "loadScript":
                 return GLib.Variant("(i)", (7,))
             if method == "unloadScript":
@@ -111,7 +104,7 @@ def test_kwin_reload_runs_loaded_script_at_kwin_script_path(tmp_path):
     backend._bus = FakeBus()
     backend._script_path = tmp_path / "waystone-kwin.js"
 
-    backend._reload_script(("price-check",))
+    backend._load_tracker()
 
     assert (
         "org.kde.KWin",
@@ -121,7 +114,7 @@ def test_kwin_reload_runs_loaded_script_at_kwin_script_path(tmp_path):
     ) in backend._bus.calls
 
 
-def test_kwin_reload_clears_stale_shortcuts(tmp_path):
+def test_kwin_startup_clears_legacy_script_shortcuts(tmp_path):
     class FakeBus:
         def __init__(self):
             self.unregistered = []
@@ -135,17 +128,55 @@ def test_kwin_reload_clears_stale_shortcuts(tmp_path):
             if method == "unregister":
                 self.unregistered.append(params.unpack())
                 return None
-            if method == "loadScript":
-                return GLib.Variant("(i)", (7,))
             return None
 
     backend = KWinBackend(config.DEFAULTS)
     backend._bus = FakeBus()
-    backend._script_path = tmp_path / "waystone-kwin.js"
 
-    backend._reload_script(("price-check",))
+    backend._clear_prior_shortcuts()
 
     assert backend._bus.unregistered == [("kwin", "waystone-1-price-check-0")]
+
+
+def test_kwin_sync_registers_via_kglobalaccel():
+    class FakeAccel:
+        def __init__(self):
+            self.synced = []
+
+        def sync(self, desired):
+            self.synced.append(desired)
+
+    backend = KWinBackend(config.DEFAULTS)
+    backend._accel = FakeAccel()
+    backend._present = True
+    backend._panel_visible = True
+
+    backend._sync_shortcuts()
+
+    (desired,) = backend._accel.synced
+    assert set(desired) == {"price-check", "unique-scan", "panel-close"}
+    keys, description = desired["unique-scan"]
+    assert keys == [0x08000000 | ord("X")]
+    assert description
+    # A second sync with unchanged state must be a no-op (no churn).
+    backend._sync_shortcuts()
+    assert len(backend._accel.synced) == 1
+
+
+def test_kwin_dispatch_gates_on_focus_but_not_registration():
+    backend = KWinBackend(config.DEFAULTS)
+    seen = []
+    backend._on_activated = seen.append
+    backend._focused = False
+    backend._panel_visible = False
+    backend._dispatch_hotkey("unique-scan")
+    assert seen == []
+    backend._focused = True
+    backend._dispatch_hotkey("unique-scan")
+    assert seen == ["unique-scan"]
+    backend._focused = False
+    backend._dispatch_hotkey("panel-close")
+    assert seen == ["unique-scan", "panel-close"]
 
 
 def test_kwin_capture_output_decodes_fd_bytes(tmp_path):

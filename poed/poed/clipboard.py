@@ -133,10 +133,20 @@ def grab_item_text(game_class_or_focused, pressed_modifiers=()) -> str | None:
         _inject_copy(pressed_modifiers)
     text = baseline
     deadline = time.monotonic() + _POLL_DEADLINE
+    reinjected = False
     while time.monotonic() < deadline:
         text = _read_clipboard()
         if text != baseline and _looks_like_item(text):
             return text
+        # The game is a native Wayland client (Wine Wayland driver); our
+        # xdotool XTEST chord only reaches it through the XWayland->libei
+        # bridge, which can drop a chord (journal: "[xwayland ei] Unhandled
+        # event EI_EVENT_SYNC" at press time). One mid-poll re-copy recovers
+        # those presses. The first-class replacement would be the XDG
+        # RemoteDesktop portal's synthetic-keyboard path.
+        if not reinjected and time.monotonic() > deadline - _POLL_DEADLINE / 2:
+            reinjected = True
+            _inject_copy(pressed_modifiers)
         time.sleep(_SLEEP)
     # Clipboard may not have changed (same item price-checked twice); accept
     # whatever is there now if it still looks like an item.

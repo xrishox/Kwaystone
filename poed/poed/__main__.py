@@ -78,6 +78,7 @@ class App:
         self.control_window = None
         self.in_flight = False
         self.in_flight_since = 0.0
+        self.pending_press = None
         self._rewarm_running = False
         self.gen = 0
         self.dismissed_gen = None
@@ -133,6 +134,17 @@ class App:
     def _end_in_flight(self) -> None:
         self.in_flight = False
         self.in_flight_since = 0.0
+        pending = self.pending_press
+        self.pending_press = None
+        if pending is not None:
+            shortcut_id, pressed_at = pending
+            if time.monotonic() - pressed_at < 12.0:
+                _LOG.info("replaying queued press: %s", shortcut_id)
+                GLib.idle_add(self._replay_press, shortcut_id)
+
+    def _replay_press(self, shortcut_id):
+        self.on_activated(shortcut_id)
+        return GLib.SOURCE_REMOVE
 
     def on_activated(self, shortcut_id):
         _LOG.info(
@@ -154,7 +166,10 @@ class App:
         if self.in_flight:
             age = time.monotonic() - self.in_flight_since if self.in_flight_since else 0.0
             if age < 15.0:
-                _LOG.info("shortcut dropped: request in flight age=%.1fs", age)
+                # Never silently eat a press: remember the latest one and
+                # replay it when the in-flight request finishes.
+                self.pending_press = (shortcut_id, time.monotonic())
+                _LOG.info("shortcut queued: %s (in flight %.1fs)", shortcut_id, age)
                 return
             _LOG.warning("stale in-flight request reset after %.1fs", age)
             self._end_in_flight()
@@ -389,6 +404,12 @@ class App:
 
         self.desktop.start(self.on_activated)
         _LOG.info("desktop backend: %s", self.desktop.name)
+
+        def prewarm_price_overlay():
+            self.price_check.prewarm()
+            return GLib.SOURCE_REMOVE
+
+        GLib.idle_add(prewarm_price_overlay)
 
         if self.desktop.uses_portal_shortcuts:
             shortcuts = GlobalShortcuts(
