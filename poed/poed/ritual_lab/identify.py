@@ -25,6 +25,10 @@ PAD_SLOTS = 0.25
 PREFILTER_1X1 = 64
 PREFILTER_MULTI = 25
 COARSE_KEEP = 10
+# 1x1 icons form dense lookalike families (omens, talismans); the coarse cut
+# must keep enough of them for full verification to arbitrate.
+COARSE_KEEP_1X1 = 18
+RESCUE_THRESHOLD = 0.62
 ACCEPT_COLOR = 0.50
 ACCEPT_COLOR_1X1 = 0.52
 # Small margins mark the match ambiguous instead of rejecting it: omen
@@ -271,34 +275,51 @@ class Identifier:
             self._families = families
         return self._families.get(id(template), [])
 
-    def rank_1x1(self, gray_half: np.ndarray, limit: int) -> list[dict]:
+    def rank_1x1(
+        self,
+        gray_half: np.ndarray,
+        limit: int,
+    ) -> list[tuple[float, dict, tuple[int, int]]]:
+        """Rank all 1x1 templates against a half-res window in one matmul.
+
+        Returns (approximate score, template, best half-res offset)."""
         matrix, members, shape, extras, correction = self._half_prefilter_matrix()
         th, tw = shape
         max_dy = gray_half.shape[0] - th
         max_dx = gray_half.shape[1] - tw
         if max_dy < 0 or max_dx < 0 or not members:
             return []
-        best = np.full(len(members), -1.0, dtype=np.float32)
-        for dy in range(0, max_dy + 1, 2):
-            for dx in range(0, max_dx + 1, 2):
-                patch = gray_half[dy:dy + th, dx:dx + tw].astype(np.float32).reshape(-1)
-                patch -= patch.mean()
-                norm = float(np.linalg.norm(patch))
-                if norm <= 1e-6:
-                    continue
-                scores = (matrix @ (patch / norm)) * correction
-                np.maximum(best, scores, out=best)
-        scored = [(float(best[i]), members[i]) for i in range(len(members))]
+        dys = np.arange(0, max_dy + 1, 2)
+        dxs = np.arange(0, max_dx + 1, 2)
+        patches = np.empty((len(dys) * len(dxs), th * tw), dtype=np.float32)
+        offsets = []
+        index = 0
+        for dy in dys:
+            for dx in dxs:
+                patches[index] = gray_half[dy:dy + th, dx:dx + tw].reshape(-1)
+                offsets.append((int(dy), int(dx)))
+                index += 1
+        patches -= patches.mean(axis=1, keepdims=True)
+        norms = np.linalg.norm(patches, axis=1)
+        norms[norms <= 1e-6] = np.inf
+        patches /= norms[:, None]
+        scores = matrix @ patches.T
+        best_offset_index = np.argmax(scores, axis=1)
+        best = scores[np.arange(len(members)), best_offset_index] * correction
+        scored = [
+            (float(best[i]), members[i], offsets[int(best_offset_index[i])])
+            for i in range(len(members))
+        ]
         for template in extras:
             ys, xs, vec = _masked_half_vectors(template)
-            score, _ = _masked_zncc_best(
+            score, offset = _masked_zncc_best(
                 gray_half, ys, xs, vec,
                 template["gray_half"].shape[0], template["gray_half"].shape[1],
                 stride=2,
             )
-            scored.append((score, template))
+            scored.append((score, template, offset))
         scored.sort(key=lambda item: -item[0])
-        return [template for _, template in scored[:limit]]
+        return scored[:limit]
 
     def quick_footprint_score(
         self,
@@ -319,12 +340,28 @@ class Identifier:
             None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA,
         )
         if footprint_wh == (1, 1) and len(group) > top:
-            candidates = self.rank_1x1(gray_half, top)
-        elif len(group) > top:
+            ranked = self.rank_1x1(gray_half, 3)
+            best = -1.0
+            for _, template, offset in ranked:
+                ys, xs, vec = _masked_half_vectors(template)
+                score, _ = _masked_zncc_best(
+                    gray_half,
+                    ys,
+                    xs,
+                    vec,
+                    template["gray_half"].shape[0],
+                    template["gray_half"].shape[1],
+                    stride=1,
+                    center=offset,
+                    radius=2,
+                )
+                best = max(best, score)
+            return best
+        if len(group) > top:
             descriptor = uniquescan._visual_descriptor(scaled)
             matrix = self._descriptor_matrix(footprint_wh)
-            ranked = np.argsort(matrix @ descriptor)[::-1][:top]
-            candidates = [group[int(index)] for index in ranked]
+            ranked_idx = np.argsort(matrix @ descriptor)[::-1][:top]
+            candidates = [group[int(index)] for index in ranked_idx]
         else:
             candidates = group
         best = -1.0
@@ -364,9 +401,9 @@ class Identifier:
         limit = PREFILTER_1X1 if footprint_wh == (1, 1) else PREFILTER_MULTI
         if footprint_wh == (1, 1) and len(group) > limit:
             # Union of two prefilters with complementary blind spots: masked
-            # half-res correlation (shape-faithful) and the interior visual
-            # descriptor (texture/color-gradient) — verification arbitrates.
-            candidates = self.rank_1x1(gray_half, limit)
+            # half-res correlation ranking (shape-faithful, offsets included)
+            # and the interior visual descriptor — verification arbitrates.
+            coarse = list(self.rank_1x1(gray_half, COARSE_KEEP_1X1))
             probe = interior if interior is not None else window
             descriptor = uniquescan._visual_descriptor(
                 cv2.resize(probe, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
@@ -375,42 +412,57 @@ class Identifier:
             )
             matrix = self._descriptor_matrix(footprint_wh)
             ranked = np.argsort(matrix @ descriptor)[::-1][:20]
-            known = {id(t) for t in candidates}
+            known = {id(template) for _, template, _ in coarse}
             for index in ranked:
                 template = group[int(index)]
-                if id(template) not in known:
-                    candidates.append(template)
-        elif len(group) > limit:
-            probe = interior if interior is not None else window
-            descriptor = uniquescan._visual_descriptor(
-                cv2.resize(probe, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
-                if probe is not window
-                else scaled
-            )
-            matrix = self._descriptor_matrix(footprint_wh)
-            ranked = np.argsort(matrix @ descriptor)[::-1][:limit]
-            candidates = [group[int(index)] for index in ranked]
+                if id(template) in known:
+                    continue
+                ys, xs, vec = _masked_half_vectors(template)
+                score, offset = _masked_zncc_best(
+                    gray_half,
+                    ys,
+                    xs,
+                    vec,
+                    template["gray_half"].shape[0],
+                    template["gray_half"].shape[1],
+                    stride=2,
+                )
+                if score > 0:
+                    coarse.append((score, template, offset))
         else:
-            candidates = group
-
-        coarse = []
-        for template in candidates:
-            ys, xs, vec = _masked_half_vectors(template)
-            score, offset = _masked_zncc_best(
-                gray_half,
-                ys,
-                xs,
-                vec,
-                template["gray_half"].shape[0],
-                template["gray_half"].shape[1],
-                stride=2,
-            )
-            if score > 0:
-                coarse.append((score, template, offset))
+            if len(group) > limit:
+                probe = interior if interior is not None else window
+                descriptor = uniquescan._visual_descriptor(
+                    cv2.resize(
+                        probe, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA
+                    )
+                    if probe is not window
+                    else scaled
+                )
+                matrix = self._descriptor_matrix(footprint_wh)
+                ranked = np.argsort(matrix @ descriptor)[::-1][:limit]
+                candidates = [group[int(index)] for index in ranked]
+            else:
+                candidates = group
+            coarse = []
+            for template in candidates:
+                ys, xs, vec = _masked_half_vectors(template)
+                score, offset = _masked_zncc_best(
+                    gray_half,
+                    ys,
+                    xs,
+                    vec,
+                    template["gray_half"].shape[0],
+                    template["gray_half"].shape[1],
+                    stride=2,
+                )
+                if score > 0:
+                    coarse.append((score, template, offset))
         coarse.sort(key=lambda item: -item[0])
 
+        keep = COARSE_KEEP_1X1 if footprint_wh == (1, 1) else COARSE_KEEP
         finalists: list[tuple[float, dict, tuple[int, int]]] = []
-        for _, template, half_offset in coarse[:COARSE_KEEP]:
+        for _, template, half_offset in coarse[:keep]:
             ys, xs, vec = _masked_vectors(template)
             gray_score, offset = _masked_zncc_best(
                 gray,
@@ -440,6 +492,28 @@ class Identifier:
             return top, top_score, top_offset, second
 
         best_template, best_score, best_offset, runner_up = pick_best(finalists)
+
+        if footprint_wh == (1, 1) and best_score < RESCUE_THRESHOLD:
+            # Dark or low-contrast art ranks weakly at half-res; when the fast
+            # path is unconvinced, pay for the deep candidate list once.
+            seen_ids = {id(template) for _, template, _ in finalists}
+            for _, template, half_offset in self.rank_1x1(gray_half, PREFILTER_1X1):
+                if id(template) in seen_ids:
+                    continue
+                ys, xs, vec = _masked_vectors(template)
+                gray_score, offset = _masked_zncc_best(
+                    gray, ys, xs, vec,
+                    template["gray"].shape[0], template["gray"].shape[1],
+                    stride=1,
+                    center=(half_offset[0] * 2, half_offset[1] * 2),
+                    radius=4,
+                )
+                if gray_score <= 0:
+                    continue
+                finalists.append(
+                    (_masked_color_score(scaled, template, offset), template, offset)
+                )
+            best_template, best_score, best_offset, runner_up = pick_best(finalists)
 
         if best_template is not None and footprint_wh == (1, 1):
             seen_ids = {id(template) for _, template, _ in finalists}
