@@ -11,6 +11,7 @@ import socket
 import subprocess
 
 from poed.image_geometry import Rect
+from poed.subproc import scrubbed_env
 
 
 def _norm(addr: str) -> str:
@@ -25,7 +26,12 @@ def _norm(addr: str) -> str:
 
 def _hyprctl(*args: str) -> bool:
     try:
-        r = subprocess.run(["hyprctl", *args], capture_output=True, timeout=2.0)
+        r = subprocess.run(
+            ["hyprctl", *args],
+            capture_output=True,
+            timeout=2.0,
+            env=scrubbed_env(),
+        )
         return r.returncode == 0
     except (OSError, subprocess.SubprocessError):
         return False  # compositor gone; nothing sensible to do
@@ -47,6 +53,7 @@ def resolve_shortcut_name(shortcut_id: str, _raw: str | None = None) -> str | No
             _raw = subprocess.run(
                 ["hyprctl", "globalshortcuts", "-j"],
                 capture_output=True, text=True, timeout=2.0,
+                env=scrubbed_env(),
             ).stdout
         except (OSError, subprocess.SubprocessError):
             return None
@@ -114,6 +121,16 @@ class BindManager:
         """Portal BindShortcuts completed; retry a deferred bind if needed."""
         self._sync()
 
+    def reset_bind(self) -> None:
+        """Forget bind/name state after a compositor restart or reload.
+
+        Runtime binds (and portal registrations they point at) do not survive
+        a Hyprland restart; trusting the stale flags would leave hotkeys
+        silently dead.
+        """
+        self._bound = False
+        self._resolved_name = None
+
     # -- lifecycle ----------------------------------------------------------
 
     def prime(self) -> None:
@@ -122,6 +139,7 @@ class BindManager:
             out = subprocess.run(
                 ["hyprctl", "clients", "-j"],
                 capture_output=True, text=True, timeout=2.0,
+                env=scrubbed_env(),
             ).stdout
             for c in json.loads(out):
                 if c.get("class") == self._game_class:
@@ -170,6 +188,10 @@ class MultiBindManager:
     def notify_registered(self) -> None:
         for m in self._managers:
             m.notify_registered()
+
+    def reset_binds(self) -> None:
+        for m in self._managers:
+            m.reset_bind()
 
     def prime(self) -> None:
         for m in self._managers:
@@ -308,7 +330,7 @@ def active_output_rect(game_class: str) -> Rect | None:
 
 def _hyprctl_out(*args: str) -> str:
     r = subprocess.run(["hyprctl", *args], capture_output=True, text=True,
-                       timeout=2.0)
+                       timeout=2.0, env=scrubbed_env())
     return r.stdout
 
 
@@ -337,6 +359,11 @@ class EscBind:
         bind_arg = f",Escape,global,{self._resolved_name}"
         if self._ctl("keyword", "bind", bind_arg):
             self._bound = True
+
+    def reset_bind(self) -> None:
+        """Forget bind/name state after a compositor restart or reload."""
+        self._bound = False
+        self._resolved_name = None
 
     def hide(self) -> None:
         if not self._bound:

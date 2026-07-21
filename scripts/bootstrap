@@ -33,7 +33,11 @@ if [[ -x "$ROOT/.venv/bin/python" ]] &&
 fi
 uv venv --python "$PYTHON_VERSION" "$ROOT/.venv"
 uv pip sync --python "$ROOT/.venv/bin/python" "$ROOT/requirements/$runtime.lock"
-uv pip install --python "$ROOT/.venv/bin/python" -r "$ROOT/requirements/dev.lock"
+# The dev layer is constrained by the runtime lock: shared transitive
+# packages (e.g. packaging) can never drift the dev venv away from the
+# hash-locked runtime the AppImage ships.
+uv pip install --python "$ROOT/.venv/bin/python" -r "$ROOT/requirements/dev.lock" \
+  --constraint "$ROOT/requirements/$runtime.lock"
 uv pip install --python "$ROOT/.venv/bin/python" --no-deps --editable "$ROOT/poed"
 printf '%s\n' "$runtime" > "$ROOT/.venv/.waystone-runtime"
 

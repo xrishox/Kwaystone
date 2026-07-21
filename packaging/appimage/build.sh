@@ -54,4 +54,14 @@ else
 fi
 
 find "$stage" -maxdepth 1 -type f -exec mv -f {} "$OUT_DIR/" \;
+
+# Docker's local export preserves container ownership (root); release
+# artifacts must stay user-modifiable on the host.
+if find "$OUT_DIR" -maxdepth 1 -user 0 -print -quit | grep -q .; then
+  if [[ "$(id -u)" == 0 && -n "${SUDO_UID:-}" ]]; then
+    chown -R "$SUDO_UID:" "$OUT_DIR" || true
+  elif [[ "$(id -u)" != 0 ]] && command -v sudo >/dev/null 2>&1; then
+    sudo chown -R "$(id -u):" "$OUT_DIR" || true
+  fi
+fi
 ls -lh "$OUT_DIR"/*AppImage "$OUT_DIR"/SHA256SUMS-* 2>/dev/null

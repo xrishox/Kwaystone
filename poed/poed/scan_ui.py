@@ -33,7 +33,7 @@ class ScanResultController:
         self._focus_poll = None
         self._seen_game_unfocused = False
 
-    def show_result(self, result, output, t0: float, timings=None) -> None:
+    def show_result(self, result, output, t0: float, timings=None, frame_size=None) -> None:
         ui_started = time.perf_counter()
         started = time.perf_counter()
         self._badges.show(
@@ -41,6 +41,7 @@ class ScanResultController:
             self._cfg["unique_min_exalted"],
             output,
             scanner_id=result.scanner_id,
+            coord_scale=self._coord_scale(frame_size),
         )
         overlay_ms = (time.perf_counter() - started) * 1000.0
         started = time.perf_counter()
@@ -63,6 +64,22 @@ class ScanResultController:
         )
         if isinstance(timings, dict):
             _LOG.debug("screenscan timings: %s", timings)
+
+    def _coord_scale(self, frame_size) -> float:
+        """Capture-pixels-per-logical-pixel of the game output (1.0 at scale 1).
+
+        Scanner matches live in capture space; the badge surface is sized in
+        logical coordinates, so fractional outputs need the division.
+        """
+        try:
+            out_rect = self._desktop.active_output_rect()
+            if frame_size and out_rect is not None and out_rect.w > 0:
+                scale = frame_size[0] / out_rect.w
+                if scale > 0 and abs(scale - 1.0) > 0.01:
+                    return scale
+        except Exception:
+            pass
+        return 1.0
 
     def show_scan_error(self, message: str) -> None:
         self.hide_badges()

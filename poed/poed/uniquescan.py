@@ -10,7 +10,6 @@ descriptors, and pool from here; ritual matching itself lives there.
 import os
 import threading
 from concurrent.futures import ThreadPoolExecutor
-from functools import lru_cache
 
 import cv2
 import numpy as np
@@ -215,7 +214,6 @@ def _load_corpus(rows: dict) -> list[dict]:
         names = g["names"]
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         descriptor = _visual_descriptor(img)
-        robust_tiles = _robust_template_tiles(img)
         out.append({
             **match_row_fields(best),
             "label": names[0] + (f" +{len(names) - 1}" if len(names) > 1 else ""),
@@ -226,7 +224,6 @@ def _load_corpus(rows: dict) -> list[dict]:
             "color": img,
             "gray": gray,
             "descriptor": descriptor,
-            "robust_tiles": robust_tiles,
             # Half-res copy for the coarse pyramid pass (1/16 the correlation
             # cost of the full-res sweep).
             "gray_half": cv2.resize(gray, None, fx=COARSE, fy=COARSE,
@@ -279,51 +276,6 @@ def _visual_descriptor(img: np.ndarray, size: int = 18) -> np.ndarray:
         _normalized_vector(gray) * 0.55,
         _normalized_vector(grad) * 0.45,
     )).astype(np.float32)
-
-
-def _feature_planes(img: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.equalizeHist(gray)
-    gx = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
-    gy = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
-    grad = cv2.magnitude(gx, gy)
-    return gray.astype(np.float32), grad.astype(np.float32)
-
-
-@lru_cache(maxsize=64)
-def _tile_slices(length: int, count: int = 6) -> tuple[tuple[int, int], ...]:
-    edges = np.linspace(0, length, count + 1).round().astype(int)
-    return tuple(
-        (int(edges[i]), int(edges[i + 1]))
-        for i in range(count)
-        if int(edges[i + 1]) - int(edges[i]) >= 4
-    )
-
-
-def _robust_template_tiles(
-    template: np.ndarray,
-) -> tuple[tuple[int, int, int, int, np.ndarray, np.ndarray], ...]:
-    """Precompute the stable template side of the robust cell comparator."""
-
-    tmpl_gray, tmpl_grad = _feature_planes(template)
-    tiles = []
-    for y0, y1 in _tile_slices(template.shape[0]):
-        for x0, x1 in _tile_slices(template.shape[1]):
-            tg = tmpl_gray[y0:y1, x0:x1]
-            te = tmpl_grad[y0:y1, x0:x1]
-            # Skip low-information catalog tiles. UI decoration can be
-            # high-contrast, so template information is the stable criterion.
-            if float(tg.std()) < 6.0 and float(te.std()) < 8.0:
-                continue
-            tiles.append((
-                y0,
-                y1,
-                x0,
-                x1,
-                _normalized_vector(tg),
-                _normalized_vector(te),
-            ))
-    return tuple(tiles)
 
 
 def _overlap(a: dict, b: dict) -> bool:

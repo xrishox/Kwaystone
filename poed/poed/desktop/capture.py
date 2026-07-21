@@ -8,6 +8,8 @@ from collections.abc import Mapping
 import cv2
 import numpy as np
 
+from poed.subproc import scrubbed_env
+
 from .base import Rect
 
 
@@ -18,6 +20,7 @@ def grim_output(output: str) -> np.ndarray | None:
             ["grim", "-t", "ppm", "-o", output, "-"],
             capture_output=True,
             timeout=5.0,
+            env=scrubbed_env(),
         )
     except (OSError, subprocess.SubprocessError):
         return None
@@ -79,6 +82,70 @@ def workspace_rect_global() -> Rect | None:
         return Rect(x0, y0, x1 - x0, y1 - y0)
     except Exception:
         return None
+
+
+def _gdk_monitors():
+    try:
+        import gi
+
+        gi.require_version("Gdk", "4.0")
+        from gi.repository import Gdk
+
+        display = Gdk.Display.get_default()
+        if display is None:
+            return []
+        monitors = display.get_monitors()
+        return [
+            monitor
+            for index in range(monitors.get_n_items())
+            if (monitor := monitors.get_item(index)) is not None
+        ]
+    except Exception:
+        return []
+
+
+def monitor_scale_factor(connector: str) -> float:
+    """Gdk scale factor of the monitor named `connector` (1.0 when unknown)."""
+    if not connector:
+        return 1.0
+    for monitor in _gdk_monitors():
+        try:
+            if monitor.get_connector() == connector:
+                return float(monitor.get_scale_factor() or 1.0)
+        except Exception:
+            continue
+    return 1.0
+
+
+def workspace_rect_physical() -> Rect | None:
+    """Workspace bounding box in CAPTURE pixels (per-monitor scale applied).
+
+    Portal screenshots come back in physical pixels; under fractional or
+    mixed per-monitor scaling, logical and physical extents diverge per
+    output, so the crop target must live in the same physical space.
+    """
+    rects = []
+    for monitor in _gdk_monitors():
+        try:
+            geo = monitor.get_geometry()
+            scale = float(monitor.get_scale_factor() or 1.0)
+        except Exception:
+            continue
+        rects.append(
+            Rect(
+                int(round(geo.x * scale)),
+                int(round(geo.y * scale)),
+                int(round(geo.width * scale)),
+                int(round(geo.height * scale)),
+            )
+        )
+    if not rects:
+        return None
+    x0 = min(rect.x for rect in rects)
+    y0 = min(rect.y for rect in rects)
+    x1 = max(rect.x + rect.w for rect in rects)
+    y1 = max(rect.y + rect.h for rect in rects)
+    return Rect(x0, y0, x1 - x0, y1 - y0)
 
 
 def crop_workspace_output(

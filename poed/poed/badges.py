@@ -61,16 +61,20 @@ class ScanOverlayLayer:
         self._win.add_css_class("poe-badges")
 
     def show(self, matches: list[dict], min_exalted: float,
-             monitor_name: str | None, scanner_id: str | None = None) -> None:
+             monitor_name: str | None, scanner_id: str | None = None,
+             coord_scale: float = 1.0) -> None:
+        # Matches arrive in capture pixels; the surface is logical. coord_scale
+        # is capture-per-logical (1.0 at scale 1, e.g. 1.5 on a 150% output).
+        scale = coord_scale if coord_scale > 0 else 1.0
         for child in list(self._fixed):
             self._fixed.remove(child)
         _anchor_to_monitor(self._win, monitor_name)
         for m in matches:
             try:
-                x = int(m["x"])
-                y = int(m["y"])
-                w = int(m.get("w") or 1)
-                h = int(m.get("h") or 1)
+                x = int(int(m["x"]) / scale)
+                y = int(int(m["y"]) / scale)
+                w = max(1, int(int(m.get("w") or 1) / scale))
+                h = max(1, int(int(m.get("h") or 1) / scale))
             except (KeyError, TypeError, ValueError):
                 continue
             if m.get("markerOnly"):

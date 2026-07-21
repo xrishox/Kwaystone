@@ -194,9 +194,11 @@ loader_dir="\$APPDIR/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders"
 if [ -d "\$loader_dir" ] && [ -x "\$APPDIR/usr/bin/gdk-pixbuf-query-loaders" ]; then
   loader_cache="\$cache_root/gdk-pixbuf-loaders-\$(printf %s "\$APPDIR" | sha256sum | cut -c1-12).cache"
   if [ ! -s "\$loader_cache" ]; then
+    # Unique tmp name: two concurrent first launches must not race the same
+    # path and publish a half-written loader cache.
     GDK_PIXBUF_MODULEDIR="\$loader_dir" \
-      "\$APPDIR/usr/bin/gdk-pixbuf-query-loaders" "\$loader_dir"/*.so > "\$loader_cache.tmp"
-    mv "\$loader_cache.tmp" "\$loader_cache"
+      "\$APPDIR/usr/bin/gdk-pixbuf-query-loaders" "\$loader_dir"/*.so > "\$loader_cache.$$.tmp"
+    mv "\$loader_cache.$$.tmp" "\$loader_cache"
   fi
   export GDK_PIXBUF_MODULE_FILE="\$loader_cache"
 fi
@@ -205,6 +207,10 @@ case "\${WAYSTONE_APPIMAGE_TEST:-}" in
   imports)
     exec "\$APPDIR/usr/python/bin/python\$PYTHON_MINOR" -c \
       'import cv2, gi, numpy, poed; gi.require_version("Gtk", "4.0"); gi.require_version("Gtk4LayerShell", "1.0"); gi.require_version("WebKit", "6.0"); from gi.repository import Gtk, Gtk4LayerShell, WebKit; print("imports ok", Gtk.MAJOR_VERSION, cv2.__version__, numpy.__version__, WebKit.MAJOR_VERSION)'
+    ;;
+  webkit)
+    exec "\$APPDIR/usr/python/bin/python\$PYTHON_MINOR" -c \
+      'import gi; gi.require_version("Gtk", "4.0"); gi.require_version("WebKit", "6.0"); from gi.repository import Gtk, WebKit; win = Gtk.Window(); view = WebKit.WebView(); win.set_child(view); view.load_uri("about:blank"); win.present(); import time; time.sleep(5); print("webkit spawn ok", view.get_title())'
     ;;
   ocr)
     [ "\$#" -eq 1 ] || { echo "WAYSTONE_APPIMAGE_TEST=ocr requires one image" >&2; exit 2; }
@@ -290,12 +296,27 @@ validation_library_path="$APPDIR/usr/lib:$APPDIR/usr/python/lib:$site/paddle/lib
 for directory in "$site"/nvidia/*/lib; do
   [[ -d "$directory" ]] && validation_library_path="$validation_library_path:$directory"
 done
+# Python wheels bundle their own dependencies in sibling *.libs dirs
+# (pillow.libs, opencv.libs, ...); resolve against them like the runtime does.
+for directory in "$site"/*.libs; do
+  [[ -d "$directory" ]] && validation_library_path="$validation_library_path:$directory"
+done
 missing="$BUILD_DIR/missing-libraries.txt"
+# Deliberately unbundled: libcuda.so.1 is the HOST NVIDIA driver (bundling it
+# breaks systems with different driver branches); the ibverbs/mlx5/rdmacm
+# trio backs optional GPUDirect-RDMA transports that single-GPU OCR never
+# loads. Everything else must resolve or the build fails.
+optional_lib_re='^[[:space:]]*(libcuda\.so\.|libmlx5\.so\.|librdmacm\.so\.|libibverbs\.so\.)'
 while IFS= read -r elf; do
-  LD_LIBRARY_PATH="$validation_library_path" ldd "$elf" 2>/dev/null |
-    grep 'not found' && printf 'required by %s\n' "$elf"
+  found_missing="$(
+    LD_LIBRARY_PATH="$validation_library_path" ldd "$elf" 2>/dev/null |
+      grep 'not found' | grep -vE "$optional_lib_re" || true
+  )"
+  if [[ -n "$found_missing" ]]; then
+    printf '%s\nrequired by %s\n' "$found_missing" "$elf"
+  fi
 done < <(
-  find "$APPDIR/usr/bin" "$APPDIR/usr/python/bin" "$APPDIR/usr/lib" "$APPDIR/usr/libexec" \
+  find "$APPDIR/usr/bin" "$APPDIR/usr/python/bin" "$APPDIR/usr/lib" "$APPDIR/usr/libexec" "$site" \
     -type f -print0 2>/dev/null |
     xargs -0 file |
     awk -F: '/ELF .* (executable|shared object)/ { print $1 }'
@@ -313,6 +334,10 @@ awk '{print $2}' "$ROOT/packaging/appimage/models.sha256" | sort > "$expected_mo
 diff -u "$expected_models" "$actual_models"
 
 env APPDIR="$APPDIR" WAYSTONE_APPIMAGE_TEST=imports "$APPDIR/AppRun"
+# Exercise the WebKit helper-exec redirect for real: a broken shim, wrong
+# webkit_src, or missing bundled helper otherwise ships undetected (the
+# failure mode is a fatal SIGTRAP on the user's first Alt+Z).
+xvfb-run -a env GDK_BACKEND=x11 APPDIR="$APPDIR" WAYSTONE_APPIMAGE_TEST=webkit "$APPDIR/AppRun"
 if [[ "$RUNTIME" == cpu ]]; then
   env APPDIR="$APPDIR" WAYSTONE_APPIMAGE_TEST=ocr \
     "$APPDIR/AppRun" "$ROOT/screenshots/Currency_lookup.png" >/dev/null
@@ -323,8 +348,12 @@ rm -f "$private_paths"
 for private_pattern in \
   "$ROOT/poed" \
   "$ROOT/brain" \
+  "$BUILD_VENV" \
+  "$MODEL_ROOT" \
+  "$BUILD_DIR" \
   /home/runner/work/waystone \
-  /github/home; do
+  /github/home \
+  /opt/node; do
   grep -R -a -l -F "$private_pattern" "$APPDIR" >> "$private_paths" || true
 done
 if [[ -s "$private_paths" ]]; then

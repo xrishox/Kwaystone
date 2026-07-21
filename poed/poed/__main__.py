@@ -111,7 +111,8 @@ class App:
         threading.Thread(target=self.run_screen_scan, args=(gen, t0), daemon=True).start()
         return GLib.SOURCE_REMOVE
 
-    def _deliver_screen_scan(self, gen, result, output, t0, timings=None, debug_dir=None):
+    def _deliver_screen_scan(self, gen, result, output, t0, timings=None, debug_dir=None,
+                             frame_size=None):
         if gen != self.gen:
             return GLib.SOURCE_REMOVE
         if gen == self.dismissed_gen:
@@ -120,7 +121,7 @@ class App:
             _LOG.info("result dropped: generation %s was dismissed", gen)
             return GLib.SOURCE_REMOVE
         if self.scan_ui is not None:
-            self.scan_ui.show_result(result, output, t0, timings)
+            self.scan_ui.show_result(result, output, t0, timings, frame_size=frame_size)
             press_to_paint_ms = round((time.monotonic() - t0) * 1000.0, 1)
             _LOG.info("screenscan press-to-paint=%.0fms", press_to_paint_ms)
             if debug_dir is not None:
@@ -260,6 +261,7 @@ class App:
                 t0,
                 engine.timings,
                 engine.debug_dir,
+                engine.frame_size,
             )
         except Exception as e:
             # Never let a press vanish silently: any scanner exception type
@@ -454,6 +456,15 @@ class App:
 
         self.desktop.start(self.on_activated)
         _LOG.info("desktop backend: %s", self.desktop.name)
+        # One startup probe names any missing host tools; call sites degrade
+        # silently by design, so this is the only place that reports them.
+        from poed.subproc import report_missing_tools
+
+        _TOOLS = {
+            "kwin": ("wl-paste", "xdotool"),
+            "hyprland": ("hyprctl", "wl-paste", "xdotool", "grim"),
+        }
+        report_missing_tools(_TOOLS.get(self.desktop.name, ()))
         portal_error = getattr(self.desktop, "portal_error", None)
         if portal_error:
             self._set_hotkey_status(f"Global hotkeys unavailable: {portal_error}")

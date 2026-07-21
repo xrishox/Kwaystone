@@ -3,6 +3,8 @@ import logging
 import subprocess
 import time
 
+from poed.subproc import scrubbed_env
+
 _LOG = logging.getLogger("waystone.clipboard")
 
 _POLL_DEADLINE = 1.5
@@ -35,6 +37,7 @@ def is_game_focused(game_class: str, _raw: str | None = None) -> bool:
                 capture_output=True,
                 text=True,
                 timeout=1.0,
+                env=scrubbed_env(),
             )
             _raw = r.stdout
         except (OSError, subprocess.SubprocessError):
@@ -55,21 +58,33 @@ def _read_clipboard() -> str:
             ["wl-paste", "--no-newline"],
             capture_output=True,
             timeout=_READ_TIMEOUT,
+            env=scrubbed_env(),
         )
         return r.stdout.decode("utf-8", errors="replace")
     except (OSError, subprocess.SubprocessError):
         return ""
 
 
-def _release_modifiers() -> None:
-    try:
-        subprocess.run(
-            ["xdotool", "keyup", *_MODIFIER_KEYS],
-            capture_output=True,
-            timeout=1.0,
-        )
-    except (OSError, subprocess.SubprocessError):
-        pass
+def _release_modifiers() -> bool:
+    """Best-effort modifier keyup; warns (never raises) when both tries fail."""
+    for attempt in (1, 2):
+        try:
+            r = subprocess.run(
+                ["xdotool", "keyup", *_MODIFIER_KEYS],
+                capture_output=True,
+                timeout=1.0,
+                env=scrubbed_env(),
+            )
+            if r.returncode == 0:
+                return True
+        except (OSError, subprocess.SubprocessError):
+            pass
+        if attempt == 1:
+            time.sleep(0.1)
+    _LOG.warning(
+        "could not release keyboard modifiers; Ctrl/Alt/Shift may be logically stuck"
+    )
+    return False
 
 
 def _inject_copy(pressed_modifiers=()) -> bool:
@@ -104,6 +119,7 @@ def _inject_copy(pressed_modifiers=()) -> bool:
             capture_output=True,
             text=True,
             timeout=2.0,
+            env=scrubbed_env(),
         )
         ok = r.returncode == 0
         if not ok:

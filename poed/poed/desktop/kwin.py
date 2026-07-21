@@ -15,11 +15,14 @@ gi.require_version("Gio", "2.0")
 gi.require_version("GLib", "2.0")
 from gi.repository import Gio, GLib  # noqa: E402
 
+from poed import config
+
 from .base import Rect, Shortcut
 from .capture import (
     crop_workspace_output,
     decode_kwin_frame,
-    workspace_rect_global,
+    monitor_scale_factor,
+    workspace_rect_physical,
 )
 
 _LOG = logging.getLogger("waystone.desktop.kwin")
@@ -425,11 +428,11 @@ class KWinBackend:
         self._esc_path = tmp / f"waystone-kwin-esc-{os.getpid()}.js"
         self._tracker = _KwinScript(self._bus, self._script_path)
         self._esc = _KwinScript(self._bus, self._esc_path)
-        # One-shot cleanup of shortcut entries leaked by older script-based
-        # registrations; the portal path never creates these. Off the main
-        # thread: it's 1s+ of D-Bus the startup path doesn't need to wait for.
+        # One-time migration cleanup of shortcut entries leaked by the
+        # script-era implementation; the portal path never creates these.
+        # Off the main thread: it's 1s+ of D-Bus startup doesn't need.
         threading.Thread(
-            target=self._clear_prior_shortcuts, daemon=True
+            target=self._cleanup_legacy_shortcuts_once, daemon=True
         ).start()
         self._load_tracker()
         self._check_portal()
@@ -619,11 +622,11 @@ class KWinBackend:
             return self._capture_portal(output)
         return decode_kwin_frame(data, metadata)
 
-    def _workspace_rect_global(self) -> Rect | None:
-        return workspace_rect_global()
-
     def _crop_portal_output(self, image, output: str):
-        workspace = self._workspace_rect_global()
+        # Portal frames are physical pixels: both crop spaces must be
+        # physical too (per-monitor scale applied), or fractional/mixed
+        # scaling crops the wrong region.
+        workspace = workspace_rect_physical()
         target = self._output_rect_global
         if (
             workspace is None
@@ -633,7 +636,14 @@ class KWinBackend:
             or workspace.h <= 0
         ):
             return image
-        return crop_workspace_output(image, workspace, target)
+        scale = monitor_scale_factor(output)
+        target_physical = Rect(
+            int(round(target.x * scale)),
+            int(round(target.y * scale)),
+            int(round(target.w * scale)),
+            int(round(target.h * scale)),
+        )
+        return crop_workspace_output(image, workspace, target_physical)
 
     def _capture_portal(self, output: str):
         """Fallback for direct AppImage launches without KWin DBus permission.
@@ -885,6 +895,25 @@ class KWinBackend:
         if self._tracker is None:
             return
         self._tracker.load(_build_script(self.cfg["game_window_class"]))
+
+    def _cleanup_legacy_shortcuts_once(self) -> None:
+        """One-time migration cleanup of script-era leaked kglobalaccel entries.
+
+        Raw org.kde.KGlobalAccel RPC is forbidden by project rule; this
+        read+unregister pair is the documented exception (it ran safely
+        dozens of times in production logs) and exists only to purge entries
+        the pre-portal implementation leaked. Runs once per state dir, then
+        never again.
+        """
+        marker = config.state_home() / "waystone" / "legacy-shortcuts-cleaned"
+        if marker.exists():
+            return
+        self._clear_prior_shortcuts()
+        try:
+            marker.parent.mkdir(parents=True, exist_ok=True)
+            marker.touch()
+        except OSError:
+            pass
 
     def _clear_prior_shortcuts(self) -> None:
         if self._bus is None:

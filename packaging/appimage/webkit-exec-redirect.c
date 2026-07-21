@@ -11,6 +11,7 @@
  */
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#include <errno.h>
 #include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,10 +30,44 @@ static const char *redirect(const char *path, char *buf, size_t n) {
     return buf;
 }
 
+/* Every interposer must survive a failed dlsym: calling a NULL pointer
+ * would crash the host process, so fail the call instead (ENOSYS) and let
+ * WebKit surface its own error. */
+
 int execve(const char *path, char *const argv[], char *const envp[]) {
     static int (*real)(const char *, char *const[], char *const[]);
     if (!real)
         real = dlsym(RTLD_NEXT, "execve");
+    if (!real) {
+        errno = ENOSYS;
+        return -1;
+    }
+    char buf[4096];
+    return real(redirect(path, buf, sizeof buf), argv, envp);
+}
+
+/* glibc-internal spawns can route through execv/execvpe rather than execve;
+ * cover the family so a WebKitGTK update can't silently bypass the redirect. */
+int execv(const char *path, char *const argv[]) {
+    static int (*real)(const char *, char *const[]);
+    if (!real)
+        real = dlsym(RTLD_NEXT, "execv");
+    if (!real) {
+        errno = ENOSYS;
+        return -1;
+    }
+    char buf[4096];
+    return real(redirect(path, buf, sizeof buf), argv);
+}
+
+int execvpe(const char *path, char *const argv[], char *const envp[]) {
+    static int (*real)(const char *, char *const[], char *const[]);
+    if (!real)
+        real = dlsym(RTLD_NEXT, "execvpe");
+    if (!real) {
+        errno = ENOSYS;
+        return -1;
+    }
     char buf[4096];
     return real(redirect(path, buf, sizeof buf), argv, envp);
 }
@@ -45,6 +80,22 @@ int posix_spawn(pid_t *pid, const char *path,
                        const posix_spawnattr_t *, char *const[], char *const[]);
     if (!real)
         real = dlsym(RTLD_NEXT, "posix_spawn");
+    if (!real)
+        return ENOSYS;
+    char buf[4096];
+    return real(pid, redirect(path, buf, sizeof buf), fa, attr, argv, envp);
+}
+
+int posix_spawnp(pid_t *pid, const char *path,
+                 const posix_spawn_file_actions_t *fa,
+                 const posix_spawnattr_t *attr,
+                 char *const argv[], char *const envp[]) {
+    static int (*real)(pid_t *, const char *, const posix_spawn_file_actions_t *,
+                       const posix_spawnattr_t *, char *const[], char *const[]);
+    if (!real)
+        real = dlsym(RTLD_NEXT, "posix_spawnp");
+    if (!real)
+        return ENOSYS;
     char buf[4096];
     return real(pid, redirect(path, buf, sizeof buf), fa, attr, argv, envp);
 }
@@ -53,6 +104,8 @@ void *dlopen(const char *path, int flags) {
     static void *(*real)(const char *, int);
     if (!real)
         real = dlsym(RTLD_NEXT, "dlopen");
+    if (!real)
+        return NULL;
     char buf[4096];
     return real(redirect(path, buf, sizeof buf), flags);
 }

@@ -34,8 +34,11 @@ class HyprlandBackend:
         self._esc_bind = EscBind("panel-close")
         self._sock = None
         self._source_id = 0
+        self._reconnect_source = 0
+        self._reconnect_delay = 1.0
         self._focused = False
         self._events_dead = False
+        self._panel_visible = False
         self._cursor: tuple[int, int] | None = None
         self._cursor_stop: threading.Event | None = None
         self._shortcuts = [
@@ -70,9 +73,19 @@ class HyprlandBackend:
         from poed import clipboard
 
         self._focused = clipboard.is_game_focused(self.cfg["game_window_class"])
-        sock = bind_mgr.connect_events()
-        self._sock = sock
+        self._connect_events()
 
+    def _connect_events(self) -> None:
+        """(Re)connect the socket2 event stream; EOF/failure retries with backoff."""
+        try:
+            sock = self._bind_mgr.connect_events()
+        except OSError as e:
+            _LOG.warning("hyprland events connect failed: %s; retrying", e)
+            self._schedule_reconnect()
+            return
+        self._events_dead = False
+        self._reconnect_delay = 1.0
+        self._sock = sock
         buf = b""
 
         def on_hypr_event(_fd, _cond, _data):
@@ -82,16 +95,21 @@ class HyprlandBackend:
             except BlockingIOError:
                 return GLib.SOURCE_CONTINUE
             if not chunk:
-                _LOG.warning("event socket closed; dynamic bind disabled until restart")
+                _LOG.warning("event socket closed; reconnecting")
                 self._events_dead = True
-                bind_mgr.stop()
+                self._sock = None
+                try:
+                    sock.close()
+                except OSError:
+                    pass
+                self._schedule_reconnect()
                 return GLib.SOURCE_REMOVE
             buf += chunk
             while b"\n" in buf:
                 line, buf = buf.split(b"\n", 1)
                 text = line.decode("utf-8", "replace")
                 self._track_focus(text)
-                bind_mgr.handle_line(text)
+                self._bind_mgr.handle_line(text)
             return GLib.SOURCE_CONTINUE
 
         self._source_id = GLibUnix.fd_add_full(
@@ -101,6 +119,28 @@ class HyprlandBackend:
             on_hypr_event,
             None,
         )
+
+    def _schedule_reconnect(self) -> None:
+        if self._reconnect_source:
+            return
+        delay = self._reconnect_delay
+        self._reconnect_delay = min(self._reconnect_delay * 2, 15.0)
+
+        def run():
+            self._reconnect_source = 0
+            # Runtime binds and their portal-name targets may not have
+            # survived whatever killed the stream: reset, re-resolve, and
+            # re-prime from live window state before listening again.
+            if self._bind_mgr is not None:
+                self._bind_mgr.reset_binds()
+                self._bind_mgr.prime()
+            self._esc_bind.reset_bind()
+            if self._panel_visible:
+                self._esc_bind.show()
+            self._connect_events()
+            return GLib.SOURCE_REMOVE
+
+        self._reconnect_source = GLib.timeout_add_seconds(int(delay), run)
 
     def _track_focus(self, line: str) -> None:
         # "activewindow>>CLASS,TITLE" (title may contain commas; empty data
@@ -116,6 +156,9 @@ class HyprlandBackend:
         if self._source_id:
             GLib.source_remove(self._source_id)
             self._source_id = 0
+        if self._reconnect_source:
+            GLib.source_remove(self._reconnect_source)
+            self._reconnect_source = 0
         self._stop_cursor_tracker()
         if self._bind_mgr is not None:
             self._bind_mgr.stop()
@@ -132,6 +175,7 @@ class HyprlandBackend:
             self._bind_mgr.notify_registered()
 
     def set_panel_visible(self, visible: bool) -> None:
+        self._panel_visible = bool(visible)
         if visible:
             self._esc_bind.show()
             self._start_cursor_tracker()

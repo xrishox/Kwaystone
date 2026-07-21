@@ -9,6 +9,7 @@ from .common import (
     update_debug_manifest,
     write_debug_image,
 )
+from .core import _fetch_rows
 from .types import Detection, ScanContext, ScanResult
 
 _LOG = logging.getLogger("waystone.scanners.ritual")
@@ -71,7 +72,11 @@ class RitualScanner:
         return ScanResult(self.id, self.title, matches)
 
     def warm(self, brain, cfg: dict) -> None:
-        uniquescan.warm(brain, cfg, row_filter=uniquescan.filter_ritual_rows)
+        if uniquescan.warm(brain, cfg, row_filter=uniquescan.filter_ritual_rows):
+            # Prebuild identification indexes (prefilter matrix, template
+            # families) so the first ritual press pays nothing on the hot path.
+            rows, _elapsed = _fetch_rows(brain, cfg)
+            ritual_scan.warm_index(rows)
 
     def stop(self) -> None:
         return

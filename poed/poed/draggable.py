@@ -20,6 +20,8 @@ import subprocess
 
 import gi
 
+from poed.subproc import scrubbed_env
+
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gtk4LayerShell", "1.0")
 from gi.repository import Gtk, Gdk, GLib, Gtk4LayerShell as LayerShell  # noqa: E402
@@ -123,6 +125,7 @@ def cursor_pos() -> tuple[int, int] | None:
             capture_output=True,
             text=True,
             timeout=0.5,
+            env=scrubbed_env(),
         )
     except (OSError, subprocess.SubprocessError):
         return None
@@ -140,6 +143,7 @@ def monitor_origin_at(gx: int, gy: int) -> tuple[int, int]:
             capture_output=True,
             text=True,
             timeout=0.5,
+            env=scrubbed_env(),
         )
         for mon in json.loads(out.stdout):
             mx, my = mon["x"], mon["y"]

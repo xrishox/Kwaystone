@@ -415,18 +415,43 @@ def test_kwin_capture_output_falls_back_to_screenshot_portal(tmp_path):
     assert not target.exists()
 
 
-def test_kwin_portal_capture_crops_full_workspace_to_active_output():
+def test_kwin_portal_capture_crops_full_workspace_to_active_output(monkeypatch):
     np = pytest.importorskip("numpy")
     image = np.arange(5 * 10 * 3, dtype=np.uint8).reshape((5, 10, 3))
     backend = KWinBackend(config.DEFAULTS)
     backend._game_rect_output = "DP-2"
     backend._output_rect_global = Rect(4, 1, 6, 4)
-    backend._workspace_rect_global = lambda: Rect(0, 0, 10, 5)
+    monkeypatch.setattr(
+        "poed.desktop.kwin.workspace_rect_physical", lambda: Rect(0, 0, 10, 5)
+    )
+    monkeypatch.setattr(
+        "poed.desktop.kwin.monitor_scale_factor", lambda _connector: 1.0
+    )
 
     cropped = backend._crop_portal_output(image, "DP-2")
 
     assert cropped.shape == (4, 6, 3)
     assert cropped.tolist() == image[1:5, 4:10].tolist()
+
+
+def test_kwin_portal_capture_scales_target_for_fractional_output(monkeypatch):
+    np = pytest.importorskip("numpy")
+    image = np.arange(5 * 10 * 3, dtype=np.uint8).reshape((5, 10, 3))
+    backend = KWinBackend(config.DEFAULTS)
+    backend._game_rect_output = "DP-2"
+    # Logical output rect 2x2 at (2,0); at 2x scale that's physical 4x4 at (4,0).
+    backend._output_rect_global = Rect(2, 0, 2, 2)
+    monkeypatch.setattr(
+        "poed.desktop.kwin.workspace_rect_physical", lambda: Rect(0, 0, 10, 5)
+    )
+    monkeypatch.setattr(
+        "poed.desktop.kwin.monitor_scale_factor", lambda _connector: 2.0
+    )
+
+    cropped = backend._crop_portal_output(image, "DP-2")
+
+    assert cropped.shape == (4, 4, 3)
+    assert cropped.tolist() == image[0:4, 4:8].tolist()
 
 
 def test_kwin_geometry_maps_window_to_captured_output_pixels():

@@ -29,6 +29,10 @@ class EngineResult:
     scan_elapsed: float
     timings: dict[str, object]
     debug_dir: object = None
+    # Capture dimensions (w, h) in pixels: matches are in capture space and
+    # the badge layer converts to logical surface coords with this and the
+    # compositor's logical output size (fractional scaling).
+    frame_size: tuple[int, int] | None = None
 
 
 @dataclass(frozen=True)
@@ -435,6 +439,7 @@ def _run_locked(brain, desktop, cfg: dict, scanners: list[Scanner] | None = None
         scan_elapsed=t_scan - t_rows,
         timings=timings,
         debug_dir=debug_dir,
+        frame_size=(shot.shape[1], shot.shape[0]),
     )
 
 

@@ -168,7 +168,7 @@ Docker with BuildKit or Podman is required. Outputs go to `dist/appimage/` with 
 
 - Python dependency graphs are hash-locked separately for CPU and CUDA 12.6.
 - `npm ci` uses the committed lockfile.
-- The container base, AppImage tool, Node archive, gtk4-layer-shell source, and OCR model files are pinned and verified.
+- The container base, Debian package set (snapshot.debian.org timestamp), AppImage tool, Node archive, gtk4-layer-shell source, and OCR model files are pinned and verified.
 - OCR models are downloaded only while building/bootstrapping and are bundled in release artifacts.
 - Pricing data, trade searches, and item icons remain online features and are cached under the XDG cache directory.
 - `scripts/check-source-hygiene --strict` must pass before release builds; it prevents local untracked source from making artifacts that a fresh clone cannot reproduce.

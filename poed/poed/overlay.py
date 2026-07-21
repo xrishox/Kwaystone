@@ -84,6 +84,7 @@ class OverlayPanel:
         self._win.set_decorated(False)
         LayerShell.init_for_window(self._win)
         LayerShell.set_layer(self._win, LayerShell.Layer.OVERLAY)
+        LayerShell.set_namespace(self._win, "waystone-scan-panel")
         LayerShell.set_keyboard_mode(self._win, LayerShell.KeyboardMode.NONE)
 
         self._sync_game_monitor()
