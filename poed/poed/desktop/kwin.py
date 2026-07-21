@@ -394,6 +394,9 @@ class KWinBackend:
             "unique-scan": Shortcut(
                 "unique-scan", "Scan current PoE2 screen", "ALT+x"
             ),
+            "arb-check": Shortcut(
+                "arb-check", "Currency arbitrage", cfg["hotkey_arb"]
+            ),
             "panel-close": Shortcut(
                 "panel-close", "Close PoE2 overlay panel", "ESC"
             ),
@@ -405,7 +408,11 @@ class KWinBackend:
         # only while a panel is visible (set_panel_visible).
         return [
             (s.sid, s.description, s.trigger)
-            for s in (self._shortcuts["price-check"], self._shortcuts["unique-scan"])
+            for s in (
+                self._shortcuts["price-check"],
+                self._shortcuts["unique-scan"],
+                self._shortcuts["arb-check"],
+            )
         ]
 
     def portal_session_token(self) -> str | None:

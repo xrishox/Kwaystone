@@ -122,7 +122,36 @@ async function fetchMarketQuotes(
   league: string,
 ): Promise<Map<string, MarketQuote>> {
   const pairs = await getJson(`Leagues/${enc(league)}/SnapshotPairs`);
+  lastPairs = { league, pairs, fetchedAt: Date.now() };
   return selectMarketQuotes(pairs);
+}
+
+// The raw exchange pairs behind the last quotes pull: the arbitrage matrix
+// needs pair-level liquidity/stock and item display names, which the selected
+// quote map alone doesn't carry.
+let lastPairs: { league: string; pairs: unknown; fetchedAt: number } | null =
+  null;
+
+/**
+ * Raw SnapshotPairs for `league`, served from the same pull the price warm
+ * just did when fresh (no duplicate request), fetched on demand otherwise.
+ * `force` bypasses the freshness window (Alt+S wants the latest on press).
+ */
+export async function snapshotPairsRaw(
+  league: string,
+  options: { force?: boolean } = {},
+): Promise<unknown> {
+  if (
+    !options.force &&
+    lastPairs &&
+    lastPairs.league === league &&
+    Date.now() - lastPairs.fetchedAt < SCOUT_TTL_MS
+  ) {
+    return lastPairs.pairs;
+  }
+  const pairs = await getJson(`Leagues/${enc(league)}/SnapshotPairs`);
+  lastPairs = { league, pairs, fetchedAt: Date.now() };
+  return pairs;
 }
 
 /**
@@ -312,6 +341,12 @@ async function snapshot(
   const hit = options.force ? null : fresh(league);
   if (hit) return hit;
 
+  if (options.force && inflight && inflight.league === league) {
+    // A forced refresh must not be satisfied by a warm that started before
+    // the user asked for fresh data: chain a new one behind the inflight.
+    await inflight.promise.catch(() => null);
+    inflight = null;
+  }
   if (!inflight || inflight.league !== league) {
     const promise = warm(league)
       .then((snap) => {
@@ -515,6 +550,11 @@ async function uniqueSnapshot(
   const hit = options.force ? null : freshUnique(league);
   if (hit) return hit;
 
+  if (options.force && uniqueInflight && uniqueInflight.league === league) {
+    // Same forced-refresh rule as snapshot(): never satisfied by a stale warm.
+    await uniqueInflight.promise.catch(() => null);
+    uniqueInflight = null;
+  }
   if (!uniqueInflight || uniqueInflight.league !== league) {
     const promise = fetchUniqueMap(league)
       .then((fetched) => {

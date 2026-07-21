@@ -58,6 +58,30 @@ Do not reintroduce separate GTK price cards, Kwaystone-specific Alt+Z query
 builders, or duplicate league/settings UI unless there is a documented reason
 that cannot be handled by the vendored EE2 UI/library.
 
+## Currency arbitrage (Alt+S)
+
+Alt+S is a two-stage freshness pipeline, split the usual way: poed owns
+clipboard capture, hotkey dispatch, and the panel; the brain owns all rate
+math. Stage 1 is instant: a forced refresh of the poe2scout exchange-pairs
+feed becomes the exchange matrix (exalted/chaos/divine + cross-rates) and,
+for bulk-commodity items, the item priced in every major currency against
+its most-liquid market pair. Stage 2 refines those rows live: official
+exchange and trade search/fetch queries verify the shown pairs, flowing
+through `brain/src/scheduler.ts` — a priority queue with per-source minimum
+intervals, key-based coalescing, and 429/Retry-After pausing — so repeated
+presses can never burst into a ban. poed polls `arbstate` from a worker
+thread and flips rows from aggregate to live-verified as answers land.
+
+The absolute scale is per-item, not exalted-by-default: each item is
+anchored to its most-liquid quote pair (liquidity and buyer stock are
+shown), and conversions chain item → anchor → each currency. Equipment
+(non-bulk items) uses one budgeted trade search+fetch per press; listings
+group by ask currency, each median is normalized at the current chain rate,
+and spreads of 5%+ versus the cheapest currency are flagged. Every row
+carries its data source (aggregate vs live) and age so freshness is always
+explicit. The brain commands are `arbquote` (stage 1) and `arbstate`
+(stage 2); the panel is `poed.arb_check` + `poed.arb_panel`.
+
 ## Screen scanning
 
 `poed.scanners.core` captures one game frame, creates one shared

@@ -17,6 +17,7 @@ DEFAULTS = {
     "league": "Runes of Aldur",  # verified current league
     "account_name": "",
     "hotkey_price": "ALT+z",       # Ctrl+D's pass-through habits collided with game keys; Alt+Z is free
+    "hotkey_arb": "ALT+s",         # currency arbitrage panel; Alt+S is free in-game
     "game_window_class": "steam_app_2694490",  # PoE2 under Proton/XWayland.
     "poesessid": "",  # paste from browser devtools (Cookie POESESSID). Grants
                       # account access — keep config.toml private (chmod 600).
@@ -46,6 +47,7 @@ class AppConfig(MutableMapping[str, Any]):
     league: str = DEFAULTS["league"]
     account_name: str = DEFAULTS["account_name"]
     hotkey_price: str = DEFAULTS["hotkey_price"]
+    hotkey_arb: str = DEFAULTS["hotkey_arb"]
     game_window_class: str = DEFAULTS["game_window_class"]
     poesessid: str = DEFAULTS["poesessid"]
     unique_min_exalted: float = DEFAULTS["unique_min_exalted"]
@@ -63,6 +65,7 @@ class AppConfig(MutableMapping[str, Any]):
             "league",
             "account_name",
             "hotkey_price",
+            "hotkey_arb",
             "game_window_class",
             "poesessid",
             "ocr_device",
@@ -146,8 +149,11 @@ league = "{league}"
 # Your account name (marks your own listings).
 account_name = "{account_name}"
 
-# Price-check hotkey. Screen-scan is ALT+x.
+# Price-check hotkey. Screen-scan is ALT+x. Currency arbitrage is ALT+s.
 hotkey_price = "{hotkey_price}"
+
+# Currency-arbitrage hotkey.
+hotkey_arb = "{hotkey_arb}"
 
 # Window class of the game.
 game_window_class = "{game_window_class}"

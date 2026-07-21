@@ -49,6 +49,7 @@ from poed import config
 from poed import leagues
 from poed import log as log_mod
 from poed import brain as brain_module
+from poed.arb_check import ArbCheckController
 from poed.brain import Brain
 from poed import scanners as screen_scan
 from poed.scanners import debug_io
@@ -73,6 +74,9 @@ class App:
         self.positions = positions
         self.desktop = desktop
         self.price_check = PriceCheckController(
+            application, cfg, brain, desktop, self._refresh_panel_visible
+        )
+        self.arb_check = ArbCheckController(
             application, cfg, brain, desktop, self._refresh_panel_visible
         )
         self.scan_ui = None
@@ -137,7 +141,7 @@ class App:
 
     def _refresh_panel_visible(self) -> None:
         scan_visible = bool(self.scan_ui is not None and self.scan_ui.is_visible())
-        price_visible = self.price_check.is_visible()
+        price_visible = self.price_check.is_visible() or self.arb_check.is_visible()
         self.desktop.set_panel_visible(scan_visible or price_visible)
 
     def _begin_in_flight(self) -> None:
@@ -179,6 +183,7 @@ class App:
             if self.scan_ui is not None:
                 self.scan_ui.dismiss()
             self.price_check.hide()
+            self.arb_check.hide()
             return
         if self.scan_ui is None:
             return
@@ -211,7 +216,9 @@ class App:
         # settle delay below is needed exactly when something of ours was on
         # screen at press time.
         overlay_was_visible = (
-            self.scan_ui.is_visible() or self.price_check.is_visible()
+            self.scan_ui.is_visible()
+            or self.price_check.is_visible()
+            or self.arb_check.is_visible()
         )
         self.scan_ui.hide_badges()  # stale badges must not outlive their screen
         if shortcut_id == "unique-scan":
@@ -223,6 +230,8 @@ class App:
                 self.scan_ui.dismiss()
             if self.price_check.is_visible():
                 self.price_check.hide()
+            if self.arb_check.is_visible():
+                self.arb_check.hide()
             # t0 = hotkey arrival in poed: the user's perceived latency clock
             # (xdph -> portal -> us is upstream of this and unmeasurable here).
             if overlay_was_visible:
@@ -230,8 +239,13 @@ class App:
             else:
                 self._start_screen_scan(self.gen, time.monotonic())
         else:
+            target = (
+                self._run_price_check
+                if shortcut_id == "price-check"
+                else self._run_arb_check
+            )
             threading.Thread(
-                target=self._run_price_check,
+                target=target,
                 args=(self.gen,),
                 daemon=True,
             ).start()
@@ -239,6 +253,12 @@ class App:
     def _run_price_check(self, gen: int) -> None:
         try:
             self.price_check.run(gen, self._is_current_gen)
+        finally:
+            self._end_in_flight(gen)
+
+    def _run_arb_check(self, gen: int) -> None:
+        try:
+            self.arb_check.run(gen, self._is_current_gen)
         finally:
             self._end_in_flight(gen)
 

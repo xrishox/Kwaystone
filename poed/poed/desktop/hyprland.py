@@ -44,6 +44,7 @@ class HyprlandBackend:
         self._shortcuts = [
             Shortcut("price-check", "PoE2 price check", cfg["hotkey_price"]),
             Shortcut("unique-scan", "Scan current PoE2 screen", "ALT+x"),
+            Shortcut("arb-check", "Currency arbitrage", cfg["hotkey_arb"]),
             Shortcut("panel-close", "Close PoE2 overlay panel", "ESC"),
         ]
 
@@ -59,11 +60,13 @@ class HyprlandBackend:
         self._on_activated = on_activated
         price_mods, price_key = hypr_bind(self.cfg["hotkey_price"])
         unique_mods, unique_key = hypr_bind("ALT+x")
+        arb_mods, arb_key = hypr_bind(self.cfg["hotkey_arb"])
         bind_mgr = MultiBindManager.create(
             self.cfg["game_window_class"],
             [
                 (price_mods, price_key, "price-check"),
                 (unique_mods, unique_key, "unique-scan"),
+                (arb_mods, arb_key, "arb-check"),
             ],
         )
         self._bind_mgr = bind_mgr

@@ -44,7 +44,7 @@ def test_create_backend_rejects_unknown_wayland(monkeypatch):
 
 
 def test_hyprland_backend_uses_configured_price_hotkey():
-    cfg = {**config.DEFAULTS, "hotkey_price": "CTRL+d"}
+    cfg = {**config.DEFAULTS, "hotkey_price": "CTRL+d", "hotkey_arb": "CTRL+s"}
     backend = HyprlandBackend(cfg)
 
     assert backend.portal_shortcuts()[0] == (
@@ -53,11 +53,11 @@ def test_hyprland_backend_uses_configured_price_hotkey():
         "CTRL+d",
     )
     ids = [shortcut[0] for shortcut in backend.portal_shortcuts()]
-    assert ids == ["price-check", "unique-scan", "panel-close"]
+    assert ids == ["price-check", "unique-scan", "arb-check", "panel-close"]
 
 
 def test_kwin_portal_shortcuts_excludes_esc_and_uses_configured_price_key():
-    cfg = {**config.DEFAULTS, "hotkey_price": "CTRL+d"}
+    cfg = {**config.DEFAULTS, "hotkey_price": "CTRL+d", "hotkey_arb": "CTRL+s"}
     backend = KWinBackend(cfg)
 
     shortcuts = backend.portal_shortcuts()
@@ -68,6 +68,7 @@ def test_kwin_portal_shortcuts_excludes_esc_and_uses_configured_price_key():
     assert shortcuts == [
         ("price-check", "PoE2 price check", "CTRL+d"),
         ("unique-scan", "Scan current PoE2 screen", "ALT+x"),
+        ("arb-check", "Currency arbitrage", "CTRL+s"),
     ]
 
 

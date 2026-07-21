@@ -76,6 +76,28 @@ const handlers: Record<string, Handler> = {
     const { leagueList } = await import("./poe2scout");
     return leagueList({ force: req.force === true });
   },
+  arbquote: async (req) => {
+    const { arbQuote } = await import("./arbitrage");
+    return arbQuote({
+      clipboard: String(req.clipboard ?? ""),
+      league: requestLeague(req),
+      accountName: String(req.accountName ?? process.env.POE2_ACCOUNT ?? ""),
+      sessionId: String(req.sessionId ?? process.env.POE2_SESSID ?? ""),
+    });
+  },
+  arbstate: async (req) => {
+    const { arbState } = await import("./arbitrage");
+    const refreshId = Number(req.refreshId ?? 0);
+    return (
+      arbState(refreshId) ?? {
+        refreshId,
+        done: true,
+        matrix: [],
+        itemRows: [],
+        missing: true,
+      }
+    );
+  },
 };
 
 async function handleLine(conn: net.Socket, line: string): Promise<void> {
