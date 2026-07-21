@@ -37,19 +37,26 @@ function requestLeague(req: any): string {
 
 const handlers: Record<string, Handler> = {
   ping: async () => "pong",
-  uniqueprices: async (req) => {
-    if (req.ifVersion !== undefined) {
-      // Versioned handshake: an unchanged snapshot skips serializing and
-      // shipping the multi-megabyte row dict to the client.
-      const { scanCorpusVersioned } = await import("./uniques");
-      const { version, rows } = await scanCorpusVersioned(requestLeague(req));
-      if (req.ifVersion === version) {
-        return { version, unchanged: true };
+  uniqueprices: async (req, emit) => {
+    // A cold-cache corpus build (~1100 icon fetches) can exceed poed's 30s
+    // inactivity timeout; heartbeat progress lines keep the request alive.
+    const heartbeat = setInterval(() => emit("building scan corpus"), 10_000);
+    try {
+      if (req.ifVersion !== undefined) {
+        // Versioned handshake: an unchanged snapshot skips serializing and
+        // shipping the multi-megabyte row dict to the client.
+        const { scanCorpusVersioned } = await import("./uniques");
+        const { version, rows } = await scanCorpusVersioned(requestLeague(req));
+        if (req.ifVersion === version) {
+          return { version, unchanged: true };
+        }
+        return { version, rows };
       }
-      return { version, rows };
+      const { scanCorpus } = await import("./uniques");
+      return scanCorpus(requestLeague(req));
+    } finally {
+      clearInterval(heartbeat);
     }
-    const { scanCorpus } = await import("./uniques");
-    return scanCorpus(requestLeague(req));
   },
   ee2host: async (req) => startEe2Host({
     league: requestLeague(req),
@@ -153,9 +160,11 @@ export async function startServer(
   return () =>
     new Promise((res) => {
       stopBackgroundRefresh();
-      void stopEe2Host();
-      server.close(() => res());
-      for (const conn of connections) conn.destroy();
+      void (async () => {
+        await stopEe2Host();
+        server.close(() => res());
+        for (const conn of connections) conn.destroy();
+      })();
     });
 }
 

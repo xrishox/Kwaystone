@@ -428,7 +428,7 @@ def _semantic_failures(
     expected_matches = _expected_matches(metadata)
     if expected_matches is None:
         return ["semantic: expectedMatches required for verificationLevel >= 3"]
-    if expected_matches and "__schema_error__" in expected_matches[0]:
+    if any("__schema_error__" in item for item in expected_matches):
         return ["semantic: expectedMatches must be a list of objects"]
 
     expected_names = Counter(
@@ -556,6 +556,10 @@ def graduate_probation(index: dict[str, Any], history: dict[str, Any]) -> list[s
         outcomes = outcomes_for(history, str(case.get("id") or ""))
         if len(outcomes) < required:
             continue
+        # Only consistent passes graduate: a case failing its recorded
+        # evaluations must not silently count as healthy regression truth.
+        if not all(outcome.get("passed") for outcome in outcomes[-required:]):
+            continue
         case["status"] = "graduated"
         case["graduatedUtc"] = now_utc()
         graduated.append(str(case.get("id") or ""))
@@ -646,10 +650,12 @@ def retention_deficits(index: dict[str, Any]) -> dict[str, dict[int, int]]:
         if case.get("status") in ACTIVE_STATUSES
         and str(case.get("expected") or "") in EXPECTED_TYPES
     ]
+    # Retention floors apply to real scanner categories; "none" is the
+    # intentional-negative bucket and has no floor requirements (per policy).
     categories = sorted({
         *EXPECTED_CATEGORIES,
         *(case_category(case) for case in active),
-    })
+    } - {"none"})
     deficits: dict[str, dict[int, int]] = {}
     for category in categories:
         by_level = {
@@ -683,11 +689,17 @@ def enforce_graduated_limits(
     corpus_root: Path,
     index: dict[str, Any],
     history: dict[str, Any],
-    *,
-    delete_images: bool = True,
-) -> list[str]:
+) -> tuple[list[str], list[Path]]:
+    """Archive over-cap graduated cases from the index.
+
+    Returns (archived case ids, orphaned image paths). Image FILES are never
+    deleted here: the caller deletes them only after the updated index has
+    been written, closing the crash window that used to leave the index
+    pointing at deleted images.
+    """
     floors = retention_floors(index)
     archived = []
+    orphan_images: list[Path] = []
     now = now_utc()
     while True:
         active = [
@@ -730,7 +742,7 @@ def enforce_graduated_limits(
             cases = category_overfull[category]
             archived_reason = "active category over capacity"
         else:
-            return archived
+            return archived, orphan_images
 
         signature_counts = Counter(case_signature(case) for case in cases)
         candidates = [
@@ -740,7 +752,7 @@ def enforce_graduated_limits(
             and not _protected_by_floor(case, active_by_bucket, floors)
         ]
         if not candidates:
-            return archived
+            return archived, orphan_images
 
         evicted = sorted(
             candidates,
@@ -754,12 +766,25 @@ def enforce_graduated_limits(
         evicted["archivedUtc"] = now
         evicted["archivedReason"] = archived_reason
         archived.append(str(evicted.get("id") or ""))
-        image = str(evicted.get("image") or "")
-        if delete_images and image:
-            try:
-                (corpus_root / image).unlink()
-            except FileNotFoundError:
-                pass
+        image = _safe_image_path(corpus_root, str(evicted.get("image") or ""))
+        if image is not None:
+            orphan_images.append(image)
+
+
+def _safe_image_path(corpus_root: Path, image: str) -> Path | None:
+    """Resolve an index image path, refusing anything outside the corpus root.
+
+    pathlib's join silently discards the root for absolute operands and
+    ``../`` escapes resolve outward; a tampered index must never be able to
+    point an image delete at an arbitrary file.
+    """
+    if not image:
+        return None
+    root = corpus_root.resolve()
+    resolved = (corpus_root / image).resolve()
+    if resolved == root or root not in resolved.parents:
+        return None
+    return resolved
 
 
 def remove_superseded_source_cases(
@@ -768,8 +793,14 @@ def remove_superseded_source_cases(
     *,
     source_scan_id: str,
     new_level: int,
-    delete_images: bool = True,
-) -> list[str]:
+) -> tuple[list[str], list[Path]]:
+    """Remove lower/equal-level cases for a source scan from the index.
+
+    Returns (removed case ids, orphaned image paths). Image FILES are never
+    deleted here: the caller deletes them only after the new index (which no
+    longer references them) has been written, closing the crash window that
+    used to leave the index pointing at deleted images.
+    """
     if new_level not in {1, 2, 3}:
         raise ValueError("new_level must be 1, 2, or 3")
     cases = list(index.get("cases") or [])
@@ -794,22 +825,18 @@ def remove_superseded_source_cases(
         if verification_level(case) <= new_level
     ]
     if not removed:
-        return []
+        return [], []
 
     removed_ids = {id(case) for case in removed}
     index["cases"] = [case for case in cases if id(case) not in removed_ids]
     removed_case_ids = []
-    if delete_images:
-        for case in removed:
-            image = str(case.get("image") or "")
-            if image:
-                try:
-                    (corpus_root / image).unlink()
-                except FileNotFoundError:
-                    pass
+    orphan_images: list[Path] = []
     for case in removed:
+        image = _safe_image_path(corpus_root, str(case.get("image") or ""))
+        if image is not None:
+            orphan_images.append(image)
         removed_case_ids.append(str(case.get("id") or ""))
-    return removed_case_ids
+    return removed_case_ids, orphan_images
 
 
 def unique_case_id(

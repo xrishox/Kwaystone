@@ -46,6 +46,11 @@ def main() -> int:
         help="use the tiny deterministic row fixture instead of the live icon corpus",
     )
     args = parser.parse_args()
+    # A missing index must fail loudly: evaluating zero cases green would
+    # "satisfy" the mandated pre-handoff validation on a typo'd path.
+    if not (args.corpus_root / "index.json").is_file():
+        print(f"error: no corpus index at {args.corpus_root}/index.json", flush=True)
+        return 2
     index = scan_corpus.load_index(args.corpus_root)
     cases = scan_corpus.active_cases(index, args.corpus_root)
     if not cases:
@@ -79,6 +84,7 @@ def main() -> int:
                         reasons=["read: unreadable image"],
                         tiers={"read": False},
                     )
+                    scan_corpus.write_history(history, args.history)
                 print(
                     f"FAIL {item.image} expected={expected} actual=unreadable "
                     "tiers=read=fail 0.000s reasons=read: unreadable image",
@@ -124,6 +130,9 @@ def main() -> int:
                     reasons=evaluation.reasons,
                     tiers=evaluation.tiers,
                 )
+                # Persist per case: an interrupted run must not discard the
+                # history (and probation graduation evidence) already earned.
+                scan_corpus.write_history(history, args.history)
             tier_text = ",".join(
                 f"{key}={'pass' if value else 'fail'}"
                 for key, value in evaluation.tiers.items()

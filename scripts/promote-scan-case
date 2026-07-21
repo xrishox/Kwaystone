@@ -152,7 +152,7 @@ def main() -> int:
     corpus_root = args.corpus_root
     index = scan_corpus.load_index(corpus_root)
     try:
-        superseded = scan_corpus.remove_superseded_source_cases(
+        superseded, orphan_images = scan_corpus.remove_superseded_source_cases(
             corpus_root,
             index,
             source_scan_id=scan_dir.name,
@@ -199,6 +199,14 @@ def main() -> int:
         case["supersedes"] = superseded
     index.setdefault("cases", []).append(case)
     scan_corpus.write_index(corpus_root, index)
+    # Superseded image files are deleted only now — after the new image and
+    # the updated index exist on disk — so a crash can never leave the index
+    # pointing at deleted files.
+    for orphan in orphan_images:
+        try:
+            orphan.unlink()
+        except FileNotFoundError:
+            pass
     for superseded_id in superseded:
         print(f"removed superseded lower/equal-level case {superseded_id}")
     print(

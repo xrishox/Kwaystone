@@ -105,7 +105,7 @@ scripts/evaluate-scan-corpus
 - After promotion or a Level 0 skip, run a separate full corpus validation with `scripts/evaluate-scan-corpus --record-history`. This command scans only the curated managed corpus, never `~/.local/state/waystone/debug/scans` or `~/.local/state/waystone/debug/tests`.
 - Report the full corpus result to the user. If it fails, include the failed case id/path, expected route, actual route, failed tier, and reason.
 - After a successful recorded full corpus run, run `scripts/maintain-scan-corpus` when maintaining probation/graduation/retention state is relevant; this is separate from the corpus evaluator.
-- Promoting a scan at a higher level supersedes lower-level entries for that same `sourceScanId`. The promotion script removes lower/equal-level corpus entries and their copied corpus images before writing the upgraded case. Do not keep duplicate Level 1/2 versions when the same scan has been upgraded to Level 2 or Level 3.
+- Promoting a scan at a higher level supersedes lower-level entries for that same `sourceScanId`. The promotion script removes lower/equal-level corpus entries from the index and deletes their copied corpus images only after the upgraded case and index are written (a crash must never leave the index pointing at deleted images). Do not keep duplicate Level 1/2 versions when the same scan has been upgraded to Level 2 or Level 3.
 - If a higher-level active case already exists for the same `sourceScanId`, do not downgrade it. The promotion script refuses this automatically.
 - The corpus evaluator has exactly one job: test every active curated corpus case at its stored verification level. It must not infer new truth from debug images, promote images, or scan local debug dumps.
 

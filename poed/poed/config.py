@@ -2,6 +2,7 @@ import logging
 import os
 import pathlib
 import re
+import threading
 import tomllib
 from collections.abc import Iterator, MutableMapping
 from dataclasses import asdict, dataclass, field
@@ -209,26 +210,31 @@ def default_path() -> pathlib.Path:
 
 
 def save_league(p: pathlib.Path | None, league: str) -> None:
-    """Persist the league dropdown choice: surgical line replace so user
-    comments and the rest of the file survive."""
-    if p is None:
-        p = default_path()
-    if not p.exists():
-        load(p)  # writes the template
-    lines = p.read_text().splitlines(keepends=True)
-    league_toml = 'league = "%s"' % league.replace("\\", "\\\\").replace('"', '\\"')
-    for i, line in enumerate(lines):
-        m = re.match(r'(\s*league\s*=\s*"[^"]*")(.*\n?)', line)
-        if m:
-            lines[i] = league_toml + m.group(2)
-            break
-    else:
-        lines.append(league_toml + "\n")
-    p.write_text("".join(lines))
+    """Persist the league dropdown choice, preserving user comments."""
+    save_values(p, {"league": league})
 
 
 def _toml_string(value: str) -> str:
     return '"%s"' % value.replace("\\", "\\\\").replace('"', '\\"')
+
+
+# Serializes config mutations across threads (EE2 league sync on the scan
+# worker vs "Save OCR settings" on the GTK thread).
+_save_lock = threading.Lock()
+
+
+def _atomic_write(path: pathlib.Path, text: str) -> None:
+    """Write via tmp+rename: a crash mid-write can never truncate the config
+    (the next load would hard-fail SystemExit on a torn TOML file)."""
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text)
+    os.replace(tmp, path)
+    # The rename carries the tmp file's fresh umask perms; the config may
+    # hold a POESESSID, so restore owner-only after every write.
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
 
 
 def save_values(p: pathlib.Path | None, values: dict[str, str]) -> None:
@@ -236,26 +242,27 @@ def save_values(p: pathlib.Path | None, values: dict[str, str]) -> None:
 
     if p is None:
         p = default_path()
-    if not p.exists():
-        load(p)  # writes the template
+    with _save_lock:
+        if not p.exists():
+            load(p)  # writes the template
 
-    updated = load(p).as_dict()
-    updated.update(values)
-    AppConfig.from_mapping(updated)
+        updated = load(p).as_dict()
+        updated.update(values)
+        AppConfig.from_mapping(updated)
 
-    lines = p.read_text().splitlines(keepends=True)
-    remaining = dict(values)
-    for i, line in enumerate(lines):
-        match = re.match(r"(\s*([A-Za-z0-9_]+)\s*=\s*)(.*?)(\s*(?:#.*)?\n?)$", line)
-        if not match:
-            continue
-        key = match.group(2)
-        if key not in remaining:
-            continue
-        lines[i] = f"{match.group(1)}{_toml_string(remaining.pop(key))}{match.group(4)}"
-    for key, value in remaining.items():
-        lines.append(f"{key} = {_toml_string(value)}\n")
-    p.write_text("".join(lines))
+        lines = p.read_text().splitlines(keepends=True)
+        remaining = dict(values)
+        for i, line in enumerate(lines):
+            match = re.match(r"(\s*([A-Za-z0-9_]+)\s*=\s*)(.*?)(\s*(?:#.*)?\n?)$", line)
+            if not match:
+                continue
+            key = match.group(2)
+            if key not in remaining:
+                continue
+            lines[i] = f"{match.group(1)}{_toml_string(remaining.pop(key))}{match.group(4)}"
+        for key, value in remaining.items():
+            lines.append(f"{key} = {_toml_string(value)}\n")
+        _atomic_write(p, "".join(lines))
 
 
 def save_ocr_settings(
@@ -296,7 +303,7 @@ def load(p: pathlib.Path | None = None) -> AppConfig:
     else:
         p.parent.mkdir(parents=True, exist_ok=True)
         p.touch(mode=0o600)
-        p.write_text(TEMPLATE.format(**DEFAULTS))
+        _atomic_write(p, TEMPLATE.format(**DEFAULTS))
         _LOG.info("wrote default config to %s", p)
     try:
         cfg = AppConfig.from_mapping(values)

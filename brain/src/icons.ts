@@ -55,13 +55,30 @@ const MAX_ICON_BYTES = 1_000_000; // poecdn icons are tens of KB; cap hostile/br
 async function download(url: string, file: string): Promise<string | null> {
   let bytes: Buffer;
   try {
-    const r = await fetch(url);
+    const r = await fetch(url, { signal: AbortSignal.timeout(15_000) });
     if (!r.ok) {
       await r.body?.cancel(); // release the socket
       return null;
     }
-    bytes = Buffer.from(await r.arrayBuffer());
-    if (bytes.byteLength > MAX_ICON_BYTES) return null;
+    // Check the size cap BEFORE buffering: iconUrl is third-party data, so a
+    // hostile/huge body must not be read fully into memory first.
+    const declared = Number(r.headers.get("content-length") ?? 0);
+    if (declared > MAX_ICON_BYTES) {
+      await r.body?.cancel();
+      return null;
+    }
+    const chunks: Buffer[] = [];
+    let size = 0;
+    for await (const chunk of r.body ?? []) {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      size += buf.length;
+      if (size > MAX_ICON_BYTES) {
+        await r.body?.cancel();
+        return null;
+      }
+      chunks.push(buf);
+    }
+    bytes = Buffer.concat(chunks);
   } catch {
     return null; // network errors are routine; no warning
   }

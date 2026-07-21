@@ -12,7 +12,7 @@ from typing import Any
 import cv2
 
 from poed import brain as brain_module
-from poed import config, expeditionscan, scan_corpus, views
+from poed import config, expeditionscan, scan_cache, scan_corpus, views
 from poed.image_geometry import frame_source
 from poed.scanners import core
 from poed.scanners.core import ScannerSelection
@@ -149,6 +149,10 @@ def scan_route(
         source=source,
         rows=rows,
     )
+    # Tooling loops many cases in one process: rotate cache generations per
+    # case so production's two-generation invariant holds here too (entries
+    # from case A must never serve case B).
+    scan_cache.begin_scan()
     if timings_ms is None:
         selections = core.select_scanners(ctx)
     else:

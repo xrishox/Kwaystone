@@ -37,7 +37,9 @@ describe("resolveIcon", () => {
     expect(existsSync(p!)).toBe(true);
     expect(readFileSync(p!, "utf8")).toBe("png-bytes");
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(fetchSpy).toHaveBeenCalledWith(URL1);
+    const [calledUrl, calledInit] = fetchSpy.mock.calls[0];
+    expect(calledUrl).toBe(URL1);
+    expect(calledInit?.signal).toBeInstanceOf(AbortSignal);
   });
 
   it("returns cached path without fetching", async () => {

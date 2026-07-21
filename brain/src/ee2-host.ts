@@ -497,8 +497,10 @@ function handleUpgrade(req: IncomingMessage, socket: net.Socket): void {
   );
   host?.sockets.add(socket);
   debug("ee2 websocket connected");
+  const reassembler = new WsReassembler();
   socket.on("data", (chunk) => {
-    for (const message of decodeClientFrames(chunk)) {
+    const { messages, closed } = reassembler.push(chunk);
+    for (const message of messages) {
       handleClientEvent(message, socket).catch((e) => {
         console.error(
           "ee2 client event failed:",
@@ -506,6 +508,7 @@ function handleUpgrade(req: IncomingMessage, socket: net.Socket): void {
         );
       });
     }
+    if (closed) socket.end();
   });
   socket.on("close", () => host?.sockets.delete(socket));
   socket.on("error", () => host?.sockets.delete(socket));
@@ -565,6 +568,88 @@ function requestNativeOverlayHide(reason: string): void {
   hideRequestSeq += 1;
   hideReason = reason;
   debug(`ee2 native hide requested reason=${reason} seq=${hideRequestSeq}`);
+}
+
+const MAX_WS_BUFFER = 4 * 1024 * 1024;
+
+/** Per-socket WebSocket reassembly: TCP chunk boundaries are arbitrary and
+ * browsers may fragment a large message across continuation frames. Parsing
+ * each chunk independently silently drops any frame split across chunks
+ * (settings saves used to vanish that way). */
+export class WsReassembler {
+  private buf: Buffer = Buffer.alloc(0);
+  private fragments: Buffer[] = [];
+
+  push(chunk: Buffer): { messages: string[]; closed: boolean } {
+    this.buf = this.buf.length ? Buffer.concat([this.buf, chunk]) : chunk;
+    if (this.buf.length > MAX_WS_BUFFER) {
+      // Runaway stream: drop the socket rather than grow memory unbounded.
+      this.buf = Buffer.alloc(0);
+      this.fragments = [];
+      return { messages: [], closed: true };
+    }
+    const messages: string[] = [];
+    let closed = false;
+    for (;;) {
+      const frame = this.readFrame();
+      if (!frame) break;
+      this.buf = this.buf.subarray(frame.consumed);
+      if (frame.opcode === 8) {
+        closed = true;
+        this.buf = Buffer.alloc(0);
+        break;
+      }
+      if (frame.opcode === 0 && this.fragments.length) {
+        this.fragments.push(frame.payload);
+        if (frame.fin) {
+          messages.push(Buffer.concat(this.fragments).toString("utf8"));
+          this.fragments = [];
+        }
+        continue;
+      }
+      if (frame.opcode === 1) {
+        if (frame.fin) {
+          messages.push(frame.payload.toString("utf8"));
+        } else {
+          this.fragments = [frame.payload];
+        }
+      }
+      // Control frames (ping/pong) and unexpected opcodes are ignored.
+    }
+    return { messages, closed };
+  }
+
+  private readFrame():
+    | { opcode: number; fin: boolean; payload: Buffer; consumed: number }
+    | null {
+    const chunk = this.buf;
+    let offset = 0;
+    if (offset + 2 > chunk.length) return null;
+    const b0 = chunk[offset++];
+    const b1 = chunk[offset++];
+    const fin = (b0 & 0x80) !== 0;
+    const opcode = b0 & 0x0f;
+    let len = b1 & 0x7f;
+    if (len === 126) {
+      if (offset + 2 > chunk.length) return null;
+      len = chunk.readUInt16BE(offset);
+      offset += 2;
+    } else if (len === 127) {
+      if (offset + 8 > chunk.length) return null;
+      const big = chunk.readBigUInt64BE(offset);
+      offset += 8;
+      if (big > BigInt(Number.MAX_SAFE_INTEGER)) return null;
+      len = Number(big);
+    }
+    const masked = (b1 & 0x80) !== 0;
+    if (!masked || offset + 4 + len > chunk.length) return null;
+    const mask = chunk.subarray(offset, offset + 4);
+    offset += 4;
+    const payload = Buffer.from(chunk.subarray(offset, offset + len));
+    offset += len;
+    for (let i = 0; i < payload.length; i++) payload[i] ^= mask[i % 4];
+    return { opcode, fin, payload, consumed: offset };
+  }
 }
 
 /** Test seam. */
@@ -642,6 +727,8 @@ function scheduleLastItemText(socket: net.Socket, delays = [100, 500, 1500]): vo
   }
 }
 
+let hostStarting: Promise<{ url: string }> | null = null;
+
 export async function startEe2Host(options: Ee2HostOptions = {}): Promise<{ url: string }> {
   defaults = {
     ...defaults,
@@ -649,6 +736,18 @@ export async function startEe2Host(options: Ee2HostOptions = {}): Promise<{ url:
     accountName: options.accountName ?? defaults.accountName,
     sessionId: options.sessionId ?? defaults.sessionId,
   };
+  if (host) return { url: `http://127.0.0.1:${host.port}/?k=${host.authToken}` };
+  // Memoize the start: two concurrent callers must not each create a server
+  // (the loser would leak, unclosed and unreachable).
+  if (!hostStarting) {
+    hostStarting = startEe2HostInner().finally(() => {
+      hostStarting = null;
+    });
+  }
+  return hostStarting;
+}
+
+async function startEe2HostInner(): Promise<{ url: string }> {
   if (host) return { url: `http://127.0.0.1:${host.port}/?k=${host.authToken}` };
 
   const server = http.createServer((req, res) => {

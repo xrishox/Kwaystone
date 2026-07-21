@@ -31,16 +31,27 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    if not (args.corpus_root / "index.json").is_file():
+        print(f"error: no corpus index at {args.corpus_root}/index.json", flush=True)
+        return 2
+
     index = scan_corpus.load_index(args.corpus_root)
     history = scan_corpus.load_history(args.history)
     graduated = scan_corpus.graduate_probation(index, history)
-    archived = scan_corpus.enforce_graduated_limits(
+    archived, orphan_images = scan_corpus.enforce_graduated_limits(
         args.corpus_root,
         index,
         history,
-        delete_images=not args.keep_archived_images,
     )
     scan_corpus.write_index(args.corpus_root, index)
+    # Archived image files are deleted only after the updated index exists
+    # on disk (never before, so a crash can't orphan index references).
+    if not args.keep_archived_images:
+        for orphan in orphan_images:
+            try:
+                orphan.unlink()
+            except FileNotFoundError:
+                pass
     for case_id in graduated:
         print(f"graduated {case_id}")
     for case_id in archived:

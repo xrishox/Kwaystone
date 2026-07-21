@@ -408,16 +408,19 @@ def test_retention_archives_only_surplus_above_configured_floor(tmp_path: Path):
         elapsed_ms=10.0,
     )
 
-    archived = scan_corpus.enforce_graduated_limits(tmp_path, index, history)
+    archived, orphan_images = scan_corpus.enforce_graduated_limits(tmp_path, index, history)
 
     assert archived == ["duplicate-old"]
+    assert orphan_images == [tmp_path / "images/duplicate-old.webp"]
     statuses = {case["id"]: case["status"] for case in index["cases"]}
     assert statuses == {
         "problematic": "graduated",
         "duplicate-old": "archived",
         "duplicate-new": "graduated",
     }
-    assert not (tmp_path / "images/duplicate-old.webp").exists()
+    # Image files are only collected, never deleted by enforce_graduated_limits:
+    # the caller deletes them after writing the updated index.
+    assert (tmp_path / "images/duplicate-old.webp").exists()
 
 
 def test_retention_does_not_archive_at_or_below_floor(tmp_path: Path):
@@ -434,13 +437,14 @@ def test_retention_does_not_archive_at_or_below_floor(tmp_path: Path):
         image.parent.mkdir(parents=True, exist_ok=True)
         image.write_bytes(b"fixture")
 
-    archived = scan_corpus.enforce_graduated_limits(
+    archived, orphan_images = scan_corpus.enforce_graduated_limits(
         tmp_path,
         index,
         scan_corpus.empty_history(),
     )
 
     assert archived == []
+    assert orphan_images == []
 
 
 def test_retention_category_limit_allows_more_ritual_cases(tmp_path: Path):
@@ -462,7 +466,7 @@ def test_retention_category_limit_allows_more_ritual_cases(tmp_path: Path):
         image.parent.mkdir(parents=True, exist_ok=True)
         image.write_bytes(b"fixture")
 
-    archived = scan_corpus.enforce_graduated_limits(
+    archived, _orphans = scan_corpus.enforce_graduated_limits(
         tmp_path,
         index,
         scan_corpus.empty_history(),
@@ -479,7 +483,7 @@ def test_retention_category_limit_allows_more_ritual_cases(tmp_path: Path):
     assert statuses["merchant-new"] == "graduated"
 
 
-def test_remove_superseded_source_cases_deletes_lower_levels_and_images(tmp_path: Path):
+def test_remove_superseded_source_cases_collects_orphan_images(tmp_path: Path):
     image_dir = tmp_path / "images"
     image_dir.mkdir()
     for name in ("level-1.webp", "level-2.webp", "other.webp"):
@@ -510,7 +514,7 @@ def test_remove_superseded_source_cases_deletes_lower_levels_and_images(tmp_path
         ],
     }
 
-    removed = scan_corpus.remove_superseded_source_cases(
+    removed, orphan_images = scan_corpus.remove_superseded_source_cases(
         tmp_path,
         index,
         source_scan_id="scan-1",
@@ -519,8 +523,13 @@ def test_remove_superseded_source_cases_deletes_lower_levels_and_images(tmp_path
 
     assert removed == ["level-1", "level-2"]
     assert [case["id"] for case in index["cases"]] == ["other"]
-    assert not (image_dir / "level-1.webp").exists()
-    assert not (image_dir / "level-2.webp").exists()
+    assert sorted(orphan_images) == [
+        image_dir / "level-1.webp",
+        image_dir / "level-2.webp",
+    ]
+    # Deletion is the caller's job (after the updated index is written).
+    assert (image_dir / "level-1.webp").exists()
+    assert (image_dir / "level-2.webp").exists()
     assert (image_dir / "other.webp").exists()
 
 
@@ -673,6 +682,8 @@ def test_evaluate_corpus_ignores_retained_debug_scans(tmp_path: Path):
     repo = Path(__file__).resolve().parents[2]
     state = tmp_path / "state"
     corpus = tmp_path / "corpus"
+    # The evaluator runs only the curated index — never retained debug scans.
+    scan_corpus.write_index(corpus, scan_corpus.empty_index())
     scan = state / "waystone/debug/scans/scan-20260101T000000-000000001"
     scan.mkdir(parents=True)
     (scan / "manifest.json").write_text(
@@ -700,6 +711,28 @@ def test_evaluate_corpus_ignores_retained_debug_scans(tmp_path: Path):
 
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "checked=0 failures=0"
+
+
+def test_evaluate_corpus_fails_loudly_on_missing_index(tmp_path: Path):
+    repo = Path(__file__).resolve().parents[2]
+    corpus = tmp_path / "corpus"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(repo / "scripts/evaluate-scan-corpus"),
+            "--corpus-root",
+            str(corpus),
+        ],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    # A typo'd corpus path must never read as a green zero-case run.
+    assert result.returncode == 2
+    assert "no corpus index" in result.stdout
 
 
 def test_evaluate_corpus_records_history_for_curated_case(tmp_path: Path):

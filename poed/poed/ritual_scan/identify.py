@@ -276,8 +276,17 @@ def _masked_color_score(
     return float(np.dot(tvec, wvec) / (tnorm * wnorm))
 
 
+_build_serial = 0
+
+
 class Identifier:
     def __init__(self, rows: dict):
+        # Monotonic build stamp folded into scan_cache keys: identifications
+        # made against an older corpus (rows rebuild, filter change) must
+        # never be served after the candidate set changes.
+        global _build_serial
+        _build_serial += 1
+        self._serial = _build_serial
         eligible = uniquescan.filter_ritual_rows(uniquescan.filter_rows(rows, 0.0))
         self.templates = uniquescan._load_corpus(eligible)
         self.groups: dict[tuple[int, int], list[dict]] = {}
@@ -471,7 +480,7 @@ class Identifier:
         cache_key = scan_cache.digest(
             np.ascontiguousarray(window),
             extra=(
-                f"ritual2:{footprint_wh[0]}x{footprint_wh[1]}:{pitch:.2f}"
+                f"ritual2:{self._serial}:{footprint_wh[0]}x{footprint_wh[1]}:{pitch:.2f}"
                 f":{SCORING_MODE}:{int(ORIENTATION_GATE)}:{int(SHARPEN_SMALL_PITCH)}"
             ),
         )

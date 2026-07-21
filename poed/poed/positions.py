@@ -5,6 +5,7 @@ user left them. Read/write are defensive: a missing or corrupt file behaves
 as 'no saved positions', never raises into the UI.
 """
 import json
+import os
 from pathlib import Path
 
 from poed import config
@@ -30,13 +31,22 @@ class PositionStore:
     def get(self, name: str) -> tuple[int, int] | None:
         e = self._data.get(name)
         if isinstance(e, dict) and "x" in e and "y" in e:
-            return int(e["x"]), int(e["y"])
+            try:
+                return int(e["x"]), int(e["y"])
+            except (TypeError, ValueError):
+                # Hand-edited or corrupted values behave as "not saved",
+                # never raise into panel construction.
+                return None
         return None
 
     def set(self, name: str, x: int, y: int) -> None:
         self._data[name] = {"x": int(x), "y": int(y)}
         try:
             self._path.parent.mkdir(parents=True, exist_ok=True)
-            self._path.write_text(json.dumps(self._data))
+            # Atomic tmp+rename: a crash mid-write must not tear the file
+            # and silently drop every panel's saved position.
+            tmp = self._path.with_name(self._path.name + ".tmp")
+            tmp.write_text(json.dumps(self._data))
+            os.replace(tmp, self._path)
         except OSError:
             pass  # best-effort; position memory is a nicety, not critical
