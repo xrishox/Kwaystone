@@ -14,6 +14,19 @@ def test_missing_file_returns_none(tmp_path):
     assert s.get("panel") is None
 
 
+def test_type_invalid_entries_degrade_to_none(tmp_path):
+    p = tmp_path / "positions.json"
+    p.write_text(
+        '{"panel": {"x": "left", "y": 5}, "other": {"x": null, "y": 3}}',
+        encoding="utf-8",
+    )
+    s = PositionStore(p)
+
+    # Hand-edited garbage must never raise into panel construction.
+    assert s.get("panel") is None
+    assert s.get("other") is None
+
+
 def test_set_then_get_roundtrip(tmp_path):
     p = tmp_path / "positions.json"
     s = PositionStore(p)

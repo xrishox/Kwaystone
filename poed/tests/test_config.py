@@ -180,3 +180,39 @@ def test_config_keeps_mapping_compatibility_and_validates_mutation():
     assert cfg.league == "Hardcore"
     with pytest.raises(ValueError):
         cfg["unique_scan_min_price"] = -1
+
+
+def test_save_league_normalizes_single_quoted_value(tmp_path):
+    p = tmp_path / "config.toml"
+    p.write_text("league = 'Standard'\n# keep me\n", encoding="utf-8")
+
+    config.save_league(p, "Runes of Aldur")
+
+    text = p.read_text()
+    # The old regex appended a second league key for non-double-quoted
+    # values, producing invalid TOML that killed the next launch.
+    assert text.count("league =") == 1
+    assert "# keep me" in text
+    assert config.load(p)["league"] == "Runes of Aldur"
+
+
+def test_save_values_writes_atomically_and_privately(tmp_path):
+    p = tmp_path / "config.toml"
+
+    config.save_values(p, {"poesessid": "secret", "league": "Standard"})
+
+    assert not (tmp_path / "config.toml.tmp").exists()
+    assert (p.stat().st_mode & 0o777) == 0o600
+    assert config.load(p)["poesessid"] == "secret"
+
+
+def test_load_repairs_loose_permissions_when_sessid_present(tmp_path):
+    import os
+
+    p = tmp_path / "config.toml"
+    p.write_text('poesessid = "abc"\n', encoding="utf-8")
+    os.chmod(p, 0o644)
+
+    config.load(p)
+
+    assert (p.stat().st_mode & 0o777) == 0o600
