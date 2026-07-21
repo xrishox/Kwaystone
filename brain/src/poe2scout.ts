@@ -597,6 +597,59 @@ export function _clearUniqueCache(): void {
 export function _clearCache(): void {
   cache = null;
   inflight = null;
+  leagueListCache = null;
+}
+
+export interface LeagueInfo {
+  name: string;
+  current: boolean;
+  permanent: boolean;
+}
+
+// Permanent leagues are always trackable even though the API flags them
+// IsCurrent=false (that flag means "current challenge league").
+const PERMANENT_LEAGUES = new Set(["Standard", "Hardcore"]);
+const LEAGUE_LIST_TTL_MS = 5 * 60 * 1000;
+
+let leagueListCache: { leagues: LeagueInfo[]; fetchedAt: number } | null = null;
+
+/**
+ * Trackable leagues right now: permanent leagues plus every currently active
+ * (IsCurrent) league, softcore and Hardcore variants alike. Dead leagues are
+ * never returned. Cached briefly; a failed refresh serves the last-good list
+ * so the league selector never empties mid-session.
+ */
+export async function leagueList(
+  options: { force?: boolean } = {},
+): Promise<{ leagues: LeagueInfo[]; fetchedAt: number }> {
+  if (
+    !options.force &&
+    leagueListCache &&
+    Date.now() - leagueListCache.fetchedAt < LEAGUE_LIST_TTL_MS
+  ) {
+    return leagueListCache;
+  }
+  try {
+    const raw = await getJson("Leagues");
+    const leagues = (Array.isArray(raw) ? raw : [])
+      .map((entry) => {
+        const name = String(entry?.Value ?? "");
+        return {
+          name,
+          current: entry?.IsCurrent === true,
+          permanent: PERMANENT_LEAGUES.has(name),
+        };
+      })
+      .filter(
+        (entry) =>
+          entry.name.length > 0 && (entry.current || entry.permanent),
+      );
+    leagueListCache = { leagues, fetchedAt: Date.now() };
+    return leagueListCache;
+  } catch (e) {
+    if (leagueListCache) return leagueListCache;
+    throw e;
+  }
 }
 
 /** Test seam: shrink the retry backoff so retry tests run fast. */

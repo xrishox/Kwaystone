@@ -72,6 +72,10 @@ const handlers: Record<string, Handler> = {
   },
   ee2config: async () => ee2ConfigSummary(),
   ee2state: async () => ee2RuntimeState(),
+  leagues: async (req) => {
+    const { leagueList } = await import("./poe2scout");
+    return leagueList({ force: req.force === true });
+  },
 };
 
 async function handleLine(conn: net.Socket, line: string): Promise<void> {

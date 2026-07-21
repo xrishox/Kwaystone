@@ -46,6 +46,7 @@ gi.require_version("GLibUnix", "2.0")
 from gi.repository import Gtk, Gio, GLib, GLibUnix  # noqa: E402
 
 from poed import config
+from poed import leagues
 from poed import log as log_mod
 from poed import brain as brain_module
 from poed.brain import Brain
@@ -78,6 +79,10 @@ class App:
         self.control_window = None
         self._hotkey_status = ""
         self._hotkey_status_label = None
+        self._league_dd = None
+        self._league_status = None
+        self._league_names = [cfg["league"]]
+        self._league_guard = False
         self._press_lock = threading.Lock()
         self.in_flight_gen = None
         self.in_flight_since = 0.0
@@ -285,9 +290,88 @@ class App:
             self._hotkey_status_label.set_text(text)
             self._hotkey_status_label.set_visible(bool(text))
 
+    # --- league selector ---------------------------------------------------
+
+    def _on_league_selected(self, dropdown, _pspec) -> None:
+        if self._league_guard:
+            return
+        names = self._league_names or [self.cfg["league"]]
+        index = int(dropdown.get_selected())
+        if index < 0 or index >= len(names):
+            return
+        name = names[index]
+        if name != self.cfg["league"]:
+            self._set_league(name, f"Saved. Tracking {name}.")
+
+    def _set_league(self, name: str, note: str) -> None:
+        try:
+            config.save_league(None, name)
+        except OSError as e:
+            if self._league_status is not None:
+                self._league_status.set_text(f"Could not save league: {e}")
+            return
+        self.cfg = config.AppConfig.from_mapping(
+            {**self.cfg.as_dict(), "league": name}
+        )
+        if self._league_status is not None:
+            self._league_status.set_text(note)
+
+    def _refresh_league_list(self) -> None:
+        if self._league_status is not None:
+            self._league_status.set_text("Refreshing leagues…")
+
+        def fetch():
+            try:
+                result = self.brain.request({"cmd": "leagues"}, timeout=5.0)
+                entries = result.get("leagues") or []
+                names = [str(e.get("name") or "") for e in entries]
+                current = {
+                    str(e.get("name") or ""): bool(e.get("current"))
+                    for e in entries
+                }
+                fetched_at = float(result.get("fetchedAt") or 0.0)
+            except (RuntimeError, OSError, TimeoutError) as e:
+                GLib.idle_add(self._fill_league_list, None, None, 0.0, str(e))
+                return
+            GLib.idle_add(self._fill_league_list, names, current, fetched_at, None)
+
+        threading.Thread(target=fetch, daemon=True).start()
+
+    def _fill_league_list(self, names, current, fetched_at, error):
+        cfg_league = self.cfg["league"]
+        note = None
+        if error or not names:
+            # Brain unreachable: keep the selector usable with just the
+            # configured league instead of dying or emptying out.
+            names = [cfg_league]
+            current = {cfg_league: True}
+            note = "league list unavailable (showing current)"
+        elif cfg_league not in names:
+            # The tracked league ended: follow the newest current league in
+            # the same family (_set_league persists and writes the note).
+            target = leagues.follow_target(names, current, cfg_league)
+            self._set_league(target, f"'{cfg_league}' ended; now tracking '{target}'.")
+            cfg_league = target
+        elif fetched_at:
+            age = max(0, int(time.time() - fetched_at / 1000))
+            note = f"{len(names)} active leagues (updated {age}s ago)"
+        else:
+            note = f"{len(names)} active leagues"
+        self._league_names = list(names)
+        self._league_guard = True
+        try:
+            self._league_dd.set_model(Gtk.StringList.new(names))
+            self._league_dd.set_selected(names.index(cfg_league))
+        finally:
+            self._league_guard = False
+        if note is not None and self._league_status is not None:
+            self._league_status.set_text(note)
+        return GLib.SOURCE_REMOVE
+
     def _show_control_window(self) -> None:
         if self.control_window is not None:
             self.control_window.present()
+            self._refresh_league_list()
             return
         win = Gtk.ApplicationWindow(application=self.application)
         win.set_title("Kwaystone")
@@ -305,6 +389,18 @@ class App:
         hotkey_status.add_css_class("warning")
         hotkey_status.set_visible(bool(self._hotkey_status))
         self._hotkey_status_label = hotkey_status
+
+        league_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        league_text = Gtk.Label(label="League", xalign=0.0)
+        league_text.set_hexpand(True)
+        self._league_dd = Gtk.DropDown.new_from_strings([self.cfg["league"]])
+        self._league_dd.set_selected(0)
+        self._league_dd.connect("notify::selected", self._on_league_selected)
+        league_row.append(league_text)
+        league_row.append(self._league_dd)
+        self._league_status = Gtk.Label(label="", xalign=0.0)
+        self._league_status.add_css_class("dim-label")
+
         settings_label = Gtk.Label(label="OCR settings require restart", xalign=0.0)
         settings_label.add_css_class("dim-label")
 
@@ -326,6 +422,8 @@ class App:
         )
         box.append(status)
         box.append(hotkey_status)
+        box.append(league_row)
+        box.append(self._league_status)
         box.append(settings_label)
         box.append(self._settings_row("OCR device", device_dd))
         box.append(self._settings_row("OCR model", model_dd))
@@ -382,6 +480,7 @@ class App:
         self.control_window = win
         win.present()
         GLib.timeout_add(350, self._minimize_control_window)
+        self._refresh_league_list()
 
     def _settings_dropdown(
         self,

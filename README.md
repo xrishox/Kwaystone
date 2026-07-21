@@ -47,6 +47,7 @@ The packages conflict because both provide the same `waystone` command and deskt
 
 - **Price check** (`Alt+Z`): hover an item in-game, press the hotkey, and get the embedded Exiled Exchange 2 price-check UI in a narrow native Wayland side panel. Press again to re-check; `Esc`, the EE2 close action, or returning focus to the game closes it.
 - **Screen scan** (`Alt+X`): detects supported game panels, including Have trade panels, merchant Buy/Sell stock, Ritual rewards, Expedition rewards, and in-world runeshape remnant rows. Runeshape can combine with another visible scanner result.
+- **League tracking**: the control window's league dropdown lists permanent and currently active leagues (softcore and Hardcore), refreshed from the live league list — dead leagues are never shown, and if your tracked league ends, tracking follows the newest league in the same family.
 
 On KDE, the first launch asks once — through the standard GlobalShortcuts
 portal dialog — to allow the `Alt+Z`/`Alt+X` shortcuts; later launches reuse
