@@ -21,6 +21,11 @@ def scan_unique_grid(
     row_filter: Callable[[dict], dict] | None = None,
 ) -> ScanResult:
     """Scan a visually localized stock grid and return normalized matches."""
+    cell = float(detection.payload.get("cell") or 0.0)
+    if cell <= 0:
+        # The Detection contract does not guarantee a cell pitch; decline
+        # instead of raising KeyError/TypeError into the engine.
+        return ScanResult(scanner_id, title, [])
     min_price = ctx.cfg.get("unique_scan_min_price", 0.0)
     rows = uniquescan.filter_rows(ctx.rows, min_price)
     if row_filter is not None:
@@ -29,7 +34,7 @@ def scan_unique_grid(
         ctx.frame,
         rows,
         detection.region,
-        float(detection.payload["cell"]),
+        cell,
         **_threshold_kwargs(gray_thresh, color_thresh),
     )
     matches = finalize_matches(

@@ -162,7 +162,8 @@ def test_rec_paths_defaults_to_batched_recognition_on_cpu(monkeypatch):
 
         def predict(self, paths, batch_size):
             self.batch_size = batch_size
-            return []
+            # One result per input path (the contract _rec_paths validates).
+            return [object() for _ in paths]
 
     monkeypatch.delenv("WAYSTONE_PADDLE_RECOGNITION_BATCH_SIZE", raising=False)
     monkeypatch.setattr(ocr_paddle, "_DEVICE", "cpu")

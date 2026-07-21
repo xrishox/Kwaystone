@@ -173,8 +173,10 @@ def _templates() -> tuple[_RuneTemplate, ...]:
     templates = []
     for rune, rel_path in sorted(_data()["runes"].items()):
         image = _decode_image(root.joinpath(rel_path).read_bytes())
-        if image.shape[2] == 4:
+        if image.ndim == 3 and image.shape[2] == 4:
             bgr = image[:, :, :3]
+        elif image.ndim == 2:
+            bgr = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         else:
             bgr = image
         gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)

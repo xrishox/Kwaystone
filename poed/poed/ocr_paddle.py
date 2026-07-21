@@ -311,7 +311,14 @@ def _rec_paths(rec, paths: list[str]) -> list[dict]:
         os.environ.get("WAYSTONE_PADDLE_RECOGNITION_BATCH_SIZE", default_batch)
     ))
     results = rec.predict(paths, batch_size=batch_size)
-    return [_dict_rec(result) for result in results]
+    reads = [_dict_rec(result) for result in results]
+    # A recognizer that silently skips unreadable images would shift every
+    # later read by one card — fail the request loudly instead of misaligning.
+    if len(reads) != len(paths):
+        raise RuntimeError(
+            f"OCR recognizer returned {len(reads)} reads for {len(paths)} images"
+        )
+    return reads
 
 
 def _write(obj: dict | list) -> None:
@@ -335,8 +342,11 @@ def serve() -> int:
         "quantity_model": quantity_rec_name,
     })
     for line in sys.stdin:
+        req = None
         try:
             req = json.loads(line)
+            if not isinstance(req, dict):
+                raise ValueError("request is not a JSON object")
             if "rec_paths" in req:
                 reads = _rec_paths(
                     quantity_rec,

@@ -131,6 +131,11 @@ def locate_panel(
         normalized, raw = _read_band_text(frame, band_frame)
         if normalized is None:
             notes.append(f"band-unverifiable: {raw}")
+            if raw.startswith("ocr-unavailable:"):
+                # A wedged/dead OCR helper will not recover within this probe;
+                # stop here instead of stacking a full timeout per band.
+                notes.append("ocr-unavailable: aborting remaining bands")
+                break
             continue
         if not TITLE_PATTERN.search(normalized):
             notes.append(f"band-rejected: {raw!r}")

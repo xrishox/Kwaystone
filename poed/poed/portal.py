@@ -149,6 +149,9 @@ class GlobalShortcuts:
         Subscribes to the predicted Request path BEFORE calling so an immediate
         Response can't be missed; verifies the returned path and re-subscribes
         defensively if it differs. on_response(code, results) fires on Response.
+
+        The method call itself is ASYNC: a hung portal must not freeze the
+        GTK main loop for the ~25s sync-call default timeout.
         """
         expected = self._request_path_for(token)
 
@@ -171,25 +174,38 @@ class GlobalShortcuts:
                 conn.signal_unsubscribe(sid)
             on_response(code, results)
 
+        def on_call_reply(conn, result, _user_data):
+            try:
+                ret = conn.call_finish(result)
+            except GLib.Error as e:
+                # Portal down/hung: route through the same failure path as a
+                # non-zero Response so the caller can retry or degrade.
+                _log(method, f"call failed: {e.message}")
+                sid = sub_holder.get("id")
+                if sid is not None:
+                    self.bus.signal_unsubscribe(sid)
+                on_response(1, {})
+                return
+            returned_path = ret.unpack()[0]
+            if returned_path != expected:
+                _log(method, f"path differs; resubscribing on {returned_path}")
+                old = sub_holder.get("id")
+                if old is not None:
+                    self.bus.signal_unsubscribe(old)
+                sub_holder["id"] = self.bus.signal_subscribe(
+                    PORTAL_BUS, REQUEST_IFACE, "Response", returned_path, None,
+                    Gio.DBusSignalFlags.NONE, on_signal, None,
+                )
+
         sub_holder["id"] = self.bus.signal_subscribe(
             PORTAL_BUS, REQUEST_IFACE, "Response", expected, None,
             Gio.DBusSignalFlags.NONE, on_signal, None,
         )
-
-        ret = self.bus.call_sync(
+        self.bus.call(
             PORTAL_BUS, PORTAL_PATH, GS_IFACE, method, params,
-            GLib.VariantType.new("(o)"), Gio.DBusCallFlags.NONE, -1, None,
+            GLib.VariantType.new("(o)"), Gio.DBusCallFlags.NONE, 30000, None,
+            on_call_reply, None,
         )
-        returned_path = ret.unpack()[0]
-        if returned_path != expected:
-            _log(method, f"path differs; resubscribing on {returned_path}")
-            old = sub_holder.get("id")
-            if old is not None:
-                self.bus.signal_unsubscribe(old)
-            sub_holder["id"] = self.bus.signal_subscribe(
-                PORTAL_BUS, REQUEST_IFACE, "Response", returned_path, None,
-                Gio.DBusSignalFlags.NONE, on_signal, None,
-            )
 
     # --- steps ------------------------------------------------------------
 
@@ -209,6 +225,9 @@ class GlobalShortcuts:
 
     def _on_session_created(self, code, results):
         if code != 0:
+            # Mark failed so the portal watch retries when the portal
+            # (re)appears; async call failures arrive here as code=1.
+            self._bind_failed = True
             self._fail(f"CreateSession failed (code={code})")
             return
         self.session_handle = results.get("session_handle")
@@ -237,8 +256,10 @@ class GlobalShortcuts:
     def _on_shortcuts_bound(self, code, results):
         # code=0 is the source of truth (ListShortcuts is unreliable on xdph).
         if code != 0:
+            self._bind_failed = True
             self._fail(f"BindShortcuts failed (code={code})")
             return
+        self._bind_failed = False
         _log("BindShortcuts", f"OK bound={results.get('shortcuts')}")
         if self._on_bound:
             self._on_bound()

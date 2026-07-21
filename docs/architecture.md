@@ -128,7 +128,15 @@ Scanner internals are intentionally split by responsibility:
 - `Rect` (shared geometry) lives in `poed.image_geometry`; the desktop layer
   re-exports it for its own interfaces.
 
-The OCR helper is persistent. Detection uses PP-OCRv6 small. Recognition model
+The OCR helper is persistent and resilient: a wedged (hung, not dead) helper
+is terminated and respawned on the next request, startup timeouts reap the
+half-started process, and its three-lock discipline (state/spawn/request)
+keeps shutdown from ever waiting behind an in-flight OCR call. More broadly,
+no blocking I/O runs on the GTK main loop — brain requests, subprocess
+spawns, and synchronous D-Bus all run on worker threads with results
+delivered via `GLib.idle_add`.
+
+Detection uses PP-OCRv6 small. Recognition model
 size is config-driven with hardware-aware auto defaults: CUDA is selected only
 when available with at least 16 GiB of VRAM; otherwise CPU is used. General
 recognition auto means small. Quantity auto follows an explicit recognition

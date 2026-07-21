@@ -83,6 +83,9 @@ def _probe_scanners(
                 str(getattr(item, "id", "")) in additive_ids
                 for item in scanner_list[index:]
             )
+            # Record skipped probes as 0ms so the manifest has no
+            # unexplained timing gaps on the definitive fast path.
+            timings[scanner_id] = 0.0
             if additive_detected or not has_unprobed_additive:
                 break
             continue
@@ -98,7 +101,17 @@ def _probe_scanners(
             continue
 
         started = time.perf_counter()
-        detection = scanner.probe(ctx, scene)
+        # Contain per-scanner failures: one buggy probe must not abort the
+        # whole press and discard every other scanner's valid detection.
+        try:
+            detection = scanner.probe(ctx, scene)
+        except Exception as e:
+            _LOG.warning("scanner probe failed: %s: %s", scanner_id, e, exc_info=True)
+            timings[scanner_id] = round(
+                (time.perf_counter() - started) * 1000,
+                2,
+            )
+            continue
         timings[scanner_id] = round(
             (time.perf_counter() - started) * 1000,
             2,
@@ -222,6 +235,11 @@ def _fetch_rows(brain, cfg: dict) -> tuple[dict, float]:
 _rows_executor_lock = threading.Lock()
 _rows_executor_instance: ThreadPoolExecutor | None = None
 
+# Single-flight guard: the app's in-flight heuristics (stale-reset after 15s)
+# can admit a second run while the first is stuck; two interleaved runs would
+# rotate each other's scan-cache generations and pin two captures at once.
+_scan_run_lock = threading.Lock()
+
 
 def _rows_executor() -> ThreadPoolExecutor:
     """Reused rows-fetch thread; per-press pool construction adds nothing."""
@@ -235,9 +253,17 @@ def _rows_executor() -> ThreadPoolExecutor:
 
 
 def run(brain, desktop, cfg: dict, scanners: list[Scanner] | None = None) -> EngineResult:
+    if not _scan_run_lock.acquire(blocking=False):
+        raise RuntimeError("screen scan already in progress")
+    try:
+        return _run_locked(brain, desktop, cfg, scanners)
+    finally:
+        _scan_run_lock.release()
+
+
+def _run_locked(brain, desktop, cfg: dict, scanners: list[Scanner] | None = None) -> EngineResult:
     t0 = time.monotonic()
     timings: dict[str, object] = {}
-    scan_cache.begin_scan()
     executor = _rows_executor()
     rows_future = executor.submit(_fetch_rows, brain, cfg)
     started = time.perf_counter()
@@ -254,6 +280,9 @@ def run(brain, desktop, cfg: dict, scanners: list[Scanner] | None = None) -> Eng
     rows, rows_request_ms = rows_future.result()
     timings["rows_wait_ms"] = _elapsed_ms(started)
     timings["rows_request_ms"] = rows_request_ms
+    # Rotate scan-cache generations only once capture AND rows succeeded:
+    # a failed press must not burn the previous press's identifications.
+    scan_cache.begin_scan()
     t_rows = time.monotonic()
     started = time.perf_counter()
     game_rect = desktop.active_game_rect(output, (shot.shape[1], shot.shape[0]))
@@ -322,14 +351,31 @@ def run(brain, desktop, cfg: dict, scanners: list[Scanner] | None = None) -> Eng
             )
             scan_started = time.perf_counter()
             results = []
+            scan_errors = []
             scanner_timings = {}
             for selection in selections:
                 child_started = time.perf_counter()
-                results.append(selection.scanner.scan(ctx, selection.detection))
+                try:
+                    results.append(selection.scanner.scan(ctx, selection.detection))
+                except Exception as e:
+                    _LOG.warning(
+                        "scanner scan failed: %s: %s",
+                        selection.scanner.id,
+                        e,
+                        exc_info=True,
+                    )
+                    scan_errors.append((selection.scanner.id, e))
                 scanner_timings[selection.scanner.id] = round(
                     (time.perf_counter() - child_started) * 1000,
                     2,
                 )
+            if not results and scan_errors:
+                # Every selected scanner failed: surface an error rather than
+                # silently reporting "none".
+                scanner_id, error = scan_errors[0]
+                raise RuntimeError(
+                    f"scanner {scanner_id} failed: {error}"
+                ) from error
             result = _combined_result(results)
             update_debug_manifest(
                 debug_dir,

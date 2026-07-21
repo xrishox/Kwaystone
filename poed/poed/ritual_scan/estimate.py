@@ -304,16 +304,22 @@ def grid_from_roi(
         return None, stats
     x0, pitch_x, _, span_x = fit_x
 
-    x_lo = max(0, int(round(x0)))
-    x_hi = min(width, int(round(x0 + span_x * pitch_x)))
+    x_lo = max(0, min(width, int(round(x0))))
+    x_hi = max(x_lo, min(width, int(round(x0 + span_x * pitch_x))))
+    if x_hi - x_lo < 3:
+        # Degenerate slice (fit landed past the frame edge): Scharr's kernel
+        # needs more room than this — decline instead of raising cv2.error.
+        return None, stats
     sy_local = _occlusion_tolerant_signal(gray_f[:, x_lo:x_hi], 1)
     fit_y = _fit_axis(sy_local, pitch_y, height, rows + 1, None)
     if fit_y is None:
         return None, stats
     y0, pitch_y, _, span_y = fit_y
 
-    y_lo = max(0, int(round(y0)))
-    y_hi = min(height, int(round(y0 + span_y * pitch_y)))
+    y_lo = max(0, min(height, int(round(y0))))
+    y_hi = max(y_lo, min(height, int(round(y0 + span_y * pitch_y))))
+    if y_hi - y_lo < 3:
+        return None, stats
     sx_local = _occlusion_tolerant_signal(gray_f[y_lo:y_hi, :], 0)
     fit_x = _fit_axis(sx_local, pitch_x, width, cols + 1, anchor_x)
     if fit_x is not None:

@@ -78,7 +78,8 @@ class App:
         self.control_window = None
         self._hotkey_status = ""
         self._hotkey_status_label = None
-        self.in_flight = False
+        self._press_lock = threading.Lock()
+        self.in_flight_gen = None
         self.in_flight_since = 0.0
         self.pending_press = None
         self._rewarm_running = False
@@ -102,17 +103,21 @@ class App:
         return GLib.SOURCE_REMOVE
 
     def _start_screen_scan(self, gen, t0):
-        if gen != self.gen:
+        if gen != self.gen or gen == self.dismissed_gen:
             _LOG.info("screenscan start dropped: stale generation current=%s got=%s", self.gen, gen)
-            self.in_flight = False
-            self.in_flight_since = 0.0
+            self._end_in_flight(gen)
             return GLib.SOURCE_REMOVE
         _LOG.info("screenscan start dispatched")
-        threading.Thread(target=self.run_screen_scan, args=(t0,), daemon=True).start()
+        threading.Thread(target=self.run_screen_scan, args=(gen, t0), daemon=True).start()
         return GLib.SOURCE_REMOVE
 
     def _deliver_screen_scan(self, gen, result, output, t0, timings=None, debug_dir=None):
         if gen != self.gen:
+            return GLib.SOURCE_REMOVE
+        if gen == self.dismissed_gen:
+            # Esc landed while the scan was in flight: the panel must stay
+            # dismissed instead of popping back open with the late result.
+            _LOG.info("result dropped: generation %s was dismissed", gen)
             return GLib.SOURCE_REMOVE
         if self.scan_ui is not None:
             self.scan_ui.show_result(result, output, t0, timings)
@@ -130,14 +135,20 @@ class App:
         self.desktop.set_panel_visible(scan_visible or price_visible)
 
     def _begin_in_flight(self) -> None:
-        self.in_flight = True
-        self.in_flight_since = time.monotonic()
+        with self._press_lock:
+            self.in_flight_gen = self.gen
+            self.in_flight_since = time.monotonic()
 
-    def _end_in_flight(self) -> None:
-        self.in_flight = False
-        self.in_flight_since = 0.0
-        pending = self.pending_press
-        self.pending_press = None
+    def _end_in_flight(self, gen: int) -> None:
+        # Only the owning generation may clear its in-flight state; a stale
+        # worker must not clobber a newer request's flag or replay queue.
+        with self._press_lock:
+            if self.in_flight_gen != gen:
+                return
+            self.in_flight_gen = None
+            self.in_flight_since = 0.0
+            pending = self.pending_press
+            self.pending_press = None
         if pending is not None:
             shortcut_id, pressed_at = pending
             if time.monotonic() - pressed_at < 12.0:
@@ -152,7 +163,7 @@ class App:
         _LOG.info(
             "shortcut received: %s in_flight=%s panel_visible=%s",
             shortcut_id,
-            self.in_flight,
+            self.in_flight_gen is not None,
             bool(self.scan_ui is not None and self.scan_ui.is_panel_visible()),
         )
         if shortcut_id == "panel-close":
@@ -165,16 +176,17 @@ class App:
             return
         if self.scan_ui is None:
             return
-        if self.in_flight:
+        if self.in_flight_gen is not None:
             age = time.monotonic() - self.in_flight_since if self.in_flight_since else 0.0
             if age < 15.0:
                 # Never silently eat a press: remember the latest one and
                 # replay it when the in-flight request finishes.
-                self.pending_press = (shortcut_id, time.monotonic())
+                with self._press_lock:
+                    self.pending_press = (shortcut_id, time.monotonic())
                 _LOG.info("shortcut queued: %s (in flight %.1fs)", shortcut_id, age)
                 return
             _LOG.warning("stale in-flight request reset after %.1fs", age)
-            self._end_in_flight()
+            self._end_in_flight(self.in_flight_gen)
         # Focus guard applies to price-check only: it injects Ctrl+C into the
         # focused window. screen-scan just screenshots the monitor — requiring
         # game FOCUS silently ate presses whenever the panel held focus (the
@@ -222,10 +234,9 @@ class App:
         try:
             self.price_check.run(gen, self._is_current_gen)
         finally:
-            self._end_in_flight()
+            self._end_in_flight(gen)
 
-    def run_screen_scan(self, t0):
-        gen = self.gen
+    def run_screen_scan(self, gen, t0):
         try:
             self.price_check.sync_config()
             engine = screen_scan.run(self.brain, self.desktop, self.cfg)
@@ -250,15 +261,18 @@ class App:
                 engine.timings,
                 engine.debug_dir,
             )
-        except (RuntimeError, OSError, TimeoutError) as e:
-            GLib.idle_add(self._deliver_scan_error, gen, str(e))
+        except Exception as e:
+            # Never let a press vanish silently: any scanner exception type
+            # (cv2.error, KeyError, ...) becomes a visible error panel.
+            GLib.idle_add(self._deliver_scan_error, gen, f"{type(e).__name__}: {e}")
         finally:
-            self._end_in_flight()
+            self._end_in_flight(gen)
 
     def on_portal_error(self, message):
         if getattr(self.desktop, "portal_required", True):
-            _LOG.error("exit: portal error — %s", message)
-            self.application.quit()
+            # Route through _shutdown so debug writes flush and backend
+            # state (dynamic binds, scripts) is cleaned up on the fatal path.
+            self._shutdown(f"portal error — {message}")
             return
         _LOG.error("portal error (hotkeys degraded): %s", message)
         self._set_hotkey_status(f"Global hotkeys unavailable: {message}")
@@ -413,14 +427,21 @@ class App:
         # The brain starts here, not in main(): GApplication single-instance
         # guarantees only the primary instance ever runs this, so duplicate
         # launches can never spawn a competing brain that steals/unlinks the
-        # shared socket path from under the running instance.
-        try:
-            self.brain.start()
-            _LOG.info("brain up: %s", self.brain.request({"cmd": "ping"}))
-        except (RuntimeError, OSError, TimeoutError) as e:
-            _LOG.error("exit: brain failed to start — %s", e)
-            self.application.quit()
-            return
+        # shared socket path from under the running instance. It starts on a
+        # worker: the spawn+ping wait (up to ~45s worst case) must not freeze
+        # the main loop that SIGINT/portal/desktop setup depends on.
+        def start_brain():
+            try:
+                self.brain.start()
+                _LOG.info("brain up: %s", self.brain.request({"cmd": "ping"}))
+            except (RuntimeError, OSError, TimeoutError) as e:
+                GLib.idle_add(self._brain_start_failed, str(e))
+                return
+            # Warm scanner services only once the brain is actually up:
+            # snapshot rows, icon templates, and the PaddleOCR helper.
+            screen_scan.warm(self.brain, self.cfg)
+
+        threading.Thread(target=start_brain, daemon=True).start()
         self._show_control_window()
         self.scan_ui = ScanResultController(
             application, self.cfg, self.positions, self.desktop,
@@ -465,16 +486,17 @@ class App:
         signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, on_sigint)
         signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, on_sigterm)
 
-        # Warm scanner services in the background: brain snapshot, icon
-        # templates, and PaddleOCR helper.
-        threading.Thread(
-            target=screen_scan.warm, args=(self.brain, self.cfg), daemon=True
-        ).start()
         # Re-warm periodically so the first press after the brain's ~12min
         # market refresh does not pay the template-corpus rebuild (~1-2s)
         # on the hot path. Skips overlapping runs; every rebuild happens on
-        # this background thread instead of inside a scan.
+        # this background thread instead of inside a scan. (The initial warm
+        # runs in start_brain after the brain is confirmed up.)
         GLib.timeout_add_seconds(240, self._background_rewarm)
+
+    def _brain_start_failed(self, message):
+        _LOG.error("exit: brain failed to start — %s", message)
+        self._shutdown(f"brain failed to start — {message}")
+        return GLib.SOURCE_REMOVE
 
     def _background_rewarm(self):
         if not self._rewarm_running:
@@ -544,6 +566,9 @@ def main():
         app.connect("activate", app_obj.on_activate)
         app.run(None)
     finally:
+        # Every exit path flushes queued debug writes, not only _shutdown:
+        # otherwise the final manifest updates are lost with the daemon writer.
+        debug_io.flush(timeout=5.0)
         screen_scan.stop()
         brain.stop()
         desktop.stop()

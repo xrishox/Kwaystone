@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from typing import Callable
 
 import gi
@@ -33,6 +34,10 @@ class HyprlandBackend:
         self._esc_bind = EscBind("panel-close")
         self._sock = None
         self._source_id = 0
+        self._focused = False
+        self._events_dead = False
+        self._cursor: tuple[int, int] | None = None
+        self._cursor_stop: threading.Event | None = None
         self._shortcuts = [
             Shortcut("price-check", "PoE2 price check", cfg["hotkey_price"]),
             Shortcut("unique-scan", "Scan current PoE2 screen", "ALT+x"),
@@ -60,6 +65,11 @@ class HyprlandBackend:
         )
         self._bind_mgr = bind_mgr
         bind_mgr.prime()
+        # Initial focus state comes from one query; afterwards the socket2
+        # activewindow stream keeps it current (no per-poll hyprctl spawns).
+        from poed import clipboard
+
+        self._focused = clipboard.is_game_focused(self.cfg["game_window_class"])
         sock = bind_mgr.connect_events()
         self._sock = sock
 
@@ -73,12 +83,15 @@ class HyprlandBackend:
                 return GLib.SOURCE_CONTINUE
             if not chunk:
                 _LOG.warning("event socket closed; dynamic bind disabled until restart")
+                self._events_dead = True
                 bind_mgr.stop()
                 return GLib.SOURCE_REMOVE
             buf += chunk
             while b"\n" in buf:
                 line, buf = buf.split(b"\n", 1)
-                bind_mgr.handle_line(line.decode("utf-8", "replace"))
+                text = line.decode("utf-8", "replace")
+                self._track_focus(text)
+                bind_mgr.handle_line(text)
             return GLib.SOURCE_CONTINUE
 
         self._source_id = GLibUnix.fd_add_full(
@@ -89,10 +102,21 @@ class HyprlandBackend:
             None,
         )
 
+    def _track_focus(self, line: str) -> None:
+        # "activewindow>>CLASS,TITLE" (title may contain commas; empty data
+        # means nothing is focused). activewindowv2 carries only an address
+        # and is ignored — the classful event accompanies it.
+        event, _, data = line.partition(">>")
+        if event != "activewindow":
+            return
+        klass, _, _title = data.partition(",")
+        self._focused = bool(klass) and klass == self.cfg["game_window_class"]
+
     def stop(self) -> None:
         if self._source_id:
             GLib.source_remove(self._source_id)
             self._source_id = 0
+        self._stop_cursor_tracker()
         if self._bind_mgr is not None:
             self._bind_mgr.stop()
         self._esc_bind.stop()
@@ -110,13 +134,45 @@ class HyprlandBackend:
     def set_panel_visible(self, visible: bool) -> None:
         if visible:
             self._esc_bind.show()
+            self._start_cursor_tracker()
         else:
             self._esc_bind.hide()
+            self._stop_cursor_tracker()
+
+    def _start_cursor_tracker(self) -> None:
+        # Panel drags read the compositor cursor at up to 100/s; spawning
+        # hyprctl per read on the GTK loop would hitch the drag. Poll on a
+        # worker while any panel is visible and serve reads from the cache.
+        if self._cursor_stop is not None:
+            return
+        stop = threading.Event()
+        self._cursor_stop = stop
+
+        def poll():
+            # Lazy import: draggable pulls in the layer-shell typelib, which
+            # must not be required at backend-import time (tests, non-GTK).
+            from poed import draggable
+
+            while not stop.wait(0.02):
+                pos = draggable.cursor_pos()
+                if pos is not None:
+                    self._cursor = pos
+
+        threading.Thread(target=poll, daemon=True).start()
+
+    def _stop_cursor_tracker(self) -> None:
+        stop, self._cursor_stop = self._cursor_stop, None
+        if stop is not None:
+            stop.set()
 
     def is_game_focused(self) -> bool:
-        from poed import clipboard
+        if self._events_dead:
+            # Socket2 is gone: degrade to the old subprocess probe rather
+            # than trusting a stale flag.
+            from poed import clipboard
 
-        return clipboard.is_game_focused(self.cfg["game_window_class"])
+            return clipboard.is_game_focused(self.cfg["game_window_class"])
+        return self._focused
 
     def active_game_output(self) -> str | None:
         return hyprbind.active_game_output(self.cfg["game_window_class"])
@@ -135,6 +191,9 @@ class HyprlandBackend:
     def cursor_pos(self) -> tuple[int, int] | None:
         from poed import draggable
 
+        if self._cursor is not None:
+            return self._cursor
+        # Cold start (panel just shown, tracker hasn't polled yet).
         return draggable.cursor_pos()
 
     def monitor_origin_at(self, gx: int, gy: int) -> tuple[int, int]:

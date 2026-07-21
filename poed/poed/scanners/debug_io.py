@@ -105,11 +105,17 @@ def submit_keyed(key: str, job: Callable[[], None]) -> None:
         _pending_keys[key] = False
 
     def run_and_clear() -> None:
-        job()
-        with _pending_lock:
-            rerun = _pending_keys.pop(key, False)
-        if rerun:
-            submit_keyed(key, job)
+        # try/finally: if job() raises, the key MUST still be popped —
+        # otherwise the flag stays set forever, every later submit_keyed
+        # takes the "already pending" branch, and the job never runs again
+        # (retention pruning silently stops; scan dirs grow unbounded).
+        try:
+            job()
+        finally:
+            with _pending_lock:
+                rerun = _pending_keys.pop(key, False)
+            if rerun:
+                submit_keyed(key, job)
 
     submit(run_and_clear)
 
@@ -118,7 +124,11 @@ def flush(timeout: float | None = 10.0) -> bool:
     """Wait until every queued job has run — including keyed jobs that
     re-queue themselves. Returns False on timeout."""
 
-    if _worker is None:
+    # Read under the lock: a lockless check can report "no worker" while a
+    # first submit() is concurrently creating one with a job already queued.
+    with _worker_lock:
+        worker = _worker
+    if worker is None:
         return True
     deadline = None if timeout is None else time.monotonic() + timeout
     while True:

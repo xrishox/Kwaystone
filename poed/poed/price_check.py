@@ -8,6 +8,7 @@ must not fall back to Kwaystone's GTK scan panel.
 from __future__ import annotations
 
 import logging
+import threading
 from collections.abc import Callable
 
 import gi
@@ -73,8 +74,11 @@ class PriceCheckController:
                     "focusOverlay": False,
                 }
             )
+            # Baseline read here (worker thread): a synchronous brain request
+            # must never sit on the GTK main loop in _show_overlay.
+            self._sync_state_baseline()
             GLib.idle_add(self._show_overlay, gen, is_current, url)
-        except (RuntimeError, OSError, TimeoutError) as e:
+        except (RuntimeError, OSError, TimeoutError, KeyError, TypeError, ValueError) as e:
             _LOG.warning("EE2 price-check failed: %s", e)
 
     def prewarm(self) -> None:
@@ -169,7 +173,6 @@ class PriceCheckController:
             except RuntimeError as e:
                 _LOG.warning("could not create EE2 price overlay: %s", e)
                 return GLib.SOURCE_REMOVE
-        self._sync_state_baseline()
         self._overlay.show(url, self._side, self._output_rect, self._game_rect)
         self._seen_game_unfocused = not self._desktop.is_game_focused()
         self._on_visibility_changed()
@@ -184,22 +187,36 @@ class PriceCheckController:
             _LOG.debug("could not read EE2 state baseline: %s", e)
 
     def _start_state_poll(self) -> None:
-        if self._state_poll is None:
-            self._state_poll = GLib.timeout_add(200, self._poll_state)
+        if self._state_poll is not None:
+            return
+        stop = threading.Event()
+        self._state_poll = stop
+        threading.Thread(target=self._poll_loop, args=(stop,), daemon=True).start()
 
-    def _stop_state_poll(self, *, remove_source: bool = True) -> None:
-        source = self._state_poll
+    def _stop_state_poll(self) -> None:
+        stop = self._state_poll
         self._state_poll = None
         self._seen_game_unfocused = False
-        if remove_source and source is not None:
-            try:
-                GLib.source_remove(source)
-            except (RuntimeError, ValueError):
-                pass
+        if stop is not None:
+            stop.set()
 
-    def _poll_state(self):
+    def _poll_loop(self, stop: threading.Event) -> None:
+        # Worker thread: the brain round-trip (0.5s timeout) must never sit
+        # on the GTK main loop — a stalled brain would freeze all UI.
+        while not stop.wait(0.2):
+            try:
+                state = self._brain.request({"cmd": "ee2state"}, timeout=0.5)
+            except (RuntimeError, OSError, TimeoutError) as e:
+                _LOG.debug("could not poll EE2 state: %s", e)
+                continue
+            GLib.idle_add(self._apply_state, state, stop)
+
+    def _apply_state(self, state, stop: threading.Event):
+        # Main thread: visibility/focus decisions and GTK hide live here.
+        if stop.is_set() or self._state_poll is not stop:
+            return GLib.SOURCE_REMOVE
         if not self.is_visible():
-            self._stop_state_poll(remove_source=False)
+            self._stop_state_poll()
             return GLib.SOURCE_REMOVE
         game_focused = self._desktop.is_game_focused()
         if not game_focused:
@@ -209,26 +226,24 @@ class PriceCheckController:
                 "hiding EE2 price-check after game focus returned: game_focused=%s",
                 game_focused,
             )
-            self._hide_overlay(remove_source=False)
+            self._hide_overlay()
             return GLib.SOURCE_REMOVE
         try:
-            state = self._brain.request({"cmd": "ee2state"}, timeout=0.5)
             seq = int(state.get("hideRequestSeq") or 0)
-        except (RuntimeError, OSError, TimeoutError, ValueError) as e:
-            _LOG.debug("could not poll EE2 state: %s", e)
-            return GLib.SOURCE_CONTINUE
+        except (TypeError, ValueError) as e:
+            _LOG.debug("could not parse EE2 state: %s", e)
+            return GLib.SOURCE_REMOVE
         if seq > self._hide_seq:
             reason = str(state.get("hideReason") or "")
             _LOG.info("EE2 requested native hide: seq=%s reason=%s", seq, reason)
             self._hide_seq = seq
-            self._hide_overlay(remove_source=False)
-            return GLib.SOURCE_REMOVE
-        return GLib.SOURCE_CONTINUE
+            self._hide_overlay()
+        return GLib.SOURCE_REMOVE
 
-    def _hide_overlay(self, *, remove_source: bool = True) -> None:
+    def _hide_overlay(self) -> None:
         was_visible = self.is_visible()
         if self._overlay is not None:
             self._overlay.hide()
-        self._stop_state_poll(remove_source=remove_source)
+        self._stop_state_poll()
         if was_visible:
             self._on_visibility_changed()

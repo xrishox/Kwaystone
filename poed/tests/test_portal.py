@@ -19,8 +19,14 @@ class FakeBus:
     def signal_unsubscribe(self, _subscription):
         pass
 
-    def call_sync(self, *args):
+    def call(self, *args):
+        # Async Gio call: record it and immediately deliver the reply through
+        # the provided callback (same shape as a successful Request handle).
         self.calls.append(args)
+        callback = args[9]
+        callback(self, object(), None)
+
+    def call_finish(self, _result):
         return GLib.Variant(
             "(o)", ("/org/freedesktop/portal/desktop/request/1_99/t",)
         )

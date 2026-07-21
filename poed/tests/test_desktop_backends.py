@@ -200,6 +200,7 @@ def test_kwin_esc_binding_follows_panel_visibility(tmp_path):
     backend._esc = _KwinScript(FakeBus(), tmp_path / "waystone-kwin-esc.js")
 
     backend.set_panel_visible(True)
+    backend._esc_thread.join(timeout=5.0)
     methods = backend._esc._bus.calls
     assert "loadScript" in methods and "run" in methods
 
@@ -208,6 +209,7 @@ def test_kwin_esc_binding_follows_panel_visibility(tmp_path):
     assert backend._esc._bus.calls == methods
 
     backend.set_panel_visible(False)
+    backend._esc_thread.join(timeout=5.0)
     methods = backend._esc._bus.calls
     assert "stop" in methods and "unloadScript" in methods
 
@@ -226,6 +228,7 @@ def test_kwin_esc_load_failure_degrades_without_raising(tmp_path):
     backend._esc = _KwinScript(FakeBus(), tmp_path / "waystone-kwin-esc.js")
 
     backend.set_panel_visible(True)  # KWin refusal is logged, not raised
+    backend._esc_thread.join(timeout=5.0)
     assert backend._panel_visible is True
     assert backend._esc.loaded is False
 
@@ -258,6 +261,7 @@ def test_kwin_kwin_watch_ignores_initial_fire_and_reloads_on_restart(tmp_path):
 
     # Owner change = compositor restart: scripts reset and reloaded.
     backend._on_kwin_appeared(None, "org.kde.KWin", ":1.22")
+    backend._reload_thread.join(timeout=5.0)
     assert loads == [True]
     assert backend._tracker.reset_calls == 1
     assert backend._esc.reset_calls == 1
@@ -265,6 +269,7 @@ def test_kwin_kwin_watch_ignores_initial_fire_and_reloads_on_restart(tmp_path):
     # Panel visible at restart time: the Esc binding is re-armed too.
     backend._panel_visible = True
     backend._on_kwin_appeared(None, "org.kde.KWin", ":1.33")
+    backend._reload_thread.join(timeout=5.0)
     assert loads == [True, True, True]
 
 

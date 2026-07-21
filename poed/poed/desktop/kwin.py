@@ -369,6 +369,10 @@ class KWinBackend:
         self._esc_path: Path | None = None
         self._tracker: _KwinScript | None = None
         self._esc: _KwinScript | None = None
+        self._esc_lock = threading.Lock()
+        self._esc_seq = 0
+        self._esc_thread: threading.Thread | None = None
+        self._reload_thread: threading.Thread | None = None
         self._kwin_watch = 0
         self._kwin_owner: str | None = None
         self.portal_error: str | None = None
@@ -422,8 +426,11 @@ class KWinBackend:
         self._tracker = _KwinScript(self._bus, self._script_path)
         self._esc = _KwinScript(self._bus, self._esc_path)
         # One-shot cleanup of shortcut entries leaked by older script-based
-        # registrations; the portal path never creates these.
-        self._clear_prior_shortcuts()
+        # registrations; the portal path never creates these. Off the main
+        # thread: it's 1s+ of D-Bus the startup path doesn't need to wait for.
+        threading.Thread(
+            target=self._clear_prior_shortcuts, daemon=True
+        ).start()
         self._load_tracker()
         self._check_portal()
         # KWin restarts silently drop loaded scripts; watch the bus name so the
@@ -469,6 +476,10 @@ class KWinBackend:
         if self._kwin_watch:
             Gio.bus_unwatch_name(self._kwin_watch)
             self._kwin_watch = 0
+        if self._esc_thread is not None:
+            # Let an in-flight Esc bind/unbind finish before final unload.
+            self._esc_thread.join(timeout=2.0)
+            self._esc_thread = None
         if self._esc is not None:
             self._esc.unload()
         if self._tracker is not None:
@@ -497,13 +508,26 @@ class KWinBackend:
         self._panel_visible = visible
         if self._esc is None:
             return
-        if visible:
-            try:
-                self._esc.load(_build_esc_script())
-            except (GLib.Error, OSError, RuntimeError) as e:
-                _LOG.warning("Esc binding failed (panel-close degraded): %s", e)
-        else:
-            self._esc.unload()
+        # Script load/unload is sync D-Bus (worst case ~4s): it must not run
+        # on the GTK main loop at the moment the user waits for the panel.
+        # Serialized worker; only the latest requested state is applied.
+        self._esc_seq += 1
+        seq = self._esc_seq
+
+        def work():
+            with self._esc_lock:
+                if seq != self._esc_seq:
+                    return
+                try:
+                    if visible:
+                        self._esc.load(_build_esc_script())
+                    else:
+                        self._esc.unload()
+                except (GLib.Error, OSError, RuntimeError) as e:
+                    _LOG.warning("Esc binding failed (panel-close degraded): %s", e)
+
+        self._esc_thread = threading.Thread(target=work, daemon=True)
+        self._esc_thread.start()
 
     def is_game_focused(self) -> bool:
         return self._focused
@@ -839,6 +863,13 @@ class KWinBackend:
             return
         self._kwin_owner = owner
         _LOG.info("KWin restarted; reloading scripts")
+        self._reload_thread = threading.Thread(
+            target=self._reload_scripts, daemon=True
+        )
+        self._reload_thread.start()
+
+    def _reload_scripts(self) -> None:
+        # Sync D-Bus script loads; always on a worker thread, never the loop.
         assert self._tracker is not None
         assert self._esc is not None
         self._tracker.reset()

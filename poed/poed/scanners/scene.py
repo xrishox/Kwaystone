@@ -70,8 +70,10 @@ class SceneAnalysis:
     def to_frame_rect(self, x0: float, y0: float, x1: float, y1: float) -> Rect:
         inv = 1.0 / self.scale
         height, width = self.frame.shape[:2]
-        left = max(0, min(width, int(round(x0 * inv))))
-        top = max(0, min(height, int(round(y0 * inv))))
+        # Clamp origins to width-1/height-1: with left == width the +1 below
+        # would emit a rect one pixel past the frame edge.
+        left = max(0, min(width - 1, int(round(x0 * inv))))
+        top = max(0, min(height - 1, int(round(y0 * inv))))
         right = max(left + 1, min(width, int(round(x1 * inv))))
         bottom = max(top + 1, min(height, int(round(y1 * inv))))
         return Rect(left, top, right - left, bottom - top)
