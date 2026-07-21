@@ -53,21 +53,63 @@ class GlobalShortcuts:
     on_activated(shortcut_id) is invoked when a bound shortcut fires.
     on_error(message) (optional) is invoked if session creation or binding
     fails; callbacks never call sys.exit (GLib swallows it).
+
+    session_token: stable token for the session handle. The KDE portal derives
+    the kglobalaccel component from it (unsandboxed apps get "token_<token>"),
+    so a stable token makes the first-run permission grant persist and later
+    launches rebind silently. None keeps a fresh random token per run.
     """
 
-    def __init__(self, app_id: str, on_activated, on_error=None, on_bound=None):
+    def __init__(self, app_id: str, on_activated, on_error=None, on_bound=None,
+                 session_token: str | None = None):
         self.app_id = app_id
         self.on_activated = on_activated
         self.on_error = on_error
         self._on_bound = on_bound
+        self._session_token = session_token
         self.bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
         unique = self.bus.get_unique_name()
         # Sender fragment of the predicted Request path: ":1.42" -> "1_42".
         self.sender = unique.lstrip(":").replace(".", "_")
         self.session_handle = None
         self._pending_shortcuts = None
+        self._portal_owner = None
+        self._bind_failed = False
         _log("bus", f"connected, unique={unique}, sender={self.sender}")
         self._subscribe_activated()
+        # Portal restarts drop the session (and with it the bindings); re-run
+        # the whole bind flow when the portal comes back. Previously granted
+        # shortcuts rebind silently, so this costs no user interaction.
+        self._watch = Gio.bus_watch_name_on_connection(
+            self.bus,
+            PORTAL_BUS,
+            Gio.BusNameWatcherFlags.NONE,
+            self._on_portal_appeared,
+            None,
+        )
+
+    def stop(self) -> None:
+        if self._watch:
+            Gio.bus_unwatch_name(self._watch)
+            self._watch = 0
+
+    def _on_portal_appeared(self, _bus, _name, owner, *_a):
+        # The watch fires once at registration for the running portal; only an
+        # owner change means a real restart. A first fire only retries a bind
+        # that already failed (portal was down at startup) — never duplicates
+        # an in-flight bind that merely hasn't answered yet.
+        if self._portal_owner is None:
+            self._portal_owner = owner
+            if not self._bind_failed:
+                return
+        elif owner == self._portal_owner:
+            return
+        else:
+            self._portal_owner = owner
+        self._bind_failed = False
+        _log("watch", "portal (re)appeared; binding shortcuts")
+        self.session_handle = None
+        self._try_create_session()
 
     # --- public API -------------------------------------------------------
 
@@ -83,7 +125,18 @@ class GlobalShortcuts:
         Not re-entry safe — call once per instance.
         """
         self._pending_shortcuts = list(shortcuts)
-        self._create_session()
+        self._try_create_session()
+
+    def _try_create_session(self):
+        # call_sync raises (e.g. portal down) rather than answering with a
+        # Response; route that through the same error hook as a failed code,
+        # and remember it so the portal watch retries once the portal appears.
+        try:
+            self._create_session()
+            self._bind_failed = False
+        except GLib.Error as e:
+            self._bind_failed = True
+            self._fail(f"CreateSession call failed: {e.message}")
 
     # --- Request/Response plumbing ----------------------------------------
 
@@ -145,7 +198,9 @@ class GlobalShortcuts:
         token = _token()
         options = {
             "handle_token": GLib.Variant("s", token),
-            "session_handle_token": GLib.Variant("s", _token()),
+            "session_handle_token": GLib.Variant(
+                "s", self._session_token or _token()
+            ),
         }
         params = GLib.Variant("(a{sv})", (options,))
         self._call_with_request(

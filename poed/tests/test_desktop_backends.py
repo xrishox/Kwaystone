@@ -6,7 +6,7 @@ from gi.repository import GLib
 from poed import config
 from poed.desktop import create_backend
 from poed.desktop.hyprland import HyprlandBackend
-from poed.desktop.kwin import KWinBackend, _build_script
+from poed.desktop.kwin import KWinBackend, _build_esc_script, _build_script, _KwinScript
 from poed.image_geometry import Rect
 
 
@@ -56,23 +56,28 @@ def test_hyprland_backend_uses_configured_price_hotkey():
     assert ids == ["price-check", "unique-scan", "panel-close"]
 
 
-def test_kwin_shortcut_sync_scopes_game_and_panel_keys():
-    backend = KWinBackend(config.DEFAULTS)
+def test_kwin_portal_shortcuts_excludes_esc_and_uses_configured_price_key():
+    cfg = {**config.DEFAULTS, "hotkey_price": "CTRL+d"}
+    backend = KWinBackend(cfg)
 
-    assert backend._desired_shortcut_ids() == ()
-    backend._present = True
-    assert backend._desired_shortcut_ids() == (
-        "price-check",
-        "unique-scan",
-    )
-    backend._panel_visible = True
-    assert backend._desired_shortcut_ids() == (
-        "price-check",
-        "unique-scan",
-        "panel-close",
-    )
-    backend._present = False
-    assert backend._desired_shortcut_ids() == ("panel-close",)
+    shortcuts = backend.portal_shortcuts()
+
+    # Esc is never portal-bound: a statically bound Esc would be consumed
+    # globally and never reach the game. It is bound natively, only while a
+    # panel is visible.
+    assert shortcuts == [
+        ("price-check", "PoE2 price check", "CTRL+d"),
+        ("unique-scan", "Scan current PoE2 screen", "ALT+x"),
+    ]
+
+
+def test_kwin_portal_session_token_is_stable_for_persistent_bindings():
+    # The KDE portal derives the kglobalaccel component from this token; a
+    # stable token is what makes the first-run grant persist across launches.
+    assert KWinBackend(config.DEFAULTS).portal_session_token() == "kwaystone"
+    # Hyprland's portal names shortcuts from the systemd scope instead; a
+    # random per-run token there is intentional.
+    assert HyprlandBackend(config.DEFAULTS).portal_session_token() is None
 
 
 def test_kwin_script_is_tracker_only():
@@ -100,9 +105,9 @@ def test_kwin_load_tracker_runs_loaded_script(tmp_path):
                 return GLib.Variant("(b)", (True,))
             return None
 
+    bus = FakeBus()
     backend = KWinBackend(config.DEFAULTS)
-    backend._bus = FakeBus()
-    backend._script_path = tmp_path / "waystone-kwin.js"
+    backend._tracker = _KwinScript(bus, tmp_path / "waystone-kwin.js")
 
     backend._load_tracker()
 
@@ -111,7 +116,7 @@ def test_kwin_load_tracker_runs_loaded_script(tmp_path):
         "/Scripting/Script7",
         "org.kde.kwin.Script",
         "run",
-    ) in backend._bus.calls
+    ) in bus.calls
 
 
 def test_kwin_startup_clears_legacy_script_shortcuts(tmp_path):
@@ -138,29 +143,129 @@ def test_kwin_startup_clears_legacy_script_shortcuts(tmp_path):
     assert backend._bus.unregistered == [("kwin", "waystone-1-price-check-0")]
 
 
-def test_kwin_sync_registers_via_kglobalaccel():
-    class FakeAccel:
-        def __init__(self):
-            self.synced = []
-
-        def sync(self, desired):
-            self.synced.append(desired)
+def test_kwin_portal_preflight_accepts_real_variant_shape():
+    # Regression: PyGObject unpacks (v) replies already unboxed; assuming a
+    # boxed Variant raised AttributeError and aborted desktop.start().
+    class FakeBus:
+        def call_sync(self, *args):
+            return GLib.Variant("(v)", (GLib.Variant("u", 2),))
 
     backend = KWinBackend(config.DEFAULTS)
-    backend._accel = FakeAccel()
-    backend._present = True
+    backend._bus = FakeBus()
+
+    backend._check_portal()
+
+    assert backend.portal_error is None
+
+
+def test_kwin_portal_preflight_records_portal_failure():
+    class FakeBus:
+        def call_sync(self, *args):
+            raise GLib.Error("portal missing")
+
+    backend = KWinBackend(config.DEFAULTS)
+    backend._bus = FakeBus()
+
+    backend._check_portal()
+
+    assert "GlobalShortcuts portal unavailable" in backend.portal_error
+
+
+def test_kwin_esc_script_binds_only_esc_to_panel_close():
+    script = _build_esc_script()
+
+    assert "registerShortcut" in script
+    assert '"Esc"' in script
+    assert '"panel-close"' in script
+    assert "waystone-panel-close" in script
+    # The tracker keeps owning game detection; the Esc script must not grow a
+    # second copy of it.
+    assert "GAME_CLASS" not in script
+
+
+def test_kwin_esc_binding_follows_panel_visibility(tmp_path):
+    class FakeBus:
+        def __init__(self):
+            self.calls = []
+
+        def call_sync(self, bus, path, iface, method, params, *rest):
+            self.calls.append(method)
+            if method == "loadScript":
+                return GLib.Variant("(i)", (7,))
+            if method == "unloadScript":
+                return GLib.Variant("(b)", (True,))
+            return None
+
+    backend = KWinBackend(config.DEFAULTS)
+    backend._esc = _KwinScript(FakeBus(), tmp_path / "waystone-kwin-esc.js")
+
+    backend.set_panel_visible(True)
+    methods = backend._esc._bus.calls
+    assert "loadScript" in methods and "run" in methods
+
+    # Repeating the same visibility must not churn script loads.
+    backend.set_panel_visible(True)
+    assert backend._esc._bus.calls == methods
+
+    backend.set_panel_visible(False)
+    methods = backend._esc._bus.calls
+    assert "stop" in methods and "unloadScript" in methods
+
+    backend.set_panel_visible(False)
+    assert backend._esc._bus.calls == methods
+
+
+def test_kwin_esc_load_failure_degrades_without_raising(tmp_path):
+    class FakeBus:
+        def call_sync(self, bus, path, iface, method, params, *rest):
+            if method == "loadScript":
+                return GLib.Variant("(i)", (-1,))
+            return None
+
+    backend = KWinBackend(config.DEFAULTS)
+    backend._esc = _KwinScript(FakeBus(), tmp_path / "waystone-kwin-esc.js")
+
+    backend.set_panel_visible(True)  # KWin refusal is logged, not raised
+    assert backend._panel_visible is True
+    assert backend._esc.loaded is False
+
+
+def test_kwin_kwin_watch_ignores_initial_fire_and_reloads_on_restart(tmp_path):
+    loads = []
+
+    class FakeScript:
+        def __init__(self):
+            self.reset_calls = 0
+
+        def reset(self):
+            self.reset_calls += 1
+
+        def load(self, _content):
+            loads.append(True)
+
+    backend = KWinBackend(config.DEFAULTS)
+    backend._tracker = FakeScript()
+    backend._esc = FakeScript()
+
+    # First fire at watch registration: records the owner, no reload.
+    backend._on_kwin_appeared(None, "org.kde.KWin", ":1.10")
+    assert loads == []
+    assert backend._tracker.reset_calls == 0
+
+    # Same owner again: still nothing.
+    backend._on_kwin_appeared(None, "org.kde.KWin", ":1.10")
+    assert loads == []
+
+    # Owner change = compositor restart: scripts reset and reloaded.
+    backend._on_kwin_appeared(None, "org.kde.KWin", ":1.22")
+    assert loads == [True]
+    assert backend._tracker.reset_calls == 1
+    assert backend._esc.reset_calls == 1
+
+    # Panel visible at restart time: the Esc binding is re-armed too.
     backend._panel_visible = True
-
-    backend._sync_shortcuts()
-
-    (desired,) = backend._accel.synced
-    assert set(desired) == {"price-check", "unique-scan", "panel-close"}
-    keys, description = desired["unique-scan"]
-    assert keys == [0x08000000 | ord("X")]
-    assert description
-    # A second sync with unchanged state must be a no-op (no churn).
-    backend._sync_shortcuts()
-    assert len(backend._accel.synced) == 1
+    backend._on_kwin_appeared(None, "org.kde.KWin", ":1.33")
+    assert loads == [True, True, True]
 
 
 def test_kwin_dispatch_gates_on_focus_but_not_registration():

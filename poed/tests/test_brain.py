@@ -77,3 +77,22 @@ def test_error_roundtrip_is_clean(tmp_path):
             b.request({"cmd": "no-such-cmd"})
     finally:
         b.stop()
+
+
+def test_stop_without_start_never_unlinks_socket(tmp_path):
+    """Duplicate/early-exit instances must not pull the socket path from
+    under a live peer's brain."""
+    sock = tmp_path / "b.sock"
+    sock.touch()
+    b = Brain(brain_dir="unused", socket_path=str(sock))
+
+    b.stop()
+
+    assert sock.exists()
+
+
+def test_request_with_missing_socket_is_actionable(tmp_path):
+    b = Brain(brain_dir="unused", socket_path=str(tmp_path / "gone.sock"))
+
+    with pytest.raises(RuntimeError, match="brain socket missing"):
+        b.request({"cmd": "ping"})

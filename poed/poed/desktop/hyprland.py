@@ -22,6 +22,9 @@ _LOG = logging.getLogger("waystone.desktop.hyprland")
 class HyprlandBackend:
     name = "hyprland"
     uses_portal_shortcuts = True
+    # The dynamic hyprctl binds route to portal-registered shortcut names, so
+    # a portal failure leaves the backend with no hotkeys at all.
+    portal_required = True
 
     def __init__(self, cfg: dict):
         self.cfg = cfg
@@ -38,6 +41,11 @@ class HyprlandBackend:
 
     def portal_shortcuts(self) -> list[tuple[str, str, str]]:
         return [(s.sid, s.description, s.trigger) for s in self._shortcuts]
+
+    def portal_session_token(self) -> str | None:
+        # xdph names shortcuts from the caller's systemd scope, not the session
+        # token; keep a fresh token per run (see hyprbind.resolve_shortcut_name).
+        return None
 
     def start(self, on_activated: Callable[[str], None]) -> None:
         self._on_activated = on_activated

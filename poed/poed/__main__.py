@@ -76,6 +76,8 @@ class App:
         )
         self.scan_ui = None
         self.control_window = None
+        self._hotkey_status = ""
+        self._hotkey_status_label = None
         self.in_flight = False
         self.in_flight_since = 0.0
         self.pending_press = None
@@ -254,8 +256,18 @@ class App:
             self._end_in_flight()
 
     def on_portal_error(self, message):
-        _LOG.error("exit: portal error — %s", message)
-        self.application.quit()
+        if getattr(self.desktop, "portal_required", True):
+            _LOG.error("exit: portal error — %s", message)
+            self.application.quit()
+            return
+        _LOG.error("portal error (hotkeys degraded): %s", message)
+        self._set_hotkey_status(f"Global hotkeys unavailable: {message}")
+
+    def _set_hotkey_status(self, text: str) -> None:
+        self._hotkey_status = text
+        if self._hotkey_status_label is not None:
+            self._hotkey_status_label.set_text(text)
+            self._hotkey_status_label.set_visible(bool(text))
 
     def _show_control_window(self) -> None:
         if self.control_window is not None:
@@ -273,6 +285,10 @@ class App:
         box.set_margin_end(14)
 
         status = Gtk.Label(label="Kwaystone is running", xalign=0.0)
+        hotkey_status = Gtk.Label(label=self._hotkey_status, xalign=0.0, wrap=True)
+        hotkey_status.add_css_class("warning")
+        hotkey_status.set_visible(bool(self._hotkey_status))
+        self._hotkey_status_label = hotkey_status
         settings_label = Gtk.Label(label="OCR settings require restart", xalign=0.0)
         settings_label.add_css_class("dim-label")
 
@@ -293,6 +309,7 @@ class App:
             self.cfg.ocr_quantity_model_size,
         )
         box.append(status)
+        box.append(hotkey_status)
         box.append(settings_label)
         box.append(self._settings_row("OCR device", device_dd))
         box.append(self._settings_row("OCR model", model_dd))
@@ -393,6 +410,17 @@ class App:
             self._show_control_window()
             return
         application.hold()
+        # The brain starts here, not in main(): GApplication single-instance
+        # guarantees only the primary instance ever runs this, so duplicate
+        # launches can never spawn a competing brain that steals/unlinks the
+        # shared socket path from under the running instance.
+        try:
+            self.brain.start()
+            _LOG.info("brain up: %s", self.brain.request({"cmd": "ping"}))
+        except (RuntimeError, OSError, TimeoutError) as e:
+            _LOG.error("exit: brain failed to start — %s", e)
+            self.application.quit()
+            return
         self._show_control_window()
         self.scan_ui = ScanResultController(
             application, self.cfg, self.positions, self.desktop,
@@ -401,9 +429,13 @@ class App:
 
         def on_shortcuts_bound():
             self.desktop.on_shortcuts_bound()
+            self._set_hotkey_status("")
 
         self.desktop.start(self.on_activated)
         _LOG.info("desktop backend: %s", self.desktop.name)
+        portal_error = getattr(self.desktop, "portal_error", None)
+        if portal_error:
+            self._set_hotkey_status(f"Global hotkeys unavailable: {portal_error}")
 
         def prewarm_price_overlay():
             self.price_check.prewarm()
@@ -415,6 +447,7 @@ class App:
             shortcuts = GlobalShortcuts(
                 "io.github.kriskruse.waystone", self.on_activated, self.on_portal_error,
                 on_bound=on_shortcuts_bound,
+                session_token=self.desktop.portal_session_token(),
             )
             self._shortcuts = shortcuts
             shortcuts.bind(self.desktop.portal_shortcuts())
@@ -462,6 +495,8 @@ class App:
         _LOG.info("exit: %s, quitting.", label)
         debug_io.flush(timeout=5.0)
         screen_scan.stop()
+        if self._shortcuts is not None:
+            self._shortcuts.stop()
         self.desktop.stop()
         self.application.quit()
         return GLib.SOURCE_REMOVE
@@ -501,9 +536,6 @@ def main():
     positions = PositionStore()  # per-panel saved positions (XDG state)
     app_obj = None
     try:
-        brain.start()
-        _LOG.info("brain up: %s", brain.request({"cmd": "ping"}))
-
         app = Gtk.Application(
             application_id="io.github.kriskruse.waystone",
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,

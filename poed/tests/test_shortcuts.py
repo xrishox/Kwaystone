@@ -17,12 +17,3 @@ def test_shortcut_modifiers_returns_xdotool_names():
     assert shortcut_modifiers("ALT+z") == ("alt",)
     assert shortcut_modifiers("control+shift+d") == ("ctrl", "shift")
     assert shortcut_modifiers("ESC") == ()
-
-
-def test_qt_keys_maps_kglobalaccel_sequences():
-    from poed.shortcuts import qt_keys
-
-    assert qt_keys("ALT+x") == [0x08000000 | ord("X")]
-    assert qt_keys("ALT+z") == [0x08000000 | ord("Z")]
-    assert qt_keys("ESC") == [0x01000000]
-    assert qt_keys("ctrl+shift+p") == [0x04000000 | 0x02000000 | ord("P")]

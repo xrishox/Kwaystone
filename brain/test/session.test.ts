@@ -38,3 +38,23 @@ it("Host.proxy sends POESESSID cookie only for pathofexile.com (not pathofexile2
   await Host.proxy("www.pathofexile.com/api/x", {});
   expect(seen["Cookie"]).toBeUndefined();
 });
+
+it("cookieAllowedForHost rejects lookalike and foreign hosts", async () => {
+  const { cookieAllowedForHost } = await import("../src/session-headers");
+
+  // Exact domain and API subdomains only.
+  expect(cookieAllowedForHost("pathofexile.com")).toBe(true);
+  expect(cookieAllowedForHost("www.pathofexile.com")).toBe(true);
+  expect(cookieAllowedForHost("API.PathOfExile.com".toLowerCase())).toBe(true);
+
+  // Lookalike domains must never receive the session cookie.
+  expect(cookieAllowedForHost("pathofexile.com.evil.example")).toBe(false);
+  expect(cookieAllowedForHost("evil-pathofexile.com")).toBe(false);
+  expect(cookieAllowedForHost("pathofexile.com.evil.com")).toBe(false);
+  expect(cookieAllowedForHost("notpathofexile.com")).toBe(false);
+
+  // The poe2 SPA domain and unrelated hosts stay anonymous.
+  expect(cookieAllowedForHost("pathofexile2.com")).toBe(false);
+  expect(cookieAllowedForHost("www.pathofexile2.com")).toBe(false);
+  expect(cookieAllowedForHost("poe2scout.com")).toBe(false);
+});

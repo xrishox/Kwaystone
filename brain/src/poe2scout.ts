@@ -74,7 +74,9 @@ interface Snapshot {
 // Module-level cache + single in-flight refresh promise (dedupes concurrent
 // warms so two simultaneous lookups issue ONE bulk pull).
 let cache: Snapshot | null = null;
-let inflight: Promise<Snapshot> | null = null;
+// Keyed by league: an unkeyed inflight would serve league A's snapshot to a
+// league B caller that arrives mid-refresh (cross-league price poisoning).
+let inflight: { league: string; promise: Promise<Snapshot> } | null = null;
 
 function enc(league: string): string {
   return encodeURIComponent(league);
@@ -310,8 +312,8 @@ async function snapshot(
   const hit = options.force ? null : fresh(league);
   if (hit) return hit;
 
-  if (!inflight) {
-    inflight = warm(league)
+  if (!inflight || inflight.league !== league) {
+    const promise = warm(league)
       .then((snap) => {
         cache = snap;
         return snap;
@@ -333,10 +335,11 @@ async function snapshot(
         return fallback;
       })
       .finally(() => {
-        inflight = null;
+        if (inflight?.promise === promise) inflight = null;
       });
+    inflight = { league, promise };
   }
-  return inflight;
+  return inflight.promise;
 }
 
 /** A market map plus whether the backing pull was fully fresh. */
@@ -405,7 +408,7 @@ interface UniqueSnapshot {
 }
 
 let uniqueCache: UniqueSnapshot | null = null;
-let uniqueInflight: Promise<UniqueSnapshot> | null = null;
+let uniqueInflight: { league: string; promise: Promise<UniqueSnapshot> } | null = null;
 
 /** Same per-category fault tolerance and `complete` contract as fetchPriceMap. */
 async function fetchUniqueMap(
@@ -512,8 +515,8 @@ async function uniqueSnapshot(
   const hit = options.force ? null : freshUnique(league);
   if (hit) return hit;
 
-  if (!uniqueInflight) {
-    uniqueInflight = fetchUniqueMap(league)
+  if (!uniqueInflight || uniqueInflight.league !== league) {
+    const promise = fetchUniqueMap(league)
       .then((fetched) => {
         // Same degraded-pull policy as the currency snapshot: backfill from
         // last-good and retry soon instead of caching holes for a full TTL.
@@ -547,10 +550,11 @@ async function uniqueSnapshot(
         return fallback;
       })
       .finally(() => {
-        uniqueInflight = null;
+        if (uniqueInflight?.promise === promise) uniqueInflight = null;
       });
+    uniqueInflight = { league, promise };
   }
-  return uniqueInflight;
+  return uniqueInflight.promise;
 }
 
 /**

@@ -299,6 +299,15 @@ def load(p: pathlib.Path | None = None) -> AppConfig:
         p.write_text(TEMPLATE.format(**DEFAULTS))
         _LOG.info("wrote default config to %s", p)
     try:
-        return AppConfig.from_mapping(values)
+        cfg = AppConfig.from_mapping(values)
     except ValueError as e:
         raise SystemExit(f"config error in {p}: {e}") from e
+    # The file may hold a POESESSID; enforce owner-only permissions even for
+    # files restored or copied in with looser modes (touch() only covers
+    # first creation).
+    if cfg["poesessid"]:
+        try:
+            os.chmod(p, 0o600)
+        except OSError:
+            pass
+    return cfg

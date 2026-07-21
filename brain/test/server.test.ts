@@ -116,7 +116,7 @@ it("starts EE2 host and reports selected config", async () => {
     accountName: "acct",
   });
   expect(host).toMatchObject({ id: 4, ok: true });
-  expect(host.result.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/$/);
+  expect(host.result.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/\?k=.+$/);
 
   const config = await rpc({ id: 5, cmd: "ee2config" });
   expect(config).toMatchObject({
@@ -157,6 +157,9 @@ it("EE2 proxy forwards JSON request headers", async () => {
       league: "Runes of Aldur",
       accountName: "acct",
     });
+    // The panel URL carries the auth token; every route requires the cookie.
+    const token = new URL(host.result.url).searchParams.get("k");
+    expect(token).toBeTruthy();
     const res = await post(
       new URL(
         "proxy/www.pathofexile.com/api/trade2/search/Runes%20of%20Aldur",
@@ -166,7 +169,7 @@ it("EE2 proxy forwards JSON request headers", async () => {
       {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Cookie": "local-cookie-must-not-leak=yes",
+        "Cookie": `kwaystone_ee2=${token}; local-cookie-must-not-leak=yes`,
       },
     );
 

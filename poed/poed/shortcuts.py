@@ -59,34 +59,3 @@ def hypr_bind(raw: str) -> tuple[str, str]:
         key.upper(), (None, key.upper() if len(key) == 1 else key)
     )[1]
     return "+".join(m[0] for m in mods), key_name.upper()
-
-
-_QT_MODS = {
-    "Alt": 0x08000000,
-    "Ctrl": 0x04000000,
-    "Shift": 0x02000000,
-    "Meta": 0x10000000,
-}
-
-_QT_KEYS = {
-    "ESC": 0x01000000,
-    "ESCAPE": 0x01000000,
-    "TAB": 0x01000001,
-    "RETURN": 0x01000004,
-    "ENTER": 0x01000004,
-    "SPACE": 0x20,
-}
-
-
-def qt_keys(raw: str) -> list[int]:
-    """Return the Qt key-sequence ints KGlobalAccel expects for a shortcut."""
-    mods, key = _parts(raw)
-    code = 0
-    for _hypr, kwin_name in mods:
-        code |= _QT_MODS[kwin_name]
-    mapped = _QT_KEYS.get(key.upper())
-    if mapped is None:
-        if len(key) != 1:
-            raise ValueError(f"unsupported shortcut key: {key}")
-        mapped = ord(key.upper())
-    return [code | mapped]

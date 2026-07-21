@@ -152,6 +152,6 @@ def grab_item_text(game_class_or_focused, pressed_modifiers=()) -> str | None:
     # whatever is there now if it still looks like an item.
     if _looks_like_item(text):
         return text
-    first = text.splitlines()[0] if text else ""
-    _LOG.debug("clipboard after copy is not an item: len=%d first=%r", len(text), first)
+    # Never log clipboard CONTENT: on failure it holds arbitrary user data.
+    _LOG.debug("clipboard after copy is not an item: len=%d", len(text))
     return None

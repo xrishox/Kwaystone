@@ -82,7 +82,18 @@ class Brain:
         with self._lock:
             self._id += 1
             msg = {"id": self._id, **msg}
-        s = self._connect()
+        try:
+            s = self._connect()
+        except FileNotFoundError:
+            raise RuntimeError(
+                f"brain socket missing: {self.socket_path} "
+                "(brain not running — restart Kwaystone)"
+            ) from None
+        except ConnectionRefusedError:
+            raise RuntimeError(
+                f"brain socket refused connection: {self.socket_path} "
+                "(stale socket — restart Kwaystone)"
+            ) from None
         s.settimeout(timeout)
         try:
             s.sendall((json.dumps(msg) + "\n").encode())
@@ -96,6 +107,10 @@ class Brain:
                     if not chunk:
                         raise RuntimeError("brain closed connection")
                     buf += chunk
+                    # The uniqueprices rows reply is multi-MB but bounded; a
+                    # runaway single line means the brain is misbehaving.
+                    if len(buf) > 16 * 1024 * 1024:
+                        raise RuntimeError("brain response exceeded 16 MiB")
                 line, buf = buf.split(b"\n", 1)
                 resp = json.loads(line)
                 if "progress" in resp:
@@ -131,7 +146,11 @@ class Brain:
                     except ProcessLookupError:
                         pass
                     self.proc.wait()
-        try:
-            os.unlink(self.socket_path)
-        except OSError:
-            pass
+        # Only a brain we actually spawned may clean up the socket path:
+        # unlinking while never having started (duplicate instance, early
+        # failure) would pull the path from under a live peer's brain.
+        if self.proc is not None:
+            try:
+                os.unlink(self.socket_path)
+            except OSError:
+                pass

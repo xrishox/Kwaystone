@@ -13,7 +13,11 @@ export const WAYSTONE_USER_AGENT = "waystone/0.1 (contact: github.com/kriskruse)
  * be useless, and sending any cookie to pathofexile2.com could leak it to a
  * domain that can never use it. Everything else (e.g. poe2scout.com) is
  * always anonymous.
+ *
+ * Exact/suffix match only: a substring check would also match lookalike
+ * hosts (pathofexile.com.evil.example) and leak the session cookie.
  */
 export function cookieAllowedForHost(host: string): boolean {
-  return host.includes("pathofexile.com") && !host.includes("pathofexile2.com");
+  const h = host.toLowerCase();
+  return h === "pathofexile.com" || h.endsWith(".pathofexile.com");
 }

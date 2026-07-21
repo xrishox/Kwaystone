@@ -15,6 +15,18 @@ import {
 type Emit = (stage: string) => void;
 type Handler = (req: any, emit: Emit) => Promise<unknown>;
 
+// A local daemon must not die from a stray rejected promise or thrown
+// listener: log and keep serving. Callers own their expected errors.
+process.on("unhandledRejection", (reason) => {
+  console.error(
+    "unhandled rejection:",
+    reason instanceof Error ? reason.stack ?? reason.message : reason,
+  );
+});
+process.on("uncaughtException", (e) => {
+  console.error("uncaught exception:", e.stack ?? e.message);
+});
+
 let activeLeague = process.env.POE2_LEAGUE ?? "Standard";
 
 function requestLeague(req: any): string {
@@ -65,7 +77,9 @@ async function handleLine(conn: net.Socket, line: string): Promise<void> {
     if (process.env.WAYSTONE_DEBUG && cmd !== "ee2state") {
       console.error(`cmd=${cmd} id=${id} start`);
     }
-    const h = handlers[req.cmd];
+    // hasOwn: a plain-object lookup would resolve prototype members like
+    // "constructor" as handlers.
+    const h = Object.hasOwn(handlers, req.cmd) ? handlers[req.cmd] : undefined;
     if (!h) throw new Error(`unknown cmd: ${req.cmd}`);
     // Progress lines stream before the final response, tagged with the same
     // id. They double as keepalive inside poed's 30s inactivity timeout
@@ -116,6 +130,13 @@ export async function startServer(
     let chain: Promise<void> = Promise.resolve();
     conn.on("data", (d) => {
       buf += d;
+      // Unbounded line buffering lets a broken/malicious local client grow
+      // our memory without limit; real requests are small JSON lines.
+      if (buf.length > 4 * 1024 * 1024) {
+        console.error("line buffer overflow, dropping connection");
+        conn.destroy();
+        return;
+      }
       const lines: string[] = [];
       let nl: number;
       while ((nl = buf.indexOf("\n")) >= 0) {

@@ -18,8 +18,14 @@ class Shortcut:
 class DesktopBackend(Protocol):
     name: str
     uses_portal_shortcuts: bool
+    # True when the backend cannot deliver hotkeys without the portal (portal
+    # errors are fatal); False when it degrades to a logged warning.
+    portal_required: bool
 
     def portal_shortcuts(self) -> list[tuple[str, str, str]]:
+        ...
+
+    def portal_session_token(self) -> str | None:
         ...
 
     def start(self, on_activated: Callable[[str], None]) -> None:

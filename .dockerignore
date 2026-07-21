@@ -11,3 +11,16 @@ dist
 packaging/src
 packaging/pkg
 packaging/waystone-git
+
+# Secret-bearing classes: the build context (COPY . .) must never see them.
+# Mirrors the .gitignore secret rules.
+.env
+.env.*
+*.pem
+*.key
+.netrc
+.npmrc
+config.toml
+poed/config.toml
+.claude
+.superpowers

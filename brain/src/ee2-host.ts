@@ -4,6 +4,7 @@ import { createReadStream } from "node:fs";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
+import { Transform } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { WAYSTONE_USER_AGENT, cookieAllowedForHost } from "./session-headers";
 
@@ -18,6 +19,7 @@ type Ee2HostState = {
   port: number;
   sockets: Set<net.Socket>;
   configPath: string;
+  authToken: string;
 };
 
 let host: Ee2HostState | null = null;
@@ -193,6 +195,18 @@ async function handleConfig(res: ServerResponse): Promise<void> {
   });
 }
 
+/** The renderer only ever proxies these hosts (trade API, EE2 data CDN,
+ * price prediction). Everything else is refused: an open loopback proxy
+ * would let any local process route authenticated requests through us. */
+const PROXY_ALLOWED_HOSTS = new Set([
+  "www.pathofexile.com",
+  "api.exiledexchange2.dev",
+  "www.poeprices.info",
+]);
+const PROXY_TIMEOUT_MS = 30_000;
+const MAX_PROXY_REQUEST_BYTES = 1024 * 1024;
+const MAX_PROXY_RESPONSE_BYTES = 32 * 1024 * 1024;
+
 async function handleProxy(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const started = Date.now();
   const raw = req.url?.slice("/proxy/".length) ?? "";
@@ -200,15 +214,45 @@ async function handleProxy(req: IncomingMessage, res: ServerResponse): Promise<v
     res.writeHead(400).end("missing proxy target");
     return;
   }
-  const target = raw.startsWith("http://") || raw.startsWith("https://")
-    ? raw
-    : `https://${raw}`;
+  let url: URL;
+  try {
+    url = new URL(
+      raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`,
+    );
+  } catch {
+    res.writeHead(400).end("invalid proxy target");
+    return;
+  }
+  // HTTPS only: the session cookie must never travel in cleartext.
+  if (url.protocol !== "https:" || !PROXY_ALLOWED_HOSTS.has(url.hostname.toLowerCase())) {
+    res.writeHead(403).end("proxy target not allowed");
+    return;
+  }
+  const declared = Number(req.headers["content-length"] ?? 0);
+  if (declared > MAX_PROXY_REQUEST_BYTES) {
+    res.writeHead(413).end("proxy request too large");
+    return;
+  }
+  const target = url.toString();
   const requestHeaders = proxyRequestHeaders(req, target);
+  // Stream the request body through a byte counter: content-length can lie.
+  let received = 0;
+  const limiter = new Transform({
+    transform(chunk, _encoding, callback) {
+      received += chunk.length;
+      if (received > MAX_PROXY_REQUEST_BYTES) {
+        callback(new Error("proxy request too large"));
+        return;
+      }
+      callback(null, chunk);
+    },
+  });
   const upstream = await fetch(target, {
     method: req.method,
-    body: req.method === "GET" || req.method === "HEAD" ? undefined : req,
+    body: req.method === "GET" || req.method === "HEAD" ? undefined : req.pipe(limiter),
     headers: requestHeaders,
     duplex: "half",
+    signal: AbortSignal.timeout(PROXY_TIMEOUT_MS),
   } as RequestInit & { duplex?: "half" });
   debug(
     [
@@ -226,7 +270,10 @@ async function handleProxy(req: IncomingMessage, res: ServerResponse): Promise<v
     if (
       key === "content-encoding" ||
       key === "transfer-encoding" ||
-      key === "connection"
+      key === "connection" ||
+      // GGG cookies are for the trade API only; they must not land in the
+      // panel's cookie jar (and multiple values fold incorrectly here).
+      key === "set-cookie"
     ) {
       return;
     }
@@ -238,10 +285,17 @@ async function handleProxy(req: IncomingMessage, res: ServerResponse): Promise<v
     return;
   }
   const reader = upstream.body.getReader();
+  let sent = 0;
   try {
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
+      sent += value.byteLength;
+      if (sent > MAX_PROXY_RESPONSE_BYTES) {
+        await reader.cancel();
+        res.destroy();
+        return;
+      }
       res.write(Buffer.from(value));
     }
   } finally {
@@ -323,8 +377,47 @@ async function handleStatic(req: IncomingMessage, res: ServerResponse): Promise<
   }
 }
 
+const AUTH_COOKIE = "kwaystone_ee2";
+
+function parseCookies(header: string | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const part of (header ?? "").split(";")) {
+    const eq = part.indexOf("=");
+    if (eq < 0) continue;
+    out[part.slice(0, eq).trim()] = part.slice(eq + 1).trim();
+  }
+  return out;
+}
+
+function isAuthed(req: IncomingMessage): boolean {
+  if (!host) return false;
+  return parseCookies(req.headers.cookie)[AUTH_COOKIE] === host.authToken;
+}
+
 async function requestHandler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
+    // Token bootstrap: the URL handed to the WebKit panel carries ?k=; it
+    // plants an HttpOnly cookie and redirects to a clean URL, so the token
+    // never lingers in history, Referer, or renderer-visible state. Every
+    // later request (fetch + WebSocket) authenticates with that cookie.
+    const url = new URL(req.url ?? "/", "http://127.0.0.1");
+    const token = url.searchParams.get("k");
+    if (token !== null) {
+      if (host && token === host.authToken) {
+        res.writeHead(302, {
+          location: url.pathname === "/" ? "/" : url.pathname,
+          "set-cookie": `${AUTH_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict`,
+        });
+      } else {
+        res.writeHead(403);
+      }
+      res.end();
+      return;
+    }
+    if (!isAuthed(req)) {
+      res.writeHead(403).end("forbidden");
+      return;
+    }
     if (req.url === "/config") return await handleConfig(res);
     if (req.url === "/client-error" && req.method === "POST") {
       return await handleClientError(req, res);
@@ -373,6 +466,17 @@ function handleUpgrade(req: IncomingMessage, socket: net.Socket): void {
     socket.destroy();
     return;
   }
+  // Browsers always send Origin on WebSocket handshakes; when present it must
+  // be our own panel origin (defense in depth on top of the cookie check).
+  if (!isAuthed(req)) {
+    socket.destroy();
+    return;
+  }
+  const origin = req.headers.origin;
+  if (origin && host && origin !== `http://127.0.0.1:${host.port}`) {
+    socket.destroy();
+    return;
+  }
   const key = req.headers["sec-websocket-key"];
   if (typeof key !== "string") {
     socket.destroy();
@@ -395,7 +499,12 @@ function handleUpgrade(req: IncomingMessage, socket: net.Socket): void {
   debug("ee2 websocket connected");
   socket.on("data", (chunk) => {
     for (const message of decodeClientFrames(chunk)) {
-      void handleClientEvent(message, socket);
+      handleClientEvent(message, socket).catch((e) => {
+        console.error(
+          "ee2 client event failed:",
+          e instanceof Error ? e.stack ?? e.message : e,
+        );
+      });
     }
   });
   socket.on("close", () => host?.sockets.delete(socket));
@@ -412,7 +521,17 @@ async function handleClientEvent(message: string, socket?: net.Socket): Promise<
   }
   if (event?.name === "CLIENT->MAIN::save-config") {
     const contents = event.payload?.contents;
-    if (typeof contents === "string") await saveConfig(contents);
+    if (typeof contents !== "string") return;
+    try {
+      await saveConfig(contents);
+    } catch (e) {
+      // Bad JSON or an fs error must not become an unhandled rejection that
+      // kills the brain process.
+      console.error(
+        "ee2 save-config rejected:",
+        e instanceof Error ? e.message : e,
+      );
+    }
     return;
   }
   if (event?.name === "OVERLAY->MAIN::focus-game") {
@@ -530,7 +649,7 @@ export async function startEe2Host(options: Ee2HostOptions = {}): Promise<{ url:
     accountName: options.accountName ?? defaults.accountName,
     sessionId: options.sessionId ?? defaults.sessionId,
   };
-  if (host) return { url: `http://127.0.0.1:${host.port}/` };
+  if (host) return { url: `http://127.0.0.1:${host.port}/?k=${host.authToken}` };
 
   const server = http.createServer((req, res) => {
     void requestHandler(req, res);
@@ -541,14 +660,16 @@ export async function startEe2Host(options: Ee2HostOptions = {}): Promise<{ url:
   if (!address || typeof address === "string") {
     throw new Error("could not start EE2 host");
   }
+  const authToken = crypto.randomBytes(24).toString("base64url");
   host = {
     server,
     port: address.port,
     sockets: new Set(),
     configPath: configPath(),
+    authToken,
   };
   console.error(`ee2 host listening on http://127.0.0.1:${address.port}/`);
-  return { url: `http://127.0.0.1:${address.port}/` };
+  return { url: `http://127.0.0.1:${address.port}/?k=${authToken}` };
 }
 
 export function sendEe2ItemText(

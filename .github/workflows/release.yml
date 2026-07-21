@@ -32,10 +32,6 @@ jobs:
       - name: build ${{ matrix.runtime }} AppImage
         run: packaging/appimage/build.sh "${{ matrix.runtime }}"
 
-      - uses: actions/attest-build-provenance@v3
-        with:
-          subject-path: dist/appimage/*.AppImage
-
       - name: split NVIDIA artifact for GitHub Releases
         if: matrix.runtime == 'nvidia'
         run: |
@@ -44,6 +40,18 @@ jobs:
             Kwaystone-nvidia-x86_64.AppImage \
             Kwaystone-nvidia-x86_64.AppImage.part-
           rm Kwaystone-nvidia-x86_64.AppImage
+
+      # Attest only what is actually published: the CPU AppImage as-is, and
+      # the NVIDIA split parts (the unsplit AppImage is deleted above).
+      - uses: actions/attest-build-provenance@v3
+        if: matrix.runtime == 'cpu'
+        with:
+          subject-path: dist/appimage/*.AppImage
+
+      - uses: actions/attest-build-provenance@v3
+        if: matrix.runtime == 'nvidia'
+        with:
+          subject-path: dist/appimage/*.AppImage.part-*
 
       - uses: actions/upload-artifact@v6
         with:
@@ -73,14 +81,25 @@ jobs:
         id: ver
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
+      - name: verify NVIDIA parts reconstruct the attested AppImage
+        run: |
+          PARTS_SHA=$(cat artifacts/Kwaystone-nvidia-x86_64.AppImage.part-* | sha256sum | cut -d' ' -f1)
+          NVIDIA_SHA=$(cut -d' ' -f1 artifacts/SHA256SUMS-nvidia)
+          [ "$PARTS_SHA" = "$NVIDIA_SHA" ] || {
+            echo "::error::NVIDIA parts do not reconstruct the attested AppImage"
+            exit 1
+          }
+
       - name: source tarball and NVIDIA assembler
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
         run: |
           git archive --format=tar.gz \
-            --prefix="Kwaystone-${{ steps.ver.outputs.version }}/" \
-            -o "artifacts/Kwaystone-${{ steps.ver.outputs.version }}.tar.gz" \
+            --prefix="Kwaystone-${VERSION}/" \
+            -o "artifacts/Kwaystone-${VERSION}.tar.gz" \
             "$GITHUB_REF_NAME"
           NVIDIA_SHA=$(cut -d' ' -f1 artifacts/SHA256SUMS-nvidia)
-          sed -e "s/@VERSION@/${{ steps.ver.outputs.version }}/g" \
+          sed -e "s/@VERSION@/${VERSION}/g" \
               -e "s/@APPIMAGE_SHA256@/${NVIDIA_SHA}/g" \
               packaging/appimage/assemble-nvidia.release \
               > artifacts/assemble-kwaystone-nvidia.sh
@@ -96,22 +115,26 @@ jobs:
         run: gh release create "$GITHUB_REF_NAME" artifacts/* --generate-notes
 
       - name: render AUR packages
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
         run: |
           CPU_SHA=$(sha256sum artifacts/Kwaystone-x86_64.AppImage | cut -d' ' -f1)
           PART_00_SHA=$(sha256sum artifacts/Kwaystone-nvidia-x86_64.AppImage.part-00 | cut -d' ' -f1)
           PART_01_SHA=$(sha256sum artifacts/Kwaystone-nvidia-x86_64.AppImage.part-01 | cut -d' ' -f1)
           PART_02_SHA=$(sha256sum artifacts/Kwaystone-nvidia-x86_64.AppImage.part-02 | cut -d' ' -f1)
-          sed -e "s/@VERSION@/${{ steps.ver.outputs.version }}/g" \
+          sed -e "s/@VERSION@/${VERSION}/g" \
               -e "s/@APPIMAGE_SHA256@/${CPU_SHA}/g" \
               packaging/PKGBUILD.release > PKGBUILD.aur
-          sed -e "s/@VERSION@/${{ steps.ver.outputs.version }}/g" \
+          sed -e "s/@VERSION@/${VERSION}/g" \
               -e "s/@PART_00_SHA256@/${PART_00_SHA}/g" \
               -e "s/@PART_01_SHA256@/${PART_01_SHA}/g" \
               -e "s/@PART_02_SHA256@/${PART_02_SHA}/g" \
               packaging/PKGBUILD.cuda.release > PKGBUILD.cuda.aur
 
+      # Pinned by commit SHA: this third-party action receives the AUR SSH
+      # private key; a mutable tag would be a silent supply-chain hijack path.
       - name: publish CPU package to AUR
-        uses: KSXGitHub/github-actions-deploy-aur@v4.1.3
+        uses: KSXGitHub/github-actions-deploy-aur@da03e160361ce01bf087e790b6ffd196d7dccff7
         with:
           pkgname: waystone
           pkgbuild: PKGBUILD.aur
@@ -121,7 +144,7 @@ jobs:
           commit_message: "release ${{ github.ref_name }}"
 
       - name: publish NVIDIA package to AUR
-        uses: KSXGitHub/github-actions-deploy-aur@v4.1.3
+        uses: KSXGitHub/github-actions-deploy-aur@da03e160361ce01bf087e790b6ffd196d7dccff7
         with:
           pkgname: waystone-cuda
           pkgbuild: PKGBUILD.cuda.aur

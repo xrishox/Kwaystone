@@ -8,12 +8,30 @@ never logged anywhere — keep it that way.
 """
 import logging
 import logging.handlers
+import os
 import threading
 from pathlib import Path
 
 from poed import config
 
 FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
+
+
+class _PrivateRotatingFileHandler(logging.handlers.RotatingFileHandler):
+    """RotatingFileHandler that keeps the log owner-only.
+
+    The log can carry account/league metadata and brain stderr; new files
+    (initial + post-rotation) would otherwise be created with the process
+    umask (typically world-readable 0644).
+    """
+
+    def _open(self):
+        stream = super()._open()
+        try:
+            os.chmod(self.baseFilename, 0o600)
+        except OSError:
+            pass
+        return stream
 
 
 def log_path() -> Path:
@@ -37,7 +55,11 @@ def setup(debug: bool = False) -> logging.Logger:
     path = log_path()
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        file = logging.handlers.RotatingFileHandler(
+        try:
+            os.chmod(path.parent, 0o700)
+        except OSError:
+            pass
+        file = _PrivateRotatingFileHandler(
             path, maxBytes=1_000_000, backupCount=2
         )
         file.setFormatter(logging.Formatter(FORMAT))

@@ -28,6 +28,16 @@ the host can replay the latest item text without relying on load-time guesses.
 EE2 then owns parsing, query construction, item editing, stat toggling, listing
 display, and settings UX for the price-check feature.
 
+The EE2 host binds loopback only and is gated by a per-run random token: the
+panel URL carries `?k=`, which plants an HttpOnly cookie and redirects away.
+All routes (including the `/events` WebSocket upgrade) require that cookie,
+and the WebSocket additionally rejects foreign `Origin` headers. `/proxy/` is
+not open: targets must be HTTPS on an allowlist (trade API, EE2 data CDN,
+price prediction) with request/response size caps and an upstream timeout,
+and `set-cookie` responses are never forwarded into the panel. The POESESSID
+cookie is attached only to exact `pathofexile.com` hosts (exact/suffix match,
+never substring), so it cannot leak to lookalike domains or cleartext.
+
 If native clipboard capture does not return valid item text, Alt+Z must not
 open any in-game UI. The failure is logged and the game remains unobstructed.
 The embedded EE2 document root is transparent; only visible EE2 widgets should
@@ -40,6 +50,9 @@ Kwaystone keeps only a thin adapter around EE2:
 - `poed/poed/price_check.py` connects the Alt+Z hotkey path, clipboard
   capture, EE2 host startup, and native overlay lifecycle.
 - `poed/poed/__main__.py` only routes shortcuts and process lifecycle.
+  The brain is started from the primary GApplication instance's `on_activate`,
+  never before `app.run()` registration, so duplicate launches cannot spawn a
+  competing brain that steals or unlinks the shared socket path.
 
 Do not reintroduce separate GTK price cards, Kwaystone-specific Alt+Z query
 builders, or duplicate league/settings UI unless there is a documented reason
@@ -210,6 +223,20 @@ The brain reads `BRAIN_SOCKET`, `POE2_LEAGUE`, `POE2_ACCOUNT`, `POE2_SESSID`,
 Desktop backends expose the same capture/window/shortcut interface. Shared
 capture decoding lives in `poed.desktop.capture`; compositor adapters must not
 import scanner modules.
+
+Alt+Z/Alt+X are bound through the XDG GlobalShortcuts portal on both
+compositors. KDE derives a persistent kglobalaccel component from the stable
+session token (`kwaystone`), so the first-run permission grant is reused
+silently on later launches and the bindings stay user-editable in System
+Settings; Hyprland routes portal-registered shortcut names through dynamic
+hyprctl binds that exist only while the game window does. Never call
+`org.kde.KGlobalAccel` directly: it is internal KDE RPC, and a malformed
+message can kill kglobalacceld — every global shortcut in the session dies
+with it. Esc is deliberately different: KDE binds it only while a panel is
+visible via a dedicated load/unload KWin script, Hyprland via a dynamic
+bind, because a statically bound Esc would be consumed globally and never
+reach the game. Focus/panel gating happens at dispatch time in the backend,
+never by rebinding keys.
 
 AppImages are built inside the pinned Debian 13 container. CPU and NVIDIA
 artifacts include Python, GTK/PyGObject, WebKitGTK, the brain, the built EE2
