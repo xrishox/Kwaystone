@@ -10,18 +10,10 @@ _LOG = logging.getLogger("waystone.clipboard")
 _POLL_DEADLINE = 1.5
 _READ_TIMEOUT = 0.12
 _SLEEP = 0.05
-_MODIFIER_KEYS = (
-    "Alt_L",
-    "Alt_R",
-    "Control_L",
-    "Control_R",
-    "Shift_L",
-    "Shift_R",
-    "Super_L",
-    "Super_R",
-    "Meta_L",
-    "Meta_R",
-)
+# Modifier-group names (always valid xdotool operands): per-key keysyms like
+# Meta_L don't exist on every keymap, and one bad keysym fails the whole call.
+_MODIFIER_GROUPS = ("ctrl", "alt", "shift", "super", "meta")
+_release_warned = False
 
 
 def is_game_focused(game_class: str, _raw: str | None = None) -> bool:
@@ -66,24 +58,31 @@ def _read_clipboard() -> str:
 
 
 def _release_modifiers() -> bool:
-    """Best-effort modifier keyup; warns (never raises) when both tries fail."""
+    """Best-effort modifier keyup; logs the real failure once, never raises."""
+    global _release_warned
+    error = ""
     for attempt in (1, 2):
         try:
             r = subprocess.run(
-                ["xdotool", "keyup", *_MODIFIER_KEYS],
+                ["xdotool", "keyup", *_MODIFIER_GROUPS],
                 capture_output=True,
+                text=True,
                 timeout=1.0,
                 env=scrubbed_env(),
             )
             if r.returncode == 0:
                 return True
-        except (OSError, subprocess.SubprocessError):
-            pass
+            error = (r.stderr or "").strip() or f"exit {r.returncode}"
+        except (OSError, subprocess.SubprocessError) as e:
+            error = str(e)
         if attempt == 1:
             time.sleep(0.1)
-    _LOG.warning(
-        "could not release keyboard modifiers; Ctrl/Alt/Shift may be logically stuck"
-    )
+    if not _release_warned:
+        _release_warned = True
+        _LOG.warning(
+            "could not release keyboard modifiers (further failures silent): %s",
+            error,
+        )
     return False
 
 

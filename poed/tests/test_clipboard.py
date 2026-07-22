@@ -178,5 +178,6 @@ def test_inject_copy_releases_modifiers_after_copy(monkeypatch):
 
     assert _inject_copy() is True
     assert calls[-1][:2] == ["xdotool", "keyup"]
-    assert "Alt_L" in calls[-1]
-    assert "Control_L" in calls[-1]
+    # Release uses modifier-group names (always valid), not per-key keysyms.
+    assert "ctrl" in calls[-1]
+    assert "alt" in calls[-1]

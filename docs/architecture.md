@@ -82,6 +82,14 @@ carries its data source (aggregate vs live) and age so freshness is always
 explicit. The brain commands are `arbquote` (stage 1) and `arbstate`
 (stage 2); the panel is `poed.arb_check` + `poed.arb_panel`.
 
+Panel layout: verdict banner (explicit buy-with call over direct pairs,
+5% threshold), liquid-pair line, per-currency price table with anchor
+conversions and exact deltas (color-coded), then the exchange matrix at the
+bottom — real currency-category items only (never omens/idols/lineage
+gems), top 8 by liquidity. Clicking a matrix row force-selects that
+currency as the session anchor; re-anchoring is pure client-side division
+against the cached answer, so it never touches the brain.
+
 ## Screen scanning
 
 `poed.scanners.core` captures one game frame, creates one shared

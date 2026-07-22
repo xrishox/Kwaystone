@@ -27,9 +27,19 @@ const PAIRS = [
     BaseCurrencyApiId: "exalted",
     Volume: 90,
     CurrencyOne: { ApiId: "divine", Text: "Divine Orb", CategoryApiId: "currency" },
-    CurrencyOneData: { RelativePrice: 237, StockValue: 90, VolumeTraded: 900, HighestStock: 100 },
+    CurrencyOneData: { RelativePrice: 237, StockValue: 90, VolumeTraded: 47, HighestStock: 100 },
     CurrencyTwo: { ApiId: "chaos", Text: "Chaos Orb", CategoryApiId: "currency" },
-    CurrencyTwoData: { RelativePrice: 0.04, StockValue: 80, VolumeTraded: 800, HighestStock: 400 },
+    CurrencyTwoData: { RelativePrice: 0.04, StockValue: 80, VolumeTraded: 278525, HighestStock: 400 },
+  },
+  {
+    // A second direct divine pair at a worse rate: the 5%+ spread the
+    // verdict must flag as an opportunity.
+    BaseCurrencyApiId: "exalted",
+    Volume: 80,
+    CurrencyOne: { ApiId: "divine", Text: "Divine Orb", CategoryApiId: "currency" },
+    CurrencyOneData: { RelativePrice: 250, StockValue: 80, VolumeTraded: 40, HighestStock: 90 },
+    CurrencyTwo: { ApiId: "exalted", Text: "Exalted Orb", CategoryApiId: "currency" },
+    CurrencyTwoData: { RelativePrice: 1, StockValue: 80, VolumeTraded: 10000, HighestStock: 500 },
   },
   {
     BaseCurrencyApiId: "exalted",
@@ -38,6 +48,17 @@ const PAIRS = [
     CurrencyOneData: { RelativePrice: 21.6, StockValue: 50, VolumeTraded: 500, HighestStock: 12000 },
     CurrencyTwo: { ApiId: "divine", Text: "Divine Orb", CategoryApiId: "currency" },
     CurrencyTwoData: { RelativePrice: 237, StockValue: 40, VolumeTraded: 400, HighestStock: 90 },
+  },
+  {
+    // Not a currency: must never appear in the exchange matrix. Kept below
+    // the divine<->chaos pair's liquidity so the liquid-anchor test resolves
+    // to chaos as intended.
+    BaseCurrencyApiId: "exalted",
+    Volume: 50,
+    CurrencyOne: { ApiId: "rakiatas-flow", Text: "Rakiata's Flow", CategoryApiId: "lineagesupportgems" },
+    CurrencyOneData: { RelativePrice: 1191, StockValue: 50000, VolumeTraded: 5000, HighestStock: 9000 },
+    CurrencyTwo: { ApiId: "divine", Text: "Divine Orb", CategoryApiId: "currency" },
+    CurrencyTwoData: { RelativePrice: 237, StockValue: 40000, VolumeTraded: 20, HighestStock: 90 },
   },
 ];
 
@@ -114,9 +135,54 @@ it("commodity mode prices the hovered item in every major currency", async () =>
   expect(answer.mode).toBe("commodity");
   expect(answer.itemName).toBe("Divine Orb");
   const rows = Object.fromEntries(answer.itemRows.map((r) => [r.key, r]));
-  expect(rows["item:divine:exalted"].priceText).toBe("237 exalted");
+  expect(rows["item:divine:exalted"].priceText).toBe("250 exalted");
   expect(rows["item:divine:chaos"].priceText).toContain("5,925");
   expect(rows["item:divine:divine"].priceText).toBe("1 divine");
+});
+
+it("the matrix lists real currencies only — never omens or lineage gems", async () => {
+  const answer = await arbQuote({ clipboard: "", league: "Standard" });
+
+  const labels = answer.matrix.map((r) => r.label);
+  expect(labels).toContain("Exalted Orb");
+  expect(labels).toContain("Chaos Orb");
+  expect(labels).toContain("Divine Orb");
+  expect(labels).toContain("Vaal Orb");
+  expect(labels).not.toContain("Rakiata's Flow");
+});
+
+it("a >=5% direct-pair spread becomes an explicit buy-with verdict", async () => {
+  const answer = await arbQuote({ clipboard: DIVINE_TEXT, league: "Standard" });
+
+  expect(answer.verdict?.kind).toBe("opportunity");
+  expect(answer.verdict?.buyWith).toBe("chaos");
+  expect(answer.verdict?.savingsPct).toBeCloseTo(5.2, 0);
+  expect(answer.verdict?.text).toContain("chaos");
+});
+
+it("per-currency rows mark direct pairs vs derived conversions", async () => {
+  const answer = await arbQuote({ clipboard: DIVINE_TEXT, league: "Standard" });
+  const rows = Object.fromEntries(
+    (answer.perCurrency ?? []).map((r) => [r.currency, r]),
+  );
+
+  expect(rows["exalted"].direct).toBe(true);
+  expect(rows["exalted"].exaltedPrice).toBe(250);
+  expect(rows["chaos"].direct).toBe(true);
+  expect(rows["chaos"].exaltedPrice).toBe(237);
+  // No divine<->divine market exists: derived, priced as 1.
+  expect(rows["divine"].direct).toBe(false);
+  expect(rows["divine"].amount).toBe(1);
+});
+
+it("the liquid pair reports the most-liquid market and its real rate", async () => {
+  const answer = await arbQuote({ clipboard: DIVINE_TEXT, league: "Standard" });
+
+  expect(answer.liquidPair?.currency).toBe("chaos");
+  expect(answer.liquidPair?.liquidity).toBe(90);
+  expect(answer.liquidPair?.stock).toBe(400);
+  // The pair's actual traded rate: 278525 chaos / 47 divine.
+  expect(answer.liquidPair?.price).toBeCloseTo(5926, 0);
 });
 
 it("stage 2 marks big-three rows live from official exchange answers", async () => {

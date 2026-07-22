@@ -12,7 +12,7 @@
  * not trade in exalts.
  */
 import { parseClipboard } from "@/parser";
-import { divinePrice, snapshotPairsRaw, SCOUT_TTL_MS } from "./poe2scout";
+import { snapshotPairsRaw, SCOUT_TTL_MS } from "./poe2scout";
 import { Scheduler, Http429, retryAfterMs } from "./scheduler";
 import { selectMarketQuotes } from "./scout/quotes";
 import { WAYSTONE_USER_AGENT, cookieAllowedForHost } from "./session-headers";
@@ -34,6 +34,30 @@ export type ArbRow = {
   stock?: number;
 };
 
+export type PerCurrency = {
+  currency: string;
+  amount?: number;      // price of one item in that currency
+  exaltedPrice: number; // exalted per unit in that market
+  direct: boolean;      // a real pair exists (else derived conversion)
+  volume?: number;
+  stock?: number;
+};
+
+export type Verdict = {
+  kind: "opportunity" | "none" | "insufficient";
+  text: string;
+  buyWith?: string;
+  savingsPct?: number;
+};
+
+export type LiquidPair = {
+  currency: string;
+  price: number;         // units of anchor currency per item
+  priceExalted: number;  // exalted per unit
+  liquidity: number;
+  stock: number;
+};
+
 export type ArbAnswer = {
   mode: "commodity" | "listings-pending" | "matrix-only" | "error";
   league: string;
@@ -44,6 +68,10 @@ export type ArbAnswer = {
   matrix: ArbRow[];
   itemRows: ArbRow[];
   ratesAgeMs: number;
+  verdict?: Verdict;
+  liquidPair?: LiquidPair;
+  perCurrency?: PerCurrency[];
+  exaltedPrices?: Record<string, number>;
 };
 
 export type ArbState = {
@@ -51,6 +79,10 @@ export type ArbState = {
   done: boolean;
   matrix: ArbRow[];
   itemRows: ArbRow[];
+  verdict?: Verdict;
+  liquidPair?: LiquidPair;
+  perCurrency?: PerCurrency[];
+  exaltedPrices?: Record<string, number>;
   listings?: {
     currency: string;
     count: number;
@@ -136,21 +168,63 @@ function fmt(value: number): string {
   return value.toLocaleString("en-US", { maximumFractionDigits: 2 });
 }
 
-function matrixRows(rawPairs: unknown, divine: number | null, ageMs: number): ArbRow[] {
+const CURRENCY_CATEGORY = "currency";
+const CURRENCY_NAMES: Record<string, string> = {
+  exalted: "Exalted Orb",
+  chaos: "Chaos Orb",
+  divine: "Divine Orb",
+};
+
+/**
+ * The bottom exchange matrix: REAL currency items only (the 'currency'
+ * category — never omens, idols, or lineage gems that pollute the raw
+ * liquidity sort). Big three first in fixed order, then the rest of the
+ * category by liquidity, capped so it always fits without scrolling.
+ */
+function currencyMatrix(rawPairs: unknown, ageMs: number, limit = 8): ArbRow[] {
   const prices = exaltedPrices(rawPairs);
+  const byId = new Map<
+    string,
+    { text: string; price: number; liquidity: number; stock: number }
+  >();
+  for (const pair of pairsOf(rawPairs)) {
+    for (const [side, data] of [
+      [pair.CurrencyOne, pair.CurrencyOneData],
+      [pair.CurrencyTwo, pair.CurrencyTwoData],
+    ] as const) {
+      const apiId = side?.ApiId;
+      if (!apiId || side?.CategoryApiId !== CURRENCY_CATEGORY) continue;
+      const price = prices.get(apiId);
+      if (price === undefined) continue;
+      const liquidity = pair.Volume ?? 0;
+      const current = byId.get(apiId);
+      if (!current || liquidity > current.liquidity) {
+        byId.set(apiId, {
+          text: side?.Text ?? CURRENCY_NAMES[apiId] ?? apiId,
+          price,
+          liquidity,
+          stock: data?.HighestStock ?? 0,
+        });
+      }
+    }
+  }
+  const rest = [...byId.entries()]
+    .filter(([apiId]) => !(BIG_THREE as readonly string[]).includes(apiId))
+    .sort((a, b) => b[1].liquidity - a[1].liquidity);
   const rows: ArbRow[] = [];
-  const exRow: ArbRow = {
+  const exPrice = 1;
+  const chaos = prices.get("chaos");
+  const divine = prices.get("divine");
+  // Big three keep pair:* keys so stage-2 refinement patches them in place.
+  rows.push({
     key: "pair:exalted",
     label: "Exalted Orb",
     priceText: "1 ex",
     detail: "the market base unit",
     source: "aggregate",
     ageMs,
-  };
-  rows.push(exRow);
-  const chaos = prices.get("chaos");
-  const div = prices.get("divine") ?? divine ?? undefined;
-  if (chaos) {
+  });
+  if (chaos !== undefined) {
     rows.push({
       key: "pair:chaos",
       label: "Chaos Orb",
@@ -160,66 +234,36 @@ function matrixRows(rawPairs: unknown, divine: number | null, ageMs: number): Ar
       ageMs,
     });
   }
-  if (div) {
+  if (divine !== undefined) {
     rows.push({
       key: "pair:divine",
       label: "Divine Orb",
-      priceText: `${fmt(div)} ex`,
+      priceText: `${fmt(divine)} ex`,
       detail: "per orb",
       source: "aggregate",
       ageMs,
     });
-    if (chaos) {
-      rows.push({
-        key: "pair:divine:chaos",
-        label: "Divine ↔ Chaos",
-        priceText: `1 div = ${fmt(div / chaos)} chaos`,
-        detail: "cross rate",
-        source: "aggregate",
-        ageMs,
-      });
-    }
   }
-  return rows;
-}
-
-function liquidCurrencies(rawPairs: unknown, ageMs: number, limit = 10): ArbRow[] {
-  const prices = exaltedPrices(rawPairs);
-  const entries: { apiId: string; text: string; price: number; stock: number; liquidity: number }[] = [];
-  for (const pair of pairsOf(rawPairs)) {
-    for (const [side, data, other] of [
-      [pair.CurrencyOne, pair.CurrencyOneData, pair.CurrencyTwo],
-      [pair.CurrencyTwo, pair.CurrencyTwoData, pair.CurrencyOne],
-    ] as const) {
-      const apiId = side?.ApiId;
-      if (!apiId || BIG_THREE.includes(apiId as typeof BIG_THREE[number])) continue;
-      const price = prices.get(apiId);
-      if (price === undefined) continue;
-      entries.push({
-        apiId,
-        text: side?.Text ?? apiId,
-        price,
-        stock: data?.HighestStock ?? 0,
-        liquidity: pair.Volume ?? 0,
-      });
-      void other;
-    }
-  }
-  entries.sort((a, b) => b.liquidity - a.liquidity);
-  const seen = new Set<string>();
-  const rows: ArbRow[] = [];
-  for (const e of entries) {
-    if (seen.has(e.apiId)) continue;
-    seen.add(e.apiId);
+  if (chaos !== undefined && divine !== undefined && rows.length < limit) {
     rows.push({
-      key: `cur:${e.apiId}`,
-      label: e.text,
-      priceText: `${fmt(e.price)} ex`,
-      detail: `stock ${fmt(e.stock)}`,
+      key: "pair:divine:chaos",
+      label: "Divine ↔ Chaos",
+      priceText: `1 div = ${fmt(divine / chaos)} chaos`,
+      detail: "cross rate",
       source: "aggregate",
       ageMs,
-      liquidity: e.liquidity,
-      stock: e.stock,
+    });
+  }
+  for (const [apiId, info] of rest) {
+    rows.push({
+      key: `cur:${apiId}`,
+      label: info.text,
+      priceText: `${fmt(info.price)} ex`,
+      detail: `vol ${fmt(info.liquidity)} · stock ${fmt(info.stock)}`,
+      source: "aggregate",
+      ageMs,
+      liquidity: info.liquidity,
+      stock: info.stock,
     });
     if (rows.length >= limit) break;
   }
@@ -514,6 +558,25 @@ async function refineListings(
     }
     stats.sort((a, b) => a.exaltedMedian - b.exaltedMedian);
     state.listings = stats;
+    // Same rule as commodities: a >=5% spread between ask currencies is a
+    // real buy-with signal.
+    if (stats.length >= 2 && best > 0) {
+      const cheapest = stats[0];
+      const next = stats[1];
+      const savings = (next.exaltedMedian - cheapest.exaltedMedian) / next.exaltedMedian;
+      state.verdict =
+        savings >= FLAG_THRESHOLD
+          ? {
+              kind: "opportunity",
+              text: `buy with ${cheapest.currency} — ${(savings * 100).toFixed(1)}% cheaper than ${next.currency}`,
+              buyWith: cheapest.currency,
+              savingsPct: savings * 100,
+            }
+          : {
+              kind: "none",
+              text: `no arb — listings within ${(savings * 100).toFixed(1)}%`,
+            };
+    }
   } catch (e) {
     state.listingsNote = `listings unavailable: ${e instanceof Error ? e.message : e}`;
   }
@@ -527,26 +590,24 @@ export async function arbQuote(options: {
 }): Promise<ArbAnswer> {
   const league = options.league;
   const sessionId = options.sessionId ?? "";
-  // Stage 1 is poe2scout-aggregate and LIGHT: the exchange pairs feed plus
-  // the league list (no full icon warm). The pairs fetch is forced on every
-  // press and budgeted through the scout lane for politeness.
-  const [rawPairs, divine] = await Promise.all([
-    scheduler.schedule(`pairs:${league}`, 1, "scout", () =>
+  // Stage 1 is poe2scout-aggregate and LIGHT: just the exchange pairs feed
+  // (no full icon warm), forced on every press and budgeted through the
+  // scout lane for politeness.
+  const rawPairs = await scheduler
+    .schedule(`pairs:${league}`, 1, "scout", () =>
       snapshotPairsRaw(league, { force: true }),
-    ).catch(() => []),
-    divinePrice(league).catch(() => null),
-  ]);
+    )
+    .catch(() => []);
   const ratesAgeMs = 0;
 
   refreshSeq += 1;
   const refreshId = refreshSeq;
-  const matrix = matrixRows(rawPairs, divine, ratesAgeMs);
   const state: ArbState & { league: string; createdAt: number } = {
     refreshId,
     league,
     createdAt: Date.now(),
     done: false,
-    matrix: [...matrix, ...liquidCurrencies(rawPairs, ratesAgeMs)],
+    matrix: currencyMatrix(rawPairs, ratesAgeMs),
     itemRows: [],
   };
   storeState(state);
@@ -601,20 +662,105 @@ export async function arbQuote(options: {
   const hit = index.get(normName(itemName));
   if (hit) {
     const prices = exaltedPrices(rawPairs);
-    const exPrice = prices.get(hit.apiId);
-    const rows: ArbRow[] = BIG_THREE.map((have) => {
+    const quote = selectMarketQuotes(rawPairs).get(hit.apiId);
+    const exPrice = prices.get(hit.apiId) ?? 0;
+
+    // Per-major-currency view: a DIRECT pair price when the item actually
+    // trades in that currency, otherwise a derived conversion (marked, so
+    // the verdict never treats math as a market).
+    const perCurrency: PerCurrency[] = BIG_THREE.map((have) => {
       const haveEx = have === "exalted" ? 1 : prices.get(have);
-      const per = exPrice !== undefined && haveEx ? exPrice / haveEx : undefined;
+      let directPair: Pair | undefined;
+      let itemSide: SideData | undefined;
+      for (const pair of pairsOf(rawPairs)) {
+        const sides = [
+          [pair.CurrencyOne, pair.CurrencyOneData, pair.CurrencyTwo],
+          [pair.CurrencyTwo, pair.CurrencyTwoData, pair.CurrencyOne],
+        ] as const;
+        for (const [side, data, other] of sides) {
+          if (side?.ApiId === hit.apiId && other?.ApiId === have) {
+            directPair = pair;
+            itemSide = data;
+          }
+        }
+      }
+      const pairPrice = itemSide?.RelativePrice ?? exPrice;
       return {
-        key: `item:${hit.apiId}:${have}`,
-        label: `1 ${hit.text} in ${have}`,
-        priceText: per !== undefined ? `${fmt(per)} ${have}` : "—",
-        detail: "aggregate rate",
-        source: "aggregate" as const,
-        ageMs: ratesAgeMs,
+        currency: have,
+        amount:
+          haveEx && pairPrice > 0 ? pairPrice / haveEx : undefined,
+        exaltedPrice: pairPrice,
+        direct: directPair !== undefined,
+        volume: directPair?.Volume,
+        stock: itemSide?.HighestStock,
       };
     });
+
+    // Verdict over DIRECT pairs only: a derived conversion is not a market.
+    const directRows = perCurrency.filter(
+      (row) => row.direct && row.exaltedPrice > 0,
+    );
+    let verdict: Verdict;
+    if (directRows.length >= 2) {
+      const sorted = [...directRows].sort(
+        (a, b) => a.exaltedPrice - b.exaltedPrice,
+      );
+      const cheapest = sorted[0];
+      const next = sorted[1];
+      const savings =
+        (next.exaltedPrice - cheapest.exaltedPrice) / next.exaltedPrice;
+      verdict =
+        savings >= FLAG_THRESHOLD
+          ? {
+              kind: "opportunity",
+              text: `buy with ${cheapest.currency} — ${(savings * 100).toFixed(1)}% cheaper than ${next.currency}`,
+              buyWith: cheapest.currency,
+              savingsPct: savings * 100,
+            }
+          : {
+              kind: "none",
+              text: `no arb — direct pairs within ${(savings * 100).toFixed(1)}%`,
+            };
+    } else if (directRows.length === 1) {
+      verdict = {
+        kind: "insufficient",
+        text: `trades only in ${directRows[0].currency} — no cross-pair spread`,
+      };
+    } else {
+      verdict = { kind: "insufficient", text: "no direct pairs found" };
+    }
+
+    const liquidPair: LiquidPair | undefined = quote
+      ? {
+          currency: quote.currency,
+          price: quote.amount,
+          priceExalted: quote.price,
+          liquidity: quote.liquidity,
+          stock: quote.buyerStock,
+        }
+      : undefined;
+
+    const rows: ArbRow[] = perCurrency.map((row) => ({
+      key: `item:${hit.apiId}:${row.currency}`,
+      label: `1 ${hit.text} in ${row.currency}`,
+      priceText:
+        row.amount !== undefined ? `${fmt(row.amount)} ${row.currency}` : "—",
+      detail: row.direct ? "direct pair" : "derived",
+      source: "aggregate" as const,
+      ageMs: ratesAgeMs,
+      liquidity: row.volume,
+      stock: row.stock,
+    }));
     state.itemRows = rows;
+    state.verdict = verdict;
+    state.liquidPair = liquidPair;
+    state.perCurrency = perCurrency;
+    state.exaltedPrices = Object.fromEntries(
+      BIG_THREE.map((have) => [
+        have,
+        have === "exalted" ? 1 : (prices.get(have) ?? 0),
+      ]),
+    );
     return finish({
       mode: "commodity",
       league,
@@ -623,6 +769,10 @@ export async function arbQuote(options: {
       matrix: state.matrix,
       itemRows: rows,
       ratesAgeMs,
+      verdict,
+      liquidPair,
+      perCurrency,
+      exaltedPrices: state.exaltedPrices,
     });
   }
 
