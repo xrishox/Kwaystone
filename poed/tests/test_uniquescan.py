@@ -49,8 +49,7 @@ def test_scan_finds_planted_icons(tmp_path):
         "quoteCurrency": "chaos",
         "quoteCurrencyText": "Chaos Orb",
         "quoteLiquidity": 120,
-        "quoteBuyerStock": 40,
-        "quoteAvailable": True,
+        "quoteMaxStock": 40,
         "exaltedPerChaos": 0.25,
         "exaltedPerDivine": 333,
         "sourceTag": "unique-0",
@@ -69,7 +68,7 @@ def test_scan_finds_planted_icons(tmp_path):
     assert m0["price"] == 100.0
     assert m0["quoteAmount"] == 0.5
     assert m0["quoteCurrency"] == "chaos"
-    assert m0["quoteAvailable"] is True
+    assert m0["quoteMaxStock"] == 40
     assert m0["exaltedPerChaos"] == 0.25
     assert m0["exaltedPerDivine"] == 333
     assert m0["sourceTag"] == "unique-0"
@@ -317,5 +316,4 @@ def test_scan_finds_duplicate_items(tmp_path):
     assert [m["name"] for m in matches] == ["Unique 0", "Unique 0"]
     coords = sorted((m["x"], m["y"]) for m in matches)
     assert coords == [(40, 50), (400, 250)]
-
 

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2023",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
@@ -15,5 +15,5 @@
       "@/*": ["./vendor/ee2/src/*"]
     }
   },
-  "include": ["src/**/*.ts", "vendor/ee2/src/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }

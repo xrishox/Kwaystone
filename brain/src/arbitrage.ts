@@ -1,109 +1,172 @@
-/**
- * Currency arbitrage analysis for Alt+S.
- *
- * Stage 1 (instant): the aggregate poe2scout exchange snapshot becomes the
- * exchange matrix and the item's anchor view. Stage 2 (refinement): official
- * exchange/trade queries verify the shown pairs live, flowing through the
- * rate-limit scheduler. Every row carries its data source and age so
- * freshness is always explicit.
- *
- * The absolute scale is per-item: its most-liquid quote pair (the market that
- * actually clears it), never a blind exalted default — some items simply do
- * not trade in exalts.
- */
-import { parseClipboard } from "@/parser";
-import { snapshotPairsRaw, SCOUT_TTL_MS } from "./poe2scout";
-import { Scheduler, Http429, retryAfterMs } from "./scheduler";
-import { selectMarketQuotes } from "./scout/quotes";
-import { WAYSTONE_USER_AGENT, cookieAllowedForHost } from "./session-headers";
+/** Currency Exchange loop analysis for the Alt+S / Alt+A workflow. */
+import { exchangePairSnapshot, exchangeSnapshotEpoch } from "./poe2scout";
+import {
+  SCOUT_MAX_AGE_MS,
+  ScoutConfidence,
+  scoutConfidence,
+} from "./scout/policy";
 
-const TRADE_HOST = "https://www.pathofexile.com";
-const BIG_THREE = ["exalted", "chaos", "divine"] as const;
-const FLAG_THRESHOLD = 0.05;
-const LISTING_FETCH_COUNT = 25;
+const DEFAULT_CAPTURE_MAX_AGE_MS = 120_000;
+const DEFAULT_MIN_PERCENT = 5;
+const DEFAULT_SAFETY_BUFFER_BPS = 500;
+const DEFAULT_EXECUTION_CONCESSION_BPS = 500;
+const MAX_SAFETY_BUFFER_BPS = 1_500;
+const MAX_EXECUTION_CONCESSION_BPS = 1_500;
+const QUANTITY_MAX = 100;
 
-export type ArbRow = {
-  key: string;
-  label: string;
-  priceText: string;
-  detail?: string;
-  source: "aggregate" | "live";
-  ageMs: number;
-  flagged?: boolean;
-  liquidity?: number;
-  stock?: number;
+export type ExchangeItem = {
+  apiId: string;
+  name: string;
+  category: string;
+  iconUrl?: string;
+  isCurrency?: boolean;
 };
 
-export type PerCurrency = {
-  currency: string;
-  amount?: number;      // price of one item in that currency
-  exaltedPrice: number; // exalted per unit in that market
-  direct: boolean;      // a real pair exists (else derived conversion)
-  volume?: number;
-  stock?: number;
+export type PairObservation = {
+  id: string;
+  want: ExchangeItem;
+  have: ExchangeItem;
+  wantAmount: number;
+  haveAmount: number;
+  rate: number;
+  observedAt: number;
 };
 
-export type Verdict = {
-  kind: "opportunity" | "none" | "insufficient";
-  text: string;
-  buyWith?: string;
-  savingsPct?: number;
+export type LoopLeg = {
+  from: ExchangeItem;
+  to: ExchangeItem;
+  rate: number;
+  executionRate?: number;
+  source:
+    | "capture"
+    | "capture-bridge"
+    | "poe2scout";
+  observedAt?: number;
+  inputAmount?: number;
+  outputAmount?: number;
+  scoutEvidence?: {
+    fromVolume: number;
+    toVolume: number;
+    liquidityExalted: number;
+    confidence: ScoutConfidence;
+  };
 };
 
-export type LiquidPair = {
-  currency: string;
-  price: number;         // units of anchor currency per item
-  priceExalted: number;  // exalted per unit
-  liquidity: number;
-  stock: number;
+export type ArbLoop = {
+  id: string;
+  path: ExchangeItem[];
+  legs: LoopLeg[];
+  multiplier: number;
+  percent: number;
+  nominalMultiplier: number;
+  nominalPercent: number;
+  executionMultiplier: number;
+  executionPercent: number;
+  bufferedMultiplier: number;
+  bufferedPercent: number;
+  status: "verified" | "estimate";
+  estimateConfidence?: ScoutConfidence;
+  validUntil?: number;
+  stale: boolean;
+  actionable: boolean;
+  quantityOutcomes: QuantityOutcome[];
 };
 
-export type ArbAnswer = {
-  mode: "commodity" | "listings-pending" | "matrix-only" | "error";
-  league: string;
-  refreshId: number;
-  itemName?: string;
-  stackSize?: number;
-  note?: string;
-  matrix: ArbRow[];
-  itemRows: ArbRow[];
+export type QuantityStepOutcome = {
+  nominalInputUnits: number;
+  nominalOutputUnits: number;
+  nominalExecuted: boolean;
+  executionInputUnits: number;
+  executionOutputUnits: number;
+  executionExecuted: boolean;
+  bufferedInputUnits: number;
+  bufferedOutputUnits: number;
+  bufferedExecuted: boolean;
+  boundaryHeadroomPercent: number;
+};
+
+export type QuantityOutcome = {
+  quantity: number;
+  nominalFinalUnits: number;
+  bufferedFinalUnits: number;
+  nominalComplete: boolean;
+  executionFinalUnits: number;
+  executionComplete: boolean;
+  bufferedComplete: boolean;
+  nominalBlockedStep?: number;
+  executionBlockedStep?: number;
+  bufferedBlockedStep?: number;
+  nominalBlockedUnits?: number;
+  executionBlockedUnits?: number;
+  bufferedBlockedUnits?: number;
+  nominalReturnPercent: number | null;
+  executionReturnPercent: number | null;
+  bufferedReturnPercent: number | null;
+  steps: QuantityStepOutcome[];
+  localScore: number;
+  localPeak: boolean;
+  budgetBest: boolean;
+  actionable: boolean;
+};
+
+export type VerificationNeed = {
+  from: ExchangeItem;
+  to: ExchangeItem;
+  hotkey: "Alt+A";
+  reason: "poe2scout";
+};
+
+export type CaptureView = PairObservation & {
+  role: "buy" | "sell";
+  quote: ExchangeItem;
+  stale: boolean;
+  validUntil: number;
+};
+
+export type BridgeCaptureView = PairObservation & {
+  stale: boolean;
+  validUntil: number;
+};
+
+export type ArbAnalysis = {
+  target: ExchangeItem;
+  captures: CaptureView[];
+  bridges: BridgeCaptureView[];
+  loops: ArbLoop[];
+  bestVerifiedLoop?: ArbLoop;
+  bestCandidateLoop?: ArbLoop;
+  loopsEvaluated: number;
+  capturedCurrencyCount: number;
+  unavailable: string[];
+  verificationNeeded: VerificationNeed[];
+  ratesEpoch?: string;
+  ratesSnapshotId?: number;
+  ratesFetchedAt: number;
   ratesAgeMs: number;
-  verdict?: Verdict;
-  liquidPair?: LiquidPair;
-  perCurrency?: PerCurrency[];
-  exaltedPrices?: Record<string, number>;
+  ratesStatus: "fresh" | "stale" | "degraded";
+  safetyBufferBps: number;
+  perLegSafetyBufferBps: number;
+  executionConcessionBps: number;
+  executionConcessionLoopPercent: number;
+  analyzedAt: number;
 };
 
-export type ArbState = {
-  refreshId: number;
-  done: boolean;
-  matrix: ArbRow[];
-  itemRows: ArbRow[];
-  verdict?: Verdict;
-  liquidPair?: LiquidPair;
-  perCurrency?: PerCurrency[];
-  exaltedPrices?: Record<string, number>;
-  listings?: {
-    currency: string;
-    count: number;
-    median: number;
-    exaltedMedian: number;
-    deltaVsBest: number;
-    flagged: boolean;
-  }[];
-  listingsNote?: string;
-};
-
-// --- snapshot-derived helpers ---------------------------------------------
+type Rational = { numerator: bigint; denominator: bigint };
 
 type PairSide = {
   ApiId?: string;
   Text?: string;
   CategoryApiId?: string;
+  IconUrl?: string;
+  ItemMetadata?: { icon?: string; name?: string };
 };
 
-type Pair = {
-  BaseCurrencyApiId?: string;
+type SideData = {
+  VolumeTraded?: number;
+};
+
+type SnapshotPair = {
+  CurrencyExchangeSnapshotId?: number;
   Volume?: number;
   CurrencyOne?: PairSide;
   CurrencyTwo?: PairSide;
@@ -111,683 +174,999 @@ type Pair = {
   CurrencyTwoData?: SideData;
 };
 
-type SideData = {
-  RelativePrice?: number;
-  StockValue?: number;
-  VolumeTraded?: number;
-  HighestStock?: number;
-};
-
-function pairsOf(raw: unknown): Pair[] {
-  return Array.isArray(raw) ? (raw as Pair[]) : [];
-}
-
-function normName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
-
-/** name -> { apiId, text, category } index over every item in the pairs feed. */
-export function buildCommodityIndex(rawPairs: unknown) {
-  const index = new Map<
-    string,
-    { apiId: string; text: string; category: string }
-  >();
-  for (const pair of pairsOf(rawPairs)) {
-    for (const side of [pair.CurrencyOne, pair.CurrencyTwo]) {
-      const apiId = side?.ApiId;
-      const text = side?.Text;
-      if (!apiId || !text) continue;
-      index.set(normName(text), {
-        apiId,
-        text,
-        category: side?.CategoryApiId ?? "",
-      });
-    }
-  }
-  return index;
-}
-
-/**
- * Exalted price per unit for every item, selected by the same rule the price
- * warm uses: executable pairs first (buyer stock > 0), then highest
- * Exalted-equivalent traded volume. Selecting any other way lets stale or
- * junk low-volume pairs set headline rates (a real divine↔vaal window once
- * read 237 ex while every liquid pair read 1192 ex).
- */
-export function exaltedPrices(rawPairs: unknown): Map<string, number> {
-  const out = new Map<string, number>();
-  for (const [apiId, quote] of selectMarketQuotes(rawPairs)) {
-    out.set(apiId, quote.price);
-  }
-  return out;
-}
-
-function fmt(value: number): string {
-  if (value >= 1000) return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
-  if (value >= 10) return value.toLocaleString("en-US", { maximumFractionDigits: 1 });
-  return value.toLocaleString("en-US", { maximumFractionDigits: 2 });
-}
-
-const CURRENCY_CATEGORY = "currency";
-const CURRENCY_NAMES: Record<string, string> = {
-  exalted: "Exalted Orb",
-  chaos: "Chaos Orb",
-  divine: "Divine Orb",
-};
-
-/**
- * The bottom exchange matrix: REAL currency items only (the 'currency'
- * category — never omens, idols, or lineage gems that pollute the raw
- * liquidity sort). Big three first in fixed order, then the rest of the
- * category by liquidity, capped so it always fits without scrolling.
- */
-function currencyMatrix(rawPairs: unknown, ageMs: number, limit = 8): ArbRow[] {
-  const prices = exaltedPrices(rawPairs);
-  const byId = new Map<
-    string,
-    { text: string; price: number; liquidity: number; stock: number }
-  >();
-  for (const pair of pairsOf(rawPairs)) {
-    for (const [side, data] of [
-      [pair.CurrencyOne, pair.CurrencyOneData],
-      [pair.CurrencyTwo, pair.CurrencyTwoData],
-    ] as const) {
-      const apiId = side?.ApiId;
-      if (!apiId || side?.CategoryApiId !== CURRENCY_CATEGORY) continue;
-      const price = prices.get(apiId);
-      if (price === undefined) continue;
-      const liquidity = pair.Volume ?? 0;
-      const current = byId.get(apiId);
-      if (!current || liquidity > current.liquidity) {
-        byId.set(apiId, {
-          text: side?.Text ?? CURRENCY_NAMES[apiId] ?? apiId,
-          price,
-          liquidity,
-          stock: data?.HighestStock ?? 0,
-        });
-      }
-    }
-  }
-  const rest = [...byId.entries()]
-    .filter(([apiId]) => !(BIG_THREE as readonly string[]).includes(apiId))
-    .sort((a, b) => b[1].liquidity - a[1].liquidity);
-  const rows: ArbRow[] = [];
-  const exPrice = 1;
-  const chaos = prices.get("chaos");
-  const divine = prices.get("divine");
-  // Big three keep pair:* keys so stage-2 refinement patches them in place.
-  rows.push({
-    key: "pair:exalted",
-    label: "Exalted Orb",
-    priceText: "1 ex",
-    detail: "the market base unit",
-    source: "aggregate",
-    ageMs,
-  });
-  if (chaos !== undefined) {
-    rows.push({
-      key: "pair:chaos",
-      label: "Chaos Orb",
-      priceText: `${fmt(chaos)} ex`,
-      detail: "per orb",
-      source: "aggregate",
-      ageMs,
-    });
-  }
-  if (divine !== undefined) {
-    rows.push({
-      key: "pair:divine",
-      label: "Divine Orb",
-      priceText: `${fmt(divine)} ex`,
-      detail: "per orb",
-      source: "aggregate",
-      ageMs,
-    });
-  }
-  if (chaos !== undefined && divine !== undefined && rows.length < limit) {
-    rows.push({
-      key: "pair:divine:chaos",
-      label: "Divine ↔ Chaos",
-      priceText: `1 div = ${fmt(divine / chaos)} chaos`,
-      detail: "cross rate",
-      source: "aggregate",
-      ageMs,
-    });
-  }
-  for (const [apiId, info] of rest) {
-    rows.push({
-      key: `cur:${apiId}`,
-      label: info.text,
-      priceText: `${fmt(info.price)} ex`,
-      detail: `vol ${fmt(info.liquidity)} · stock ${fmt(info.stock)}`,
-      source: "aggregate",
-      ageMs,
-      liquidity: info.liquidity,
-      stock: info.stock,
-    });
-    if (rows.length >= limit) break;
-  }
-  return rows;
-}
-
-// --- official GGG requests (through the scheduler) -------------------------
-
-function gggFetch(
-  path: string,
-  init: RequestInit,
-  sessionId: string,
-): Promise<Response> {
-  return (async () => {
-    const url = `${TRADE_HOST}${path}`;
-    const headers: Record<string, string> = {
-      "user-agent": WAYSTONE_USER_AGENT,
-      "accept": "application/json",
-      "content-type": "application/json",
-      ...(init.headers as Record<string, string> | undefined),
-    };
-    if (sessionId && cookieAllowedForHost(new URL(url).hostname)) {
-      headers["cookie"] = `POESESSID=${sessionId}`;
-    }
-    const r = await fetch(url, { ...init, headers });
-    if (r.status === 429) {
-      throw new Http429(retryAfterMs(r.headers) ?? 30_000);
-    }
-    return r;
-  })();
-}
-
-type ExchangeOffer = {
-  listing: {
-    offers: { exchange: { amount: number; currency: string }; item: { amount: number; stock: number } }[];
-    indexed: string;
-  };
-};
-
-/** Best ask for one unit of `wantApiId` payable in `haveApiId`, live. */
-async function exchangeBest(
-  league: string,
-  wantApiId: string,
-  haveApiId: string,
-  sessionId: string,
-): Promise<{ price: number; stock: number } | null> {
-  const body = {
-    engine: "new",
-    query: {
-      status: { option: "online" },
-      have: [haveApiId],
-      want: [wantApiId],
-    },
-    sort: { have: "asc" },
-  };
-  const r = await gggFetch(
-    `/api/trade2/exchange/poe2/${encodeURIComponent(league)}`,
-    { method: "POST", body: JSON.stringify(body) },
-    sessionId,
-  );
-  if (!r.ok) return null;
-  const data = (await r.json()) as { result?: Record<string, ExchangeOffer> };
-  let best: { price: number; stock: number } | null = null;
-  for (const offer of Object.values(data.result ?? {})) {
-    const first = offer.listing.offers[0];
-    if (!first || first.exchange.currency !== haveApiId) continue;
-    const perUnit = first.exchange.amount / first.item.amount;
-    if (!Number.isFinite(perUnit) || perUnit <= 0) continue;
-    if (!best || perUnit < best.price) best = { price: perUnit, stock: first.item.stock };
-  }
-  return best;
-}
-
-// --- the engine ------------------------------------------------------------
-
-let scheduler = new Scheduler();
-let refreshSeq = 0;
-const states = new Map<number, ArbState & { league: string; createdAt: number }>();
-const MAX_STATES = 4;
-
-/** Test seam: inject a scheduler with a fake clock/intervals. */
-export function _setScheduler(next: Scheduler): void {
-  scheduler = next;
-}
-
-/** Test seam: drop all refinement state. */
-export function _clearArbStates(): void {
-  states.clear();
-  refreshSeq = 0;
-}
-
-function storeState(state: ArbState & { league: string; createdAt: number }): void {
-  states.set(state.refreshId, state);
-  if (states.size > MAX_STATES) {
-    const oldest = Math.min(...states.keys());
-    states.delete(oldest);
-  }
-}
-
-export function arbState(refreshId: number): ArbState | null {
-  const state = states.get(refreshId);
-  if (!state) return null;
-  const { league: _league, createdAt: _createdAt, ...rest } = state;
-  return rest;
-}
-
-function patchMatrix(
-  state: ArbState & { league: string; createdAt: number },
-  key: string,
-  patch: Partial<ArbRow>,
-): void {
-  const row = state.matrix.find((r) => r.key === key);
-  if (row) Object.assign(row, patch, { source: "live" as const, ageMs: 0 });
-}
-
-async function refineBigThree(
-  state: ArbState & { league: string; createdAt: number },
-  sessionId: string,
-): Promise<void> {
-  const jobs: { key: string; want: string; have: string; priority: number }[] = [
-    { key: "pair:divine", want: "divine", have: "exalted", priority: 10 },
-    { key: "pair:chaos", want: "chaos", have: "exalted", priority: 11 },
-    { key: "pair:divine:chaos", want: "divine", have: "chaos", priority: 12 },
-  ];
-  await Promise.all(
-    jobs.map((job) =>
-      scheduler
-        .schedule(`xchg:${state.league}:${job.want}:${job.have}`, job.priority, "ggg", () =>
-          exchangeBest(state.league, job.want, job.have, sessionId),
-        )
-        .then((best) => {
-          if (!best) return;
-          if (job.key === "pair:divine:chaos") {
-            const chaosRow = state.matrix.find((r) => r.key === "pair:chaos");
-            const divRow = state.matrix.find((r) => r.key === "pair:divine");
-            if (divRow && chaosRow) {
-              const divEx = Number(divRow.priceText.replace(/[^\d.]/g, ""));
-              const chaosPerDiv = best.price;
-              if (divEx > 0 && chaosPerDiv > 0) {
-                patchMatrix(state, job.key, {
-                  priceText: `1 div = ${fmt(chaosPerDiv)} chaos`,
-                  detail: "cross rate (live)",
-                });
-              }
-            }
-            return;
-          }
-          patchMatrix(state, job.key, {
-            priceText: `${fmt(best.price)} ex`,
-            detail: `per orb (live, stock ${fmt(best.stock)})`,
-            stock: best.stock,
-          });
-        })
-        .catch(() => {}),
-    ),
-  );
-}
-
-async function refineCommodity(
-  state: ArbState & { league: string; createdAt: number },
-  apiId: string,
-  sessionId: string,
-): Promise<void> {
-  const results = await Promise.all(
-    BIG_THREE.map((have, i) =>
-      scheduler
-        .schedule(`xchg:${state.league}:${apiId}:${have}`, 5 + i, "ggg", () =>
-          exchangeBest(state.league, apiId, have, sessionId),
-        )
-        .catch(() => null),
-    ),
-  );
-  for (let i = 0; i < BIG_THREE.length; i++) {
-    const best = results[i];
-    if (!best) continue;
-    const have = BIG_THREE[i];
-    const row = state.itemRows.find((r) => r.key === `item:${apiId}:${have}`);
-    if (row) {
-      Object.assign(row, {
-        priceText: `${fmt(best.price)} ${have}`,
-        detail: `live best ask, stock ${fmt(best.stock)}`,
-        source: "live" as const,
-        ageMs: 0,
-        stock: best.stock,
-      });
-    }
-  }
-}
-
-type Listing = { amount: number; currency: string };
-
-async function fetchListings(
-  league: string,
-  name: string,
-  sessionId: string,
-): Promise<Listing[]> {
-  const searchBody = {
-    query: { name, status: { option: "online" } },
-    sort: { price: "asc" },
-  };
-  const searchRes = await scheduler.schedule(
-    `search:${league}:${name}`,
-    1,
-    "ggg",
-    () =>
-      gggFetch(
-        `/api/trade2/search/poe2/${encodeURIComponent(league)}`,
-        { method: "POST", body: JSON.stringify(searchBody) },
-        sessionId,
-      ),
-  );
-  if (!searchRes.ok) throw new Error(`trade search failed (${searchRes.status})`);
-  const searchData = (await searchRes.json()) as { id?: string; result?: string[] };
-  const ids = (searchData.result ?? []).slice(0, LISTING_FETCH_COUNT);
-  if (!searchData.id || ids.length === 0) return [];
-  const fetchRes = await scheduler.schedule(
-    `fetch:${searchData.id}:${ids.join(",")}`,
-    2,
-    "ggg",
-    () =>
-      gggFetch(
-        `/api/trade2/fetch/${ids.join(",")}?query=${searchData.id}`,
-        { method: "GET" },
-        sessionId,
-      ),
-  );
-  if (!fetchRes.ok) throw new Error(`trade fetch failed (${fetchRes.status})`);
-  const fetchData = (await fetchRes.json()) as {
-    result?: { listing?: { price?: { amount?: number; currency?: string } } }[];
-  };
-  const out: Listing[] = [];
-  for (const entry of fetchData.result ?? []) {
-    const price = entry.listing?.price;
-    if (
-      price &&
-      typeof price.amount === "number" &&
-      price.amount > 0 &&
-      typeof price.currency === "string"
-    ) {
-      out.push({ amount: price.amount, currency: price.currency });
-    }
-  }
-  return out;
-}
-
-function median(values: number[]): number {
-  if (!values.length) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-async function refineListings(
-  state: ArbState & { league: string; createdAt: number },
-  name: string,
-  sessionId: string,
-  rawPairs: unknown,
-): Promise<void> {
-  try {
-    const listings = await fetchListings(state.league, name, sessionId);
-    const prices = exaltedPrices(rawPairs);
-    prices.set("exalted", 1);
-    const groups = new Map<string, number[]>();
-    for (const listing of listings) {
-      if (!prices.has(listing.currency)) continue;
-      groups.set(listing.currency, [
-        ...(groups.get(listing.currency) ?? []),
-        listing.amount,
-      ]);
-    }
-    if (groups.size === 0) {
-      state.listingsNote = listings.length
-        ? `${listings.length} listings, none in convertible currencies`
-        : "no online listings right now";
-      return;
-    }
-    const stats = [...groups.entries()].map(([currency, amounts]) => {
-      const med = median(amounts);
-      return {
-        currency,
-        count: amounts.length,
-        median: med,
-        exaltedMedian: med * (prices.get(currency) ?? 0),
-        deltaVsBest: 0,
-        flagged: false,
-      };
-    });
-    const best = Math.min(...stats.map((s) => s.exaltedMedian));
-    for (const s of stats) {
-      s.deltaVsBest = best > 0 ? (s.exaltedMedian - best) / best : 0;
-      s.flagged = best > 0 && s.deltaVsBest >= FLAG_THRESHOLD;
-    }
-    stats.sort((a, b) => a.exaltedMedian - b.exaltedMedian);
-    state.listings = stats;
-    // Same rule as commodities: a >=5% spread between ask currencies is a
-    // real buy-with signal.
-    if (stats.length >= 2 && best > 0) {
-      const cheapest = stats[0];
-      const next = stats[1];
-      const savings = (next.exaltedMedian - cheapest.exaltedMedian) / next.exaltedMedian;
-      state.verdict =
-        savings >= FLAG_THRESHOLD
-          ? {
-              kind: "opportunity",
-              text: `buy with ${cheapest.currency} — ${(savings * 100).toFixed(1)}% cheaper than ${next.currency}`,
-              buyWith: cheapest.currency,
-              savingsPct: savings * 100,
-            }
-          : {
-              kind: "none",
-              text: `no arb — listings within ${(savings * 100).toFixed(1)}%`,
-            };
-    }
-  } catch (e) {
-    state.listingsNote = `listings unavailable: ${e instanceof Error ? e.message : e}`;
-  }
-}
-
-export async function arbQuote(options: {
-  clipboard: string;
+type RateBook = {
   league: string;
-  accountName?: string;
-  sessionId?: string;
-}): Promise<ArbAnswer> {
-  const league = options.league;
-  const sessionId = options.sessionId ?? "";
-  // Stage 1 is poe2scout-aggregate and LIGHT: just the exchange pairs feed
-  // (no full icon warm), forced on every press and budgeted through the
-  // scout lane for politeness.
-  const rawPairs = await scheduler
-    .schedule(`pairs:${league}`, 1, "scout", () =>
-      snapshotPairsRaw(league, { force: true }),
-    )
-    .catch(() => []);
-  const ratesAgeMs = 0;
+  epoch?: string;
+  fetchedAt: number;
+  catalog: Map<string, ExchangeItem>;
+  snapshotId?: number;
+  rates: Map<string, {
+    rate: number;
+    liquidity: number;
+    fromVolume: number;
+    toVolume: number;
+    confidence: ScoutConfidence;
+  }>;
+  degraded: boolean;
+};
 
-  refreshSeq += 1;
-  const refreshId = refreshSeq;
-  const state: ArbState & { league: string; createdAt: number } = {
-    refreshId,
-    league,
-    createdAt: Date.now(),
-    done: false,
-    matrix: currencyMatrix(rawPairs, ratesAgeMs),
-    itemRows: [],
+const cachedBooks = new Map<string, RateBook>();
+
+function pairsOf(raw: unknown): SnapshotPair[] {
+  return Array.isArray(raw) ? (raw as SnapshotPair[]) : [];
+}
+
+function normName(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+export function isCurrencyCategory(value: unknown): boolean {
+  return typeof value === "string" && value.trim().toLowerCase() === "currency";
+}
+
+function pairKey(from: string, to: string): string {
+  return `${from}->${to}`;
+}
+
+function gcd(left: bigint, right: bigint): bigint {
+  let a = left < 0n ? -left : left;
+  let b = right < 0n ? -right : right;
+  while (b) [a, b] = [b, a % b];
+  return a || 1n;
+}
+
+function rational(numerator: bigint, denominator: bigint): Rational {
+  if (denominator === 0n) throw new Error("zero rational denominator");
+  const sign = denominator < 0n ? -1n : 1n;
+  const divisor = gcd(numerator, denominator);
+  return {
+    numerator: sign * numerator / divisor,
+    denominator: sign * denominator / divisor,
   };
-  storeState(state);
+}
 
-  // The vendored parser is not total: some inputs throw instead of returning
-  // an error Result. A bad clipboard must degrade to the matrix, never kill
-  // the request.
-  let itemName = "";
-  try {
-    const parsed = options.clipboard
-      ? parseClipboard(options.clipboard)
-      : null;
-    if (parsed?.isOk()) itemName = parsed._unsafeUnwrap().info.refName;
-  } catch {
-    itemName = "";
-  }
+function rationalFromString(raw: string): Rational | null {
+  const match = raw.trim().match(/^([+]?[0-9]+)(?:\.([0-9]*))?(?:e([+-]?[0-9]+))?$/i);
+  if (!match) return null;
+  const whole = match[1].replace("+", "");
+  const fraction = match[2] ?? "";
+  const exponent = Number(match[3] ?? 0);
+  if (!Number.isInteger(exponent)) return null;
+  let numerator = BigInt(`${whole}${fraction}` || "0");
+  const scale = fraction.length - exponent;
+  let denominator = 1n;
+  if (scale > 0) denominator = 10n ** BigInt(scale);
+  else if (scale < 0) numerator *= 10n ** BigInt(-scale);
+  return rational(numerator, denominator);
+}
 
-  const finish = (answer: ArbAnswer) => {
-    void (async () => {
-      try {
-        await refineBigThree(state, sessionId);
-        if (answer.mode === "commodity" && answer.itemName) {
-          const index = buildCommodityIndex(rawPairs);
-          const hit = index.get(normName(answer.itemName));
-          if (hit) await refineCommodity(state, hit.apiId, sessionId);
-        }
-        if (answer.mode === "listings-pending" && answer.itemName) {
-          await refineListings(state, answer.itemName, sessionId, rawPairs);
-        }
-      } finally {
-        state.done = true;
-      }
-    })();
-    return answer;
-  };
+function rationalFromNumber(value: unknown): Rational | null {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return null;
+  return rationalFromString(String(number));
+}
 
-  if (!itemName) {
-    return finish({
-      mode: options.clipboard ? "error" : "matrix-only",
-      league,
-      refreshId,
-      note: options.clipboard
-        ? "could not parse the hovered item — showing the exchange matrix"
-        : "no item hovered — showing the exchange matrix",
-      matrix: state.matrix,
-      itemRows: [],
-      ratesAgeMs,
-    });
-  }
+function multiply(left: Rational, right: Rational): Rational {
+  return rational(
+    left.numerator * right.numerator,
+    left.denominator * right.denominator,
+  );
+}
 
-  const index = buildCommodityIndex(rawPairs);
-  const hit = index.get(normName(itemName));
-  if (hit) {
-    const prices = exaltedPrices(rawPairs);
-    const quote = selectMarketQuotes(rawPairs).get(hit.apiId);
-    const exPrice = prices.get(hit.apiId) ?? 0;
+function divide(left: Rational, right: Rational): Rational {
+  return rational(
+    left.numerator * right.denominator,
+    left.denominator * right.numerator,
+  );
+}
 
-    // Per-major-currency view: a DIRECT pair price when the item actually
-    // trades in that currency, otherwise a derived conversion (marked, so
-    // the verdict never treats math as a market).
-    const perCurrency: PerCurrency[] = BIG_THREE.map((have) => {
-      const haveEx = have === "exalted" ? 1 : prices.get(have);
-      let directPair: Pair | undefined;
-      let itemSide: SideData | undefined;
-      for (const pair of pairsOf(rawPairs)) {
-        const sides = [
-          [pair.CurrencyOne, pair.CurrencyOneData, pair.CurrencyTwo],
-          [pair.CurrencyTwo, pair.CurrencyTwoData, pair.CurrencyOne],
-        ] as const;
-        for (const [side, data, other] of sides) {
-          if (side?.ApiId === hit.apiId && other?.ApiId === have) {
-            directPair = pair;
-            itemSide = data;
-          }
-        }
-      }
-      const pairPrice = itemSide?.RelativePrice ?? exPrice;
-      return {
-        currency: have,
-        amount:
-          haveEx && pairPrice > 0 ? pairPrice / haveEx : undefined,
-        exaltedPrice: pairPrice,
-        direct: directPair !== undefined,
-        volume: directPair?.Volume,
-        stock: itemSide?.HighestStock,
-      };
-    });
+function rationalNumber(value: Rational): number {
+  return Number(value.numerator) / Number(value.denominator);
+}
 
-    // Verdict over DIRECT pairs only: a derived conversion is not a market.
-    const directRows = perCurrency.filter(
-      (row) => row.direct && row.exaltedPrice > 0,
-    );
-    let verdict: Verdict;
-    if (directRows.length >= 2) {
-      const sorted = [...directRows].sort(
-        (a, b) => a.exaltedPrice - b.exaltedPrice,
-      );
-      const cheapest = sorted[0];
-      const next = sorted[1];
-      const savings =
-        (next.exaltedPrice - cheapest.exaltedPrice) / next.exaltedPrice;
-      verdict =
-        savings >= FLAG_THRESHOLD
-          ? {
-              kind: "opportunity",
-              text: `buy with ${cheapest.currency} — ${(savings * 100).toFixed(1)}% cheaper than ${next.currency}`,
-              buyWith: cheapest.currency,
-              savingsPct: savings * 100,
-            }
-          : {
-              kind: "none",
-              text: `no arb — direct pairs within ${(savings * 100).toFixed(1)}%`,
-            };
-    } else if (directRows.length === 1) {
-      verdict = {
-        kind: "insufficient",
-        text: `trades only in ${directRows[0].currency} — no cross-pair spread`,
-      };
-    } else {
-      verdict = { kind: "insufficient", text: "no direct pairs found" };
+function floorProduct(units: number, rate: Rational): number {
+  return Number(BigInt(units) * rate.numerator / rate.denominator);
+}
+
+function displayedRate(rate: number): Rational | null {
+  if (!Number.isFinite(rate) || rate <= 0) return null;
+  const larger = rate >= 1 ? rate : 1 / rate;
+  const displayed = rationalFromString(larger.toFixed(2));
+  if (!displayed) return null;
+  return rate >= 1 ? displayed : rational(displayed.denominator, displayed.numerator);
+}
+
+function canonicalLegRate(leg: LoopLeg): Rational | null {
+  const input = rationalFromNumber(leg.inputAmount);
+  const output = rationalFromNumber(leg.outputAmount);
+  if (input && output) return divide(output, input);
+  return displayedRate(leg.rate);
+}
+
+function safetyBufferBps(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return DEFAULT_SAFETY_BUFFER_BPS;
+  const clamped = Math.max(0, Math.min(MAX_SAFETY_BUFFER_BPS, parsed));
+  return Math.round(clamped / 50) * 50;
+}
+
+function executionConcessionBps(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return DEFAULT_EXECUTION_CONCESSION_BPS;
+  const clamped = Math.max(0, Math.min(MAX_EXECUTION_CONCESSION_BPS, parsed));
+  return Math.round(clamped / 50) * 50;
+}
+
+function perLegStress(bufferBps: number, legCount: number): Rational {
+  if (bufferBps <= 0 || legCount <= 0) return rational(1n, 1n);
+  const totalFactor = (10_000 - bufferBps) / 10_000;
+  const scale = 1_000_000_000_000;
+  // Round toward a worse rate so floating-point conversion can never make the
+  // configured total loop buffer less conservative at an integer boundary.
+  const scaled = Math.floor(totalFactor ** (1 / legCount) * scale);
+  return rational(BigInt(scaled), BigInt(scale));
+}
+
+type UnitSimulation = {
+  finalUnits: number;
+  complete: boolean;
+  blockedStep?: number;
+  blockedUnits?: number;
+  inputs: number[];
+  outputs: number[];
+  executed: boolean[];
+};
+
+function simulateQuantity(quantity: number, rates: Rational[]): UnitSimulation {
+  let current = quantity;
+  let complete = true;
+  let blockedStep: number | undefined;
+  let blockedUnits: number | undefined;
+  const inputs: number[] = [];
+  const outputs: number[] = [];
+  const executed: boolean[] = [];
+  for (const [stepIndex, rate] of rates.entries()) {
+    const input = complete ? current : 0;
+    const output = complete ? floorProduct(input, rate) : 0;
+    const didExecute = complete && output > 0;
+    inputs.push(input);
+    outputs.push(output);
+    executed.push(didExecute);
+    if (complete && !didExecute) {
+      complete = false;
+      blockedStep = stepIndex;
+      blockedUnits = input;
+    } else if (complete) {
+      current = output;
     }
+  }
+  return {
+    finalUnits: complete ? current : 0,
+    complete,
+    ...(blockedStep !== undefined ? { blockedStep } : {}),
+    ...(blockedUnits !== undefined ? { blockedUnits } : {}),
+    inputs,
+    outputs,
+    executed,
+  };
+}
 
-    const liquidPair: LiquidPair | undefined = quote
-      ? {
-          currency: quote.currency,
-          price: quote.amount,
-          priceExalted: quote.price,
-          liquidity: quote.liquidity,
-          stock: quote.buyerStock,
-        }
-      : undefined;
+function quantityOutcomes(
+  marketRates: Rational[],
+  concessionBps: number,
+  bufferBps: number,
+  status: ArbLoop["status"],
+  stale: boolean,
+  minPercent: number,
+): QuantityOutcome[] {
+  const concession = rational(BigInt(10_000 - concessionBps), 10_000n);
+  const stress = perLegStress(bufferBps, marketRates.length);
+  const executionRates = marketRates.map((rate) => multiply(rate, concession));
+  const bufferedRates = executionRates.map((rate) => multiply(rate, stress));
+  const base = Array.from({ length: QUANTITY_MAX }, (_, index) => {
+    const quantity = index + 1;
+    const nominal = simulateQuantity(quantity, marketRates);
+    const execution = simulateQuantity(quantity, executionRates);
+    const buffered = simulateQuantity(quantity, bufferedRates);
+    const steps = marketRates.map((rate, stepIndex) => {
+      const executionInput = execution.inputs[stepIndex];
+      const executionRate = executionRates[stepIndex];
+      const ideal = Number(BigInt(executionInput) * executionRate.numerator) /
+        Number(executionRate.denominator);
+      const executionOutput = execution.outputs[stepIndex];
+      const boundaryHeadroomPercent = executionOutput > 0 && ideal > 0
+        ? Math.max(0, (1 - executionOutput / ideal) * 100)
+        : 0;
+      return {
+        nominalInputUnits: nominal.inputs[stepIndex],
+        nominalOutputUnits: nominal.outputs[stepIndex],
+        nominalExecuted: nominal.executed[stepIndex],
+        executionInputUnits: executionInput,
+        executionOutputUnits: executionOutput,
+        executionExecuted: execution.executed[stepIndex],
+        bufferedInputUnits: buffered.inputs[stepIndex],
+        bufferedOutputUnits: buffered.outputs[stepIndex],
+        bufferedExecuted: buffered.executed[stepIndex],
+        boundaryHeadroomPercent,
+      };
+    });
+    const nominalReturnPercent = nominal.complete
+      ? (nominal.finalUnits / quantity - 1) * 100
+      : null;
+    const executionReturnPercent = execution.complete
+      ? (execution.finalUnits / quantity - 1) * 100
+      : null;
+    const bufferedReturnPercent = buffered.complete
+      ? (buffered.finalUnits / quantity - 1) * 100
+      : null;
+    return {
+      quantity,
+      nominalFinalUnits: nominal.finalUnits,
+      executionFinalUnits: execution.finalUnits,
+      bufferedFinalUnits: buffered.finalUnits,
+      nominalComplete: nominal.complete,
+      executionComplete: execution.complete,
+      bufferedComplete: buffered.complete,
+      ...(nominal.blockedStep !== undefined
+        ? { nominalBlockedStep: nominal.blockedStep }
+        : {}),
+      ...(execution.blockedStep !== undefined
+        ? { executionBlockedStep: execution.blockedStep }
+        : {}),
+      ...(buffered.blockedStep !== undefined
+        ? { bufferedBlockedStep: buffered.blockedStep }
+        : {}),
+      ...(nominal.blockedUnits !== undefined
+        ? { nominalBlockedUnits: nominal.blockedUnits }
+        : {}),
+      ...(execution.blockedUnits !== undefined
+        ? { executionBlockedUnits: execution.blockedUnits }
+        : {}),
+      ...(buffered.blockedUnits !== undefined
+        ? { bufferedBlockedUnits: buffered.blockedUnits }
+        : {}),
+      nominalReturnPercent,
+      executionReturnPercent,
+      bufferedReturnPercent,
+      steps,
+      localScore: 0,
+      localPeak: false,
+      budgetBest: false,
+      actionable:
+        status === "verified" &&
+        !stale &&
+        buffered.complete &&
+        bufferedReturnPercent !== null &&
+        bufferedReturnPercent >= minPercent,
+    };
+  });
 
-    const rows: ArbRow[] = perCurrency.map((row) => ({
-      key: `item:${hit.apiId}:${row.currency}`,
-      label: `1 ${hit.text} in ${row.currency}`,
-      priceText:
-        row.amount !== undefined ? `${fmt(row.amount)} ${row.currency}` : "—",
-      detail: row.direct ? "direct pair" : "derived",
-      source: "aggregate" as const,
-      ageMs: ratesAgeMs,
-      liquidity: row.volume,
-      stock: row.stock,
-    }));
-    state.itemRows = rows;
-    state.verdict = verdict;
-    state.liquidPair = liquidPair;
-    state.perCurrency = perCurrency;
-    state.exaltedPrices = Object.fromEntries(
-      BIG_THREE.map((have) => [
-        have,
-        have === "exalted" ? 1 : (prices.get(have) ?? 0),
-      ]),
+  const radius = Math.max(2, Math.floor(QUANTITY_MAX / 20));
+  for (let index = 0; index < base.length; index += 1) {
+    const nearby = base.slice(
+      Math.max(0, index - radius),
+      Math.min(base.length, index + radius + 1),
+    ).filter(
+      (point) => point.bufferedComplete && point.bufferedReturnPercent !== null,
+    ).map((point) => point.bufferedReturnPercent as number);
+    const current = base[index];
+    if (!current.bufferedComplete || current.bufferedReturnPercent === null || !nearby.length) {
+      current.localScore = 0;
+      current.localPeak = false;
+      continue;
+    }
+    const low = Math.min(...nearby);
+    const high = Math.max(...nearby);
+    const value = current.bufferedReturnPercent;
+    current.localScore = high - low < 1e-12 ? 0.5 : (value - low) / (high - low);
+    current.localPeak =
+      value >= high - 1e-12 && nearby.some((other) => value > other + 1e-12);
+  }
+  for (const [lower, upper] of [[1, 5], [6, 10], [11, 25], [26, 50], [51, 100]]) {
+    const candidates = base.slice(lower - 1, upper).filter(
+      (point) => point.bufferedComplete && point.bufferedReturnPercent !== null,
     );
-    return finish({
-      mode: "commodity",
-      league,
-      refreshId,
-      itemName: hit.text,
-      matrix: state.matrix,
-      itemRows: rows,
-      ratesAgeMs,
-      verdict,
-      liquidPair,
-      perCurrency,
-      exaltedPrices: state.exaltedPrices,
+    if (!candidates.length) continue;
+    const best = candidates.reduce((current, candidate) =>
+      (candidate.bufferedReturnPercent as number) >
+      (current.bufferedReturnPercent as number)
+        ? candidate
+        : current,
+    );
+    best.budgetBest = true;
+  }
+  return base;
+}
+
+function sideItem(side: PairSide | undefined): ExchangeItem | null {
+  if (!side?.ApiId) return null;
+  const name = side.Text || side.ItemMetadata?.name;
+  if (!name) return null;
+  const iconUrl = side.IconUrl || side.ItemMetadata?.icon;
+  return {
+    apiId: side.ApiId,
+    name,
+    category: side.CategoryApiId ?? "",
+    isCurrency: isCurrencyCategory(side.CategoryApiId),
+    ...(iconUrl ? { iconUrl } : {}),
+  };
+}
+
+export function buildRateBook(
+  raw: unknown,
+  meta: {
+    league?: string;
+    epoch?: string;
+    snapshotId?: number;
+    fetchedAt?: number;
+    degraded?: boolean;
+  } = {},
+): RateBook {
+  const catalog = new Map<string, ExchangeItem>();
+  const rates: RateBook["rates"] = new Map();
+  for (const pair of pairsOf(raw)) {
+    const one = sideItem(pair.CurrencyOne);
+    const two = sideItem(pair.CurrencyTwo);
+    if (one) catalog.set(one.apiId, one);
+    if (two) catalog.set(two.apiId, two);
+    if (!one || !two || !one.isCurrency || !two.isCurrency) {
+      continue;
+    }
+    const oneVolume = Number(pair.CurrencyOneData?.VolumeTraded ?? 0);
+    const twoVolume = Number(pair.CurrencyTwoData?.VolumeTraded ?? 0);
+    if (
+      !Number.isFinite(oneVolume) ||
+      !Number.isFinite(twoVolume) ||
+      !(oneVolume > 0) ||
+      !(twoVolume > 0)
+    ) continue;
+    const liquidityRaw = Number(pair.Volume ?? 0);
+    const liquidity = Number.isFinite(liquidityRaw) && liquidityRaw >= 0
+      ? liquidityRaw
+      : 0;
+    const oneToTwo = twoVolume / oneVolume;
+    const current = rates.get(pairKey(one.apiId, two.apiId));
+    if (!current || liquidity > current.liquidity) {
+      const confidence = scoutConfidence(oneVolume, twoVolume, liquidity);
+      rates.set(pairKey(one.apiId, two.apiId), {
+        rate: oneToTwo,
+        liquidity,
+        fromVolume: oneVolume,
+        toVolume: twoVolume,
+        confidence,
+      });
+      rates.set(pairKey(two.apiId, one.apiId), {
+        rate: 1 / oneToTwo,
+        liquidity,
+        fromVolume: twoVolume,
+        toVolume: oneVolume,
+        confidence,
+      });
+    }
+  }
+  return {
+    league: meta.league ?? "Standard",
+    epoch: meta.epoch,
+    snapshotId: meta.snapshotId,
+    fetchedAt: meta.fetchedAt ?? Date.now(),
+    catalog,
+    rates,
+    degraded: meta.degraded ?? false,
+  };
+}
+
+function editDistance(a: string, b: string): number {
+  const previous = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let diagonal = previous[0];
+    previous[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const old = previous[j];
+      previous[j] = Math.min(
+        previous[j] + 1,
+        previous[j - 1] + 1,
+        diagonal + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+      diagonal = old;
+    }
+  }
+  return previous[b.length];
+}
+
+function nameScore(raw: string, candidate: string): number {
+  const a = normName(raw);
+  const b = normName(candidate);
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  return 1 - editDistance(a, b) / Math.max(a.length, b.length);
+}
+
+function rankedExchangeItems(
+  rawName: string,
+  catalog: Map<string, ExchangeItem>,
+): { item: ExchangeItem; score: number }[] {
+  return [...catalog.values()]
+    .map((item) => ({ item, score: nameScore(rawName, item.name) }))
+    .sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name));
+}
+
+export function resolveExchangeItem(
+  rawName: string,
+  catalog: Map<string, ExchangeItem>,
+): ExchangeItem {
+  const ranked = rankedExchangeItems(rawName, catalog);
+  const best = ranked[0];
+  const second = ranked[1];
+  if (!best || best.score < 0.72 || (best.score < 1 && second && best.score - second.score < 0.06)) {
+    throw new Error(`ambiguous Currency Exchange item: ${rawName || "unreadable"}`);
+  }
+  return best.item;
+}
+
+function observedExchangeItem(
+  rawName: string,
+  catalog: Map<string, ExchangeItem>,
+): ExchangeItem {
+  const ranked = rankedExchangeItems(rawName, catalog);
+  // A plausible catalog match that failed only on margin remains ambiguous.
+  // Never turn it into a second identity for an existing exchange item.
+  if ((ranked[0]?.score ?? 0) >= 0.72) {
+    throw new Error(`ambiguous Currency Exchange item: ${rawName || "unreadable"}`);
+  }
+  const name = rawName
+    .normalize("NFKD")
+    .replace(/[^\x20-\x7e]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^[^a-z0-9]+/i, "")
+    .replace(/[^a-z0-9]+$/i, "");
+  const normalized = normName(name);
+  const words = normalized.split(" ").filter(Boolean);
+  if (
+    normalized.length < 8 ||
+    !words.some((word) => word.length >= 4) ||
+    (words.length === 1 && normalized.length < 10)
+  ) {
+    throw new Error(`ambiguous Currency Exchange item: ${rawName || "unreadable"}`);
+  }
+  return {
+    apiId: `observed:${normalized.replace(/ /g, "-")}`,
+    name,
+    category: "observed-exchange",
+    isCurrency: false,
+  };
+}
+
+function catalogWithKnownItems(
+  book: RateBook,
+  knownItems: ExchangeItem[] | undefined,
+): RateBook {
+  if (!knownItems?.length) return book;
+  const catalog = new Map(book.catalog);
+  for (const raw of knownItems) {
+    const apiId = typeof raw?.apiId === "string" ? raw.apiId.trim() : "";
+    const name = typeof raw?.name === "string" ? raw.name.trim() : "";
+    if (!apiId || !name) continue;
+    catalog.set(apiId, {
+      apiId,
+      name,
+      category: typeof raw.category === "string" ? raw.category : "",
+      isCurrency: isCurrencyCategory(raw.category),
+      ...(typeof raw.iconUrl === "string" && raw.iconUrl
+        ? { iconUrl: raw.iconUrl }
+        : {}),
+    });
+  }
+  return { ...book, catalog };
+}
+
+export function resolveClosedSetItem(
+  rawName: string,
+  catalog: Map<string, ExchangeItem>,
+  allowedApiIds: string[],
+): { item: ExchangeItem; score: number; margin: number } {
+  const allowed = new Set(allowedApiIds.filter(Boolean));
+  const ranked = [...catalog.values()]
+    .filter((item) => allowed.has(item.apiId))
+    .map((item) => ({ item, score: nameScore(rawName, item.name) }))
+    .sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name));
+  const best = ranked[0];
+  const secondScore = ranked[1]?.score ?? 0;
+  const margin = (best?.score ?? 0) - secondScore;
+  if (!best || best.score < 0.82 || (best.score < 1 && margin < 0.10)) {
+    throw new Error(`live Currency Exchange item is ambiguous: ${rawName || "unreadable"}`);
+  }
+  return { item: best.item, score: best.score, margin };
+}
+
+export function resolveObservation(
+  input: {
+    wantText: string;
+    haveText: string;
+    wantAmount: number;
+    haveAmount: number;
+    observedAt?: number;
+  },
+  book: RateBook,
+  options: { observeUnknown?: boolean } = {},
+): PairObservation {
+  const wantAmount = Number(input.wantAmount);
+  const haveAmount = Number(input.haveAmount);
+  if (
+    !Number.isFinite(wantAmount) ||
+    !Number.isFinite(haveAmount) ||
+    !(wantAmount > 0) ||
+    !(haveAmount > 0)
+  ) {
+    throw new Error("Currency Exchange market ratio is invalid");
+  }
+  const resolve = options.observeUnknown
+    ? (rawName: string) => {
+        try {
+          return resolveExchangeItem(rawName, book.catalog);
+        } catch {
+          return observedExchangeItem(rawName, book.catalog);
+        }
+      }
+    : (rawName: string) => resolveExchangeItem(rawName, book.catalog);
+  const want = resolve(input.wantText);
+  const have = resolve(input.haveText);
+  if (want.apiId === have.apiId) throw new Error("Currency Exchange pair has identical items");
+  const observedAt = Number(input.observedAt ?? Date.now());
+  return {
+    id: `${have.apiId}->${want.apiId}`,
+    want,
+    have,
+    wantAmount,
+    haveAmount,
+    rate: wantAmount / haveAmount,
+    observedAt: Number.isFinite(observedAt) ? observedAt : Date.now(),
+  };
+}
+
+function catalogItem(book: RateBook, apiId: string): ExchangeItem {
+  return (
+    book.catalog.get(apiId) ?? {
+      apiId,
+      name: apiId,
+      category: "currency",
+      isCurrency: true,
+    }
+  );
+}
+
+function snapshotTimeMs(book: RateBook): number {
+  if (book.epoch) {
+    const numeric = Number(book.epoch);
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return numeric < 10_000_000_000 ? numeric * 1000 : numeric;
+    }
+    const parsed = Date.parse(book.epoch);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return book.fetchedAt;
+}
+
+export function analyzeLoops(
+  targetApiId: string,
+  observations: PairObservation[],
+  book: RateBook,
+  options: {
+    now?: number;
+    minPercent?: number;
+    captureMaxAgeMs?: number;
+    safetyBufferBps?: number;
+    executionConcessionBps?: number;
+  } = {},
+): ArbAnalysis {
+  const now = options.now ?? Date.now();
+  const minPercent = options.minPercent ?? DEFAULT_MIN_PERCENT;
+  const maxAge = options.captureMaxAgeMs ?? DEFAULT_CAPTURE_MAX_AGE_MS;
+  const bufferBps = safetyBufferBps(options.safetyBufferBps);
+  const concessionBps = executionConcessionBps(
+    options.executionConcessionBps,
+  );
+  const concession = rational(BigInt(10_000 - concessionBps), 10_000n);
+  const ratesAgeMs = Math.max(0, now - snapshotTimeMs(book));
+  const ratesStatus: ArbAnalysis["ratesStatus"] = book.degraded
+    ? "degraded"
+    : ratesAgeMs > SCOUT_MAX_AGE_MS
+      ? "stale"
+      : "fresh";
+  const target = observations
+    .flatMap((observation) => [observation.want, observation.have])
+    .find((item) => item.apiId === targetApiId) ?? catalogItem(book, targetApiId);
+  type GraphEdge = LoopLeg & { observationId?: string };
+  const captures: CaptureView[] = [];
+  const bridges = new Map<string, BridgeCaptureView>();
+  const exactTargetEdges = new Map<string, GraphEdge>();
+  const exactBridgeEdges = new Map<string, GraphEdge>();
+  const capturedCurrencies = new Map<string, ExchangeItem>();
+  const unavailable = new Set<string>();
+
+  const keepNewest = (edges: Map<string, GraphEdge>, edge: GraphEdge): void => {
+    const key = pairKey(edge.from.apiId, edge.to.apiId);
+    const current = edges.get(key);
+    if (!current || Number(edge.observedAt ?? 0) >= Number(current.observedAt ?? 0)) {
+      edges.set(key, edge);
+    }
+  };
+
+  for (const observation of observations) {
+    let role: CaptureView["role"] | null = null;
+    let quote: ExchangeItem | null = null;
+    if (observation.have.apiId === targetApiId) {
+      role = "sell";
+      quote = observation.want;
+    } else if (observation.want.apiId === targetApiId) {
+      role = "buy";
+      quote = observation.have;
+    }
+    if (!role || !quote) continue;
+    if (!quote.isCurrency) {
+      unavailable.add(`${quote.name} is not a supported bridge currency`);
+      continue;
+    }
+    captures.push({
+      ...observation,
+      role,
+      quote,
+      stale: now - observation.observedAt > maxAge,
+      validUntil: observation.observedAt + maxAge,
+    });
+    capturedCurrencies.set(quote.apiId, quote);
+    keepNewest(exactTargetEdges, {
+      from: observation.have,
+      to: observation.want,
+      rate: observation.rate,
+      source: "capture",
+      observedAt: observation.observedAt,
+      inputAmount: observation.haveAmount,
+      outputAmount: observation.wantAmount,
+      observationId: observation.id,
     });
   }
 
-  // Not a bulk commodity: treat as a listed item (unique/equipment) and
-  // normalize live listings per ask currency in stage 2.
-  return finish({
-    mode: "listings-pending",
-    league,
-    refreshId,
-    itemName,
-    note: "fetching live listings…",
-    matrix: state.matrix,
-    itemRows: [],
+  for (const observation of observations) {
+    const haveId = observation.have.apiId;
+    const wantId = observation.want.apiId;
+    if (
+      !observation.have.isCurrency ||
+      !observation.want.isCurrency ||
+      !capturedCurrencies.has(haveId) ||
+      !capturedCurrencies.has(wantId) ||
+      haveId === wantId
+    ) {
+      continue;
+    }
+    const key = pairKey(haveId, wantId);
+    const current = bridges.get(key);
+    if (!current || observation.observedAt >= current.observedAt) {
+      bridges.set(key, {
+        ...observation,
+        stale: now - observation.observedAt > maxAge,
+        validUntil: observation.observedAt + maxAge,
+      });
+    }
+    keepNewest(exactBridgeEdges, {
+      from: observation.have,
+      to: observation.want,
+      rate: observation.rate,
+      source: "capture-bridge",
+      observedAt: observation.observedAt,
+      inputAmount: observation.haveAmount,
+      outputAmount: observation.wantAmount,
+      observationId: observation.id,
+    });
+  }
+
+  const currencies = [...capturedCurrencies.values()].sort((a, b) =>
+    a.apiId.localeCompare(b.apiId),
+  );
+  const targetEdge = (from: ExchangeItem, to: ExchangeItem): GraphEdge | undefined => {
+    const key = pairKey(from.apiId, to.apiId);
+    return exactTargetEdges.get(key);
+  };
+  const verificationNeeded = new Map<string, VerificationNeed>();
+  const noteVerification = (leg: LoopLeg): void => {
+    if (leg.source === "poe2scout") {
+      verificationNeeded.set(pairKey(leg.from.apiId, leg.to.apiId), {
+        from: leg.from,
+        to: leg.to,
+        hotkey: "Alt+A",
+        reason: "poe2scout",
+      });
+    }
+  };
+  const loops: ArbLoop[] = [];
+  for (const first of currencies) {
+    const targetToFirst = targetEdge(target, first);
+    if (!targetToFirst) {
+      unavailable.add(`${target.name} → ${first.name}`);
+      continue;
+    }
+    for (const second of currencies) {
+      if (first.apiId === second.apiId) continue;
+      const bridgeKey = pairKey(first.apiId, second.apiId);
+      const capturedBridge = exactBridgeEdges.get(bridgeKey);
+      const estimatedBridge = ratesStatus === "fresh"
+        ? book.rates.get(pairKey(first.apiId, second.apiId))
+        : undefined;
+      let bridgeLeg: LoopLeg | null = null;
+      if (capturedBridge) {
+        bridgeLeg = capturedBridge;
+      } else if (estimatedBridge) {
+        bridgeLeg = {
+          from: first,
+          to: second,
+          rate: estimatedBridge.rate,
+          source: "poe2scout",
+          scoutEvidence: {
+            fromVolume: estimatedBridge.fromVolume,
+            toVolume: estimatedBridge.toVolume,
+            liquidityExalted: estimatedBridge.liquidity,
+            confidence: estimatedBridge.confidence,
+          },
+        };
+      } else {
+        unavailable.add(`${first.name} → ${second.name}`);
+        continue;
+      }
+      const secondToTarget = targetEdge(second, target);
+      if (!secondToTarget) {
+        unavailable.add(`${second.name} → ${target.name}`);
+        continue;
+      }
+      const rawLegs: LoopLeg[] = [
+        targetToFirst,
+        bridgeLeg,
+        secondToTarget,
+      ];
+      const canonicalRates = rawLegs.map(canonicalLegRate);
+      if (canonicalRates.some((rate) => rate === null)) continue;
+      const rates = canonicalRates as Rational[];
+      const legs = rawLegs.map((leg, index) => ({
+        ...leg,
+        rate: rationalNumber(rates[index]),
+        executionRate: rationalNumber(multiply(rates[index], concession)),
+      }));
+      let nominalRate = rational(1n, 1n);
+      for (const rate of rates) nominalRate = multiply(nominalRate, rate);
+      let executionRate = nominalRate;
+      for (let index = 0; index < legs.length; index += 1) {
+        executionRate = multiply(executionRate, concession);
+      }
+      const totalStress = rational(BigInt(10_000 - bufferBps), 10_000n);
+      const bufferedRate = multiply(executionRate, totalStress);
+      const multiplier = rationalNumber(nominalRate);
+      const executionMultiplier = rationalNumber(executionRate);
+      const bufferedMultiplier = rationalNumber(bufferedRate);
+      if (!(multiplier > 0) || !Number.isFinite(multiplier)) continue;
+      const liveTimes = legs
+        .filter((leg) => leg.source !== "poe2scout")
+        .map((leg) => Number(leg.observedAt ?? 0));
+      const validUntil = liveTimes.length
+        ? Math.min(...liveTimes.map((observedAt) => observedAt + maxAge))
+        : undefined;
+      const stale = validUntil !== undefined && now > validUntil;
+      const status: ArbLoop["status"] = legs.every(
+        (leg) => leg.source === "capture" || leg.source === "capture-bridge",
+      )
+        ? "verified"
+        : "estimate";
+      const estimateConfidence = status === "estimate"
+        ? legs.some(
+            (leg) =>
+              leg.source === "poe2scout" &&
+              leg.scoutEvidence?.confidence === "thin",
+          )
+          ? "thin"
+          : "reliable"
+        : undefined;
+      const path = [target, first, second, target];
+      const percent = (multiplier - 1) * 100;
+      const executionPercent = (executionMultiplier - 1) * 100;
+      const bufferedPercent = (bufferedMultiplier - 1) * 100;
+      const outcomes = quantityOutcomes(
+        rates,
+        concessionBps,
+        bufferBps,
+        status,
+        stale,
+        minPercent,
+      );
+      for (const leg of legs) noteVerification(leg);
+      loops.push({
+        id: path.map((item) => item.apiId).join("->"),
+        path,
+        legs,
+        multiplier,
+        percent,
+        nominalMultiplier: multiplier,
+        nominalPercent: percent,
+        executionMultiplier,
+        executionPercent,
+        bufferedMultiplier,
+        bufferedPercent,
+        status,
+        ...(estimateConfidence ? { estimateConfidence } : {}),
+        ...(validUntil !== undefined ? { validUntil } : {}),
+        stale,
+        actionable: outcomes.some((outcome) => outcome.actionable),
+        quantityOutcomes: outcomes,
+      });
+    }
+  }
+
+  loops.sort(
+    (a, b) =>
+      Number(b.status === "verified") - Number(a.status === "verified") ||
+      Number(b.estimateConfidence === "reliable") -
+        Number(a.estimateConfidence === "reliable") ||
+      b.bufferedPercent - a.bufferedPercent ||
+      a.id.localeCompare(b.id),
+  );
+  const bestVerifiedLoop = loops.find(
+    (loop) => loop.status === "verified" && !loop.stale,
+  );
+  const bestCandidateLoop = loops.find(
+    (loop) =>
+      loop.status === "estimate" &&
+      loop.estimateConfidence === "reliable" &&
+      !loop.stale,
+  );
+  return {
+    target,
+    captures: captures.sort((a, b) => b.observedAt - a.observedAt),
+    bridges: [...bridges.values()].sort((a, b) => b.observedAt - a.observedAt),
+    loops,
+    ...(bestVerifiedLoop ? { bestVerifiedLoop } : {}),
+    ...(bestCandidateLoop ? { bestCandidateLoop } : {}),
+    loopsEvaluated: loops.length,
+    capturedCurrencyCount: currencies.length,
+    unavailable: [...unavailable].sort(),
+    verificationNeeded: [...verificationNeeded.values()].sort((a, b) =>
+      pairKey(a.from.apiId, a.to.apiId).localeCompare(pairKey(b.from.apiId, b.to.apiId)),
+    ),
+    ratesEpoch: book.epoch,
+    ...(book.snapshotId ? { ratesSnapshotId: book.snapshotId } : {}),
+    ratesFetchedAt: book.fetchedAt,
     ratesAgeMs,
+    ratesStatus,
+    safetyBufferBps: bufferBps,
+    perLegSafetyBufferBps:
+      (1 - rationalNumber(perLegStress(bufferBps, 3))) * 10_000,
+    executionConcessionBps: concessionBps,
+    executionConcessionLoopPercent:
+      (1 - rationalNumber(multiply(multiply(concession, concession), concession))) * 100,
+    analyzedAt: now,
+  };
+}
+
+async function rateBook(
+  league: string,
+  options: { force?: boolean; reuse?: boolean } = {},
+): Promise<RateBook> {
+  const cached = cachedBooks.get(league);
+  if (options.reuse && cached) return cached;
+  if (!options.force && cached) {
+    const epoch = await exchangeSnapshotEpoch(league).catch(() => null);
+    if (epoch && cached.epoch === epoch) return cached;
+    if (!epoch) return { ...cached, degraded: true };
+  }
+  try {
+    const snapshot = await exchangePairSnapshot(league, { force: true });
+    const book = buildRateBook(snapshot.pairs, {
+      league,
+      epoch: snapshot.epoch,
+      snapshotId: snapshot.snapshotId,
+      fetchedAt: snapshot.fetchedAt,
+      degraded: false,
+    });
+    cachedBooks.set(league, book);
+    return book;
+  } catch (error) {
+    if (cached) return { ...cached, degraded: true };
+    throw error;
+  }
+}
+
+export async function arbPair(input: {
+  league: string;
+  wantText: string;
+  haveText: string;
+  wantAmount: number;
+  haveAmount: number;
+  observedAt?: number;
+  forceRates?: boolean;
+  knownItems?: ExchangeItem[];
+}): Promise<{ observation: PairObservation; ratesEpoch?: string; ratesFetchedAt: number }> {
+  const baseBook = await rateBook(input.league, { force: input.forceRates });
+  const book = catalogWithKnownItems(baseBook, input.knownItems);
+  return {
+    observation: resolveObservation(input, book, { observeUnknown: true }),
+    ratesEpoch: book.epoch,
+    ratesFetchedAt: book.fetchedAt,
+  };
+}
+
+export function arbResolveLive(input: {
+  league: string;
+  allowedApiIds: string[];
+  wantText: string;
+  haveText: string;
+  wantAmount: number;
+  haveAmount: number;
+  observedAt?: number;
+  knownItems?: ExchangeItem[];
+}): {
+  observation: PairObservation;
+  wantScore: number;
+  haveScore: number;
+  wantMargin: number;
+  haveMargin: number;
+} {
+  const baseBook = cachedBooks.get(input.league);
+  if (!baseBook) {
+    throw new Error("live arbitrage catalog is unavailable; recalculate first");
+  }
+  const book = catalogWithKnownItems(baseBook, input.knownItems);
+  const want = resolveClosedSetItem(input.wantText, book.catalog, input.allowedApiIds);
+  const have = resolveClosedSetItem(input.haveText, book.catalog, input.allowedApiIds);
+  const wantAmount = Number(input.wantAmount);
+  const haveAmount = Number(input.haveAmount);
+  if (
+    !Number.isFinite(wantAmount) ||
+    !Number.isFinite(haveAmount) ||
+    !(wantAmount > 0) ||
+    !(haveAmount > 0)
+  ) {
+    throw new Error("Currency Exchange market ratio is invalid");
+  }
+  if (want.item.apiId === have.item.apiId) {
+    throw new Error("Currency Exchange pair has identical items");
+  }
+  const observedAt = Number(input.observedAt ?? Date.now());
+  return {
+    observation: {
+      id: `${have.item.apiId}->${want.item.apiId}`,
+      want: want.item,
+      have: have.item,
+      wantAmount,
+      haveAmount,
+      rate: wantAmount / haveAmount,
+      observedAt: Number.isFinite(observedAt) ? observedAt : Date.now(),
+    },
+    wantScore: want.score,
+    haveScore: have.score,
+    wantMargin: want.margin,
+    haveMargin: have.margin,
+  };
+}
+
+export async function arbAnalyze(input: {
+  league: string;
+  targetApiId: string;
+  observations: PairObservation[];
+  minPercent?: number;
+  captureMaxAgeMs?: number;
+  safetyBufferBps?: number;
+  executionConcessionBps?: number;
+  forceRates?: boolean;
+  reuseRates?: boolean;
+}): Promise<ArbAnalysis> {
+  const book = await rateBook(input.league, {
+    force: input.forceRates,
+    reuse: input.reuseRates,
+  });
+  return analyzeLoops(input.targetApiId, input.observations, book, {
+    minPercent: input.minPercent,
+    captureMaxAgeMs: input.captureMaxAgeMs,
+    safetyBufferBps: input.safetyBufferBps,
+    executionConcessionBps: input.executionConcessionBps,
   });
 }
 
-export { SCOUT_TTL_MS };
+export function _clearArbCache(): void {
+  cachedBooks.clear();
+}

@@ -18,6 +18,12 @@ DEFAULTS = {
     "account_name": "",
     "hotkey_price": "ALT+z",       # Ctrl+D's pass-through habits collided with game keys; Alt+Z is free
     "hotkey_arb": "ALT+s",         # currency arbitrage panel; Alt+S is free in-game
+    "hotkey_arb_add": "ALT+a",     # capture any session Currency Exchange pair
+    "hotkey_arb_monitor": "ALT+d",  # live validation of the selected loop
+    "arb_min_percent": 5.0,
+    "arb_safety_buffer_percent": 5.0,
+    "arb_execution_concession_percent": 5.0,
+    "arb_show_losing_candidates": False,
     "game_window_class": "steam_app_2694490",  # PoE2 under Proton/XWayland.
     "poesessid": "",  # paste from browser devtools (Cookie POESESSID). Grants
                       # account access — keep config.toml private (chmod 600).
@@ -48,6 +54,14 @@ class AppConfig(MutableMapping[str, Any]):
     account_name: str = DEFAULTS["account_name"]
     hotkey_price: str = DEFAULTS["hotkey_price"]
     hotkey_arb: str = DEFAULTS["hotkey_arb"]
+    hotkey_arb_add: str = DEFAULTS["hotkey_arb_add"]
+    hotkey_arb_monitor: str = DEFAULTS["hotkey_arb_monitor"]
+    arb_min_percent: float = DEFAULTS["arb_min_percent"]
+    arb_safety_buffer_percent: float = DEFAULTS["arb_safety_buffer_percent"]
+    arb_execution_concession_percent: float = DEFAULTS[
+        "arb_execution_concession_percent"
+    ]
+    arb_show_losing_candidates: bool = DEFAULTS["arb_show_losing_candidates"]
     game_window_class: str = DEFAULTS["game_window_class"]
     poesessid: str = DEFAULTS["poesessid"]
     unique_min_exalted: float = DEFAULTS["unique_min_exalted"]
@@ -59,6 +73,12 @@ class AppConfig(MutableMapping[str, Any]):
 
     @classmethod
     def from_mapping(cls, values: dict[str, Any]) -> "AppConfig":
+        values = dict(values)
+        legacy_bridge = values.pop("hotkey_arb_bridge", None)
+        if legacy_bridge is not None:
+            # The former one-shot Alt+D action is now the monitor action. Its
+            # configured key wins over the removed Alt+F monitor binding.
+            values["hotkey_arb_monitor"] = legacy_bridge
         merged = dict(DEFAULTS)
         merged.update(values)
         string_fields = (
@@ -66,6 +86,8 @@ class AppConfig(MutableMapping[str, Any]):
             "account_name",
             "hotkey_price",
             "hotkey_arb",
+            "hotkey_arb_add",
+            "hotkey_arb_monitor",
             "game_window_class",
             "poesessid",
             "ocr_device",
@@ -84,13 +106,31 @@ class AppConfig(MutableMapping[str, Any]):
         for name in ("ocr_model_size", "ocr_quantity_model_size"):
             if merged[name] not in OCR_MODEL_SIZE_VALUES:
                 raise ValueError(f"{name} must be auto, small, or medium")
-        for name in ("unique_min_exalted", "unique_scan_min_price"):
+        if not isinstance(merged["arb_show_losing_candidates"], bool):
+            raise ValueError("arb_show_losing_candidates must be a boolean")
+        for name in (
+            "unique_min_exalted",
+            "unique_scan_min_price",
+            "arb_min_percent",
+            "arb_safety_buffer_percent",
+            "arb_execution_concession_percent",
+        ):
             value = merged[name]
             if isinstance(value, bool) or not isinstance(value, (int, float)):
                 raise ValueError(f"{name} must be a number")
             merged[name] = float(value)
             if merged[name] < 0:
                 raise ValueError(f"{name} must be non-negative")
+        if merged["arb_safety_buffer_percent"] > 15:
+            raise ValueError("arb_safety_buffer_percent must not exceed 15")
+        if merged["arb_execution_concession_percent"] > 15:
+            raise ValueError("arb_execution_concession_percent must not exceed 15")
+        merged["arb_safety_buffer_percent"] = (
+            round(merged["arb_safety_buffer_percent"] * 2) / 2
+        )
+        merged["arb_execution_concession_percent"] = (
+            round(merged["arb_execution_concession_percent"] * 2) / 2
+        )
         known = set(DEFAULTS)
         extras = {key: value for key, value in merged.items() if key not in known}
         return cls(
@@ -149,11 +189,29 @@ league = "{league}"
 # Your account name (marks your own listings).
 account_name = "{account_name}"
 
-# Price-check hotkey. Screen-scan is ALT+x. Currency arbitrage is ALT+s.
+# Price-check hotkey. Screen-scan is ALT+x; arbitrage starts with ALT+s.
 hotkey_price = "{hotkey_price}"
 
 # Currency-arbitrage hotkey.
 hotkey_arb = "{hotkey_arb}"
+
+# Capture any visible pair belonging to the active arbitrage session.
+hotkey_arb_add = "{hotkey_arb_add}"
+
+# Start or stop live screen validation for the selected arbitrage loop.
+hotkey_arb_monitor = "{hotkey_arb_monitor}"
+
+# Minimum buffered whole-unit loop percentage shown as actionable.
+arb_min_percent = {arb_min_percent}
+
+# Total adverse price movement distributed across the three arbitrage legs.
+arb_safety_buffer_percent = {arb_safety_buffer_percent}
+
+# Intentional output concession on each leg to favor faster fills.
+arb_execution_concession_percent = {arb_execution_concession_percent}
+
+# Include non-positive buffered arbitrage candidates in the panel.
+arb_show_losing_candidates = false
 
 # Window class of the game.
 game_window_class = "{game_window_class}"
@@ -243,8 +301,16 @@ def _atomic_write(path: pathlib.Path, text: str) -> None:
         pass
 
 
-def save_values(p: pathlib.Path | None, values: dict[str, str]) -> None:
-    """Persist selected scalar string values without rewriting user comments."""
+def _toml_value(value: Any) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return str(value)
+    return _toml_string(str(value))
+
+
+def save_values(p: pathlib.Path | None, values: dict[str, Any]) -> None:
+    """Persist selected scalar values without rewriting user comments."""
 
     if p is None:
         p = default_path()
@@ -265,9 +331,9 @@ def save_values(p: pathlib.Path | None, values: dict[str, str]) -> None:
             key = match.group(2)
             if key not in remaining:
                 continue
-            lines[i] = f"{match.group(1)}{_toml_string(remaining.pop(key))}{match.group(4)}"
+            lines[i] = f"{match.group(1)}{_toml_value(remaining.pop(key))}{match.group(4)}"
         for key, value in remaining.items():
-            lines.append(f"{key} = {_toml_string(value)}\n")
+            lines.append(f"{key} = {_toml_value(value)}\n")
         _atomic_write(p, "".join(lines))
 
 
@@ -323,4 +389,28 @@ def load(p: pathlib.Path | None = None) -> AppConfig:
             os.chmod(p, 0o600)
         except OSError:
             pass
+    if "hotkey_arb_bridge" in values:
+        _persist_arb_hotkey_migration(p, str(cfg["hotkey_arb_monitor"]))
     return cfg
+
+
+def _persist_arb_hotkey_migration(p: pathlib.Path, monitor_hotkey: str) -> None:
+    """Collapse the old Alt+D/Alt+F pair without rewriting unrelated config."""
+    lines = p.read_text().splitlines(keepends=True)
+    migrated: list[str] = []
+    found_monitor = False
+    for line in lines:
+        match = re.match(r"(\s*([A-Za-z0-9_]+)\s*=\s*)(.*?)(\s*(?:#.*)?\n?)$", line)
+        key = match.group(2) if match else ""
+        if key == "hotkey_arb_bridge":
+            continue
+        if key == "hotkey_arb_monitor":
+            migrated.append(
+                f"{match.group(1)}{_toml_value(monitor_hotkey)}{match.group(4)}"
+            )
+            found_monitor = True
+        else:
+            migrated.append(line)
+    if not found_monitor:
+        migrated.append(f"hotkey_arb_monitor = {_toml_value(monitor_hotkey)}\n")
+    _atomic_write(p, "".join(migrated))

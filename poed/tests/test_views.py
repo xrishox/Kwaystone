@@ -47,7 +47,7 @@ def test_match_value_label_shows_stack_total():
     assert match_badge_price_label(match) == "2 ex"
 
 
-def test_match_value_label_shows_native_market_quote_with_ex_conversion():
+def test_match_value_label_keeps_aggregate_primary_and_marks_hourly_context():
     match = {
         "price": 7.1,
         "unitPrice": 7.1,
@@ -56,10 +56,9 @@ def test_match_value_label_shows_native_market_quote_with_ex_conversion():
         "quoteAmount": 1 / 3,
         "quoteCurrency": "chaos",
         "quoteCurrencyText": "Chaos Orb",
-        "quoteAvailable": True,
     }
 
-    assert match_value_label(match) == "0.33 c (~7.1 ex)"
+    assert match_value_label(match) == "7.1 ex (~0.33 c last hour)"
     assert match_badge_price_label(match) == "7.1 ex"
 
 
@@ -72,10 +71,9 @@ def test_match_value_label_preserves_small_native_quote_precision():
         "quoteAmount": 0.0050466,
         "quoteCurrency": "divine",
         "quoteCurrencyText": "Divine Orb",
-        "quoteAvailable": True,
     }
 
-    assert match_value_label(match) == "0.005 div (~1 ex)"
+    assert match_value_label(match) == "1 ex (~0.005 div last hour)"
     assert match_badge_price_label(match) == "1 ex"
 
 
@@ -88,7 +86,6 @@ def test_match_badge_price_label_uses_exalted_for_grey_tier_even_with_tiny_div_q
         "quoteAmount": 0.0008,
         "quoteCurrency": "divine",
         "quoteCurrencyText": "Divine Orb",
-        "quoteAvailable": True,
         "exaltedPerDivine": 300,
     }
 
@@ -96,7 +93,7 @@ def test_match_badge_price_label_uses_exalted_for_grey_tier_even_with_tiny_div_q
     assert match_badge_price_label(match) == "0.25 ex"
 
 
-def test_match_value_label_marks_unavailable_market_and_converts_stack():
+def test_match_value_label_converts_stack_without_inventing_availability():
     match = {
         "price": 2.5,
         "unitPrice": 2.5,
@@ -106,10 +103,9 @@ def test_match_value_label_marks_unavailable_market_and_converts_stack():
         "quoteAmount": 2.5,
         "quoteCurrency": "exalted",
         "quoteCurrencyText": "Exalted Orb",
-        "quoteAvailable": False,
     }
 
-    assert match_value_label(match) == "2.5 ex (4x = 10 ex; no buyers)"
+    assert match_value_label(match) == "2.5 ex (4x = 10 ex) (~10 ex last hour)"
     assert match_badge_price_label(match) == "10 ex"
 
 
@@ -290,14 +286,12 @@ def test_low_confidence_prices_render_as_estimates():
         "quoteAmount": 545.74,
         "quoteCurrency": "divine",
         "quoteCurrencyText": "Divine Orb",
-        "quoteAvailable": True,
         "exaltedPerDivine": 726.0,
     }
     label = match_value_label(match)
     assert label.startswith("~")
     assert "?" in label
-    assert "illiquid" in label
+    assert "last hour" in label
 
     match["priceConfidence"] = "ok"
-    assert "illiquid" not in match_value_label(match)
     assert not match_value_label(match).startswith("~")

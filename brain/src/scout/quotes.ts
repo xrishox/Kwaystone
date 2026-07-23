@@ -1,10 +1,14 @@
+import {
+  MAJOR_CURRENCY_SET,
+  scoutConfidence,
+} from "./policy";
+
 export interface MarketQuote {
-  price: number;
   amount: number;
   currency: string;
   currencyText: string;
   liquidity: number;
-  buyerStock: number;
+  maxStock: number;
   itemVolume: number;
 }
 
@@ -26,8 +30,8 @@ function number(value: unknown): number | null {
 }
 
 /**
- * Select one liquid native-currency quote per item from a scout snapshot.
- * Executable pairs outrank dead pairs, then Exalted-equivalent volume wins.
+ * Select one well-supported major-currency quote per item from the completed
+ * exchange snapshot. These are historical context, never a live order book.
  */
 export function selectMarketQuotes(pairs: unknown): Map<string, MarketQuote> {
   const out = new Map<string, MarketQuote>();
@@ -51,47 +55,35 @@ export function selectMarketQuotes(pairs: unknown): Map<string, MarketQuote> {
     const currency = text(quote.ApiId);
     const itemVolume = number(itemData.VolumeTraded);
     const quoteVolume = number(quoteData.VolumeTraded);
-    const relativePrice = number(itemData.RelativePrice);
-    const price = item.ApiId === pair.BaseCurrencyApiId ? 1 : relativePrice;
     if (
       !apiId ||
       !currency ||
+      !MAJOR_CURRENCY_SET.has(currency) ||
       itemVolume === null ||
       itemVolume <= 0 ||
       quoteVolume === null ||
-      quoteVolume <= 0 ||
-      price === null ||
-      price <= 0
+      quoteVolume <= 0
     ) {
       return;
     }
 
     const liquidity = number(pair.Volume) ?? 0;
-    const buyerStock = number(quoteData.HighestStock) ?? 0;
+    if (scoutConfidence(itemVolume, quoteVolume, liquidity) !== "reliable") return;
     const candidate: MarketQuote = {
-      price,
       amount: quoteVolume / itemVolume,
       currency,
       currencyText: text(quote.Text) ?? currency,
       liquidity,
-      buyerStock,
+      maxStock: number(quoteData.HighestStock) ?? 0,
       itemVolume,
     };
     const current = out.get(apiId);
-    const candidateAvailable = candidate.buyerStock > 0;
-    const currentAvailable = (current?.buyerStock ?? 0) > 0;
     if (
       !current ||
-      (candidateAvailable && !currentAvailable) ||
+      candidate.liquidity > current.liquidity ||
       (
-        candidateAvailable === currentAvailable &&
-        (
-          candidate.liquidity > current.liquidity ||
-          (
-            candidate.liquidity === current.liquidity &&
-            candidate.itemVolume > current.itemVolume
-          )
-        )
+        candidate.liquidity === current.liquidity &&
+        candidate.itemVolume > current.itemVolume
       )
     ) {
       out.set(apiId, candidate);

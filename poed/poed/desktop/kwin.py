@@ -397,6 +397,13 @@ class KWinBackend:
             "arb-check": Shortcut(
                 "arb-check", "Currency arbitrage", cfg["hotkey_arb"]
             ),
+            "arb-add": Shortcut(
+                "arb-add", "Capture Currency Exchange pair", cfg["hotkey_arb_add"]
+            ),
+            "arb-bridge": Shortcut(
+                # Keep the portal id so existing Alt+D grants migrate silently.
+                "arb-bridge", "Monitor selected arbitrage loop", cfg["hotkey_arb_monitor"]
+            ),
             "panel-close": Shortcut(
                 "panel-close", "Close PoE2 overlay panel", "ESC"
             ),
@@ -412,6 +419,8 @@ class KWinBackend:
                 self._shortcuts["price-check"],
                 self._shortcuts["unique-scan"],
                 self._shortcuts["arb-check"],
+                self._shortcuts["arb-add"],
+                self._shortcuts["arb-bridge"],
             )
         ]
 

@@ -1,6 +1,6 @@
 import { SCOUT_TTL_MS } from "./poe2scout";
 
-export const DEFAULT_BACKGROUND_REFRESH_MS = Math.floor(SCOUT_TTL_MS * 0.8);
+export const DEFAULT_BACKGROUND_REFRESH_MS = SCOUT_TTL_MS;
 
 function refreshIntervalMs(): number {
   const configured = Number(process.env.WAYSTONE_BRAIN_REFRESH_MS);

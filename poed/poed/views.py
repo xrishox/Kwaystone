@@ -129,6 +129,9 @@ def match_value_label(match: dict, *, compact: bool = False) -> str:
     cur = _currency_short(match.get("priceCurrency", "exalted"))
     suffix = "?" if match.get("ambiguous") or low_confidence else ""
     prefix = "~" if low_confidence else ""
+    base = f"{prefix}{_value_amount(price)}{suffix}{sep}{cur}"
+    if stack > 1 and total is not None and total > price:
+        base = f"{base} ({stack}x = {_value_amount(total)}{suffix}{sep}{cur})"
     quote = match.get("quoteAmount")
     quote_currency = match.get("quoteCurrency")
     if isinstance(quote, (int, float)) and quote > 0 and quote_currency:
@@ -136,49 +139,19 @@ def match_value_label(match: dict, *, compact: bool = False) -> str:
             str(quote_currency),
             str(match.get("quoteCurrencyText") or quote_currency),
         )
-        quote_base = f"{prefix}{_quote_amount(quote)}{suffix}{sep}{qcur}"
-        available = match.get("quoteAvailable")
-        no_buyers = available is False
-        if stack > 1:
-            quote_total = quote * stack
-            ex_total = total if total is not None else price * stack
-            details = (
-                f"{stack}x = {_quote_amount(quote_total)}{suffix}{sep}{qcur}"
-            )
-            if qcur != cur:
-                details += f"; ~{_value_amount(ex_total)}{suffix}{sep}{cur}"
-            if no_buyers:
-                details += "; no buyers"
-            elif low_confidence:
-                details += "; illiquid"
-            return f"{quote_base} ({details})"
-        if qcur != cur:
-            details = f"~{_value_amount(price)}{suffix}{sep}{cur}"
-            if no_buyers:
-                details += "; no buyers"
-            elif low_confidence:
-                details += "; illiquid"
-            return f"{quote_base} ({details})"
-        if no_buyers:
-            return f"{quote_base} (no buyers)"
-        if low_confidence:
-            return f"{quote_base} (illiquid)"
-        return quote_base
-
-    base = f"{prefix}{_value_amount(price)}{suffix}{sep}{cur}"
-    if stack > 1 and total is not None and total > price:
-        return f"{base} ({stack}x = {_value_amount(total)}{suffix}{sep}{cur})"
+        amount = quote * stack if stack > 1 else quote
+        return f"{base} (~{_quote_amount(amount)}{sep}{qcur} last hour)"
     return base
 
 
 def match_badge_price_label(match: dict) -> str:
     """Compact on-screen badge value.
 
-    The scan panel can show detailed stack/conversion/no-buyer context. The
+    The scan panel can show detailed stack/conversion context. The
     badge over the item stays deterministic by value tier: grey/blue/red show
-    Exalted, orange shows Chaos, white shows Divine. A native quote in the
-    desired currency is used when present; otherwise the exalted-equivalent
-    value is converted with league exchange rates carried on the match.
+    Exalted, orange shows Chaos, white shows Divine. The exalted-equivalent
+    aggregate value is converted with league exchange rates carried on the
+    match; completed-hour native quotes never override it.
     """
 
     if match.get("markerOnly") or match.get("priceAvailable") is False:
@@ -186,19 +159,9 @@ def match_badge_price_label(match: dict) -> str:
     low_confidence = match.get("priceConfidence") == "low"
     suffix = "?" if match.get("ambiguous") or low_confidence else ""
     prefix = "~" if low_confidence else ""
-    try:
-        stack = int(match.get("stackSize") or 1)
-    except (TypeError, ValueError):
-        stack = 1
 
     value = match_total_value(match)
     target = _badge_target_currency(value)
-    quote = _numeric(match.get("quoteAmount"))
-    quote_currency = _currency_key(match.get("quoteCurrency"))
-    if quote is not None and quote > 0 and quote_currency == target:
-        amount = quote * stack if stack > 1 else quote
-        return f"{prefix}{_quote_amount(amount)}{suffix} {_currency_short(target)}"
-
     rate = _exalted_per(match, target)
     if rate is not None:
         return f"{prefix}{_quote_amount(value / rate)}{suffix} {_currency_short(target)}"

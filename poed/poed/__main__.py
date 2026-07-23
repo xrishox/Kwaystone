@@ -120,6 +120,17 @@ class App:
         threading.Thread(target=self.run_screen_scan, args=(gen, t0), daemon=True).start()
         return GLib.SOURCE_REMOVE
 
+    def _start_arb_capture(self, gen: int, action: str):
+        if gen != self.gen or gen == self.dismissed_gen:
+            self._end_in_flight(gen)
+            return GLib.SOURCE_REMOVE
+        threading.Thread(
+            target=self._run_arb_capture,
+            args=(gen, action),
+            daemon=True,
+        ).start()
+        return GLib.SOURCE_REMOVE
+
     def _deliver_screen_scan(self, gen, result, output, t0, timings=None, debug_dir=None,
                              frame_size=None):
         if gen != self.gen:
@@ -187,6 +198,12 @@ class App:
             return
         if self.scan_ui is None:
             return
+        if shortcut_id == "arb-bridge":
+            if not self.desktop.is_game_focused():
+                return
+            self.arb_check.sync_config(self.cfg)
+            self.arb_check.toggle_monitor()
+            return
         if self.in_flight_gen is not None:
             age = time.monotonic() - self.in_flight_since if self.in_flight_since else 0.0
             if age < 15.0:
@@ -198,17 +215,15 @@ class App:
                 return
             _LOG.warning("stale in-flight request reset after %.1fs", age)
             self._end_in_flight(self.in_flight_gen)
-        # Focus guard applies to price-check only: it injects Ctrl+C into the
-        # focused window. screen-scan just screenshots the monitor — requiring
-        # game FOCUS silently ate presses whenever the panel held focus (the
-        # timer instrumentation caught 3 presses -> 1 scan, 2026-06-11).
-        # The dynamic Alt+X bind already guarantees a game window exists.
+        # Clipboard price checks and Currency Exchange captures require game
+        # focus. Alt+X only needs the game window to exist because it captures
+        # the monitor without injecting input.
         if (
             shortcut_id != "unique-scan"
             and not self.desktop.is_game_focused()
         ):
             return
-        # New lookup supersedes any in-flight requery still in the brain.
+        # A new hotkey request supersedes older capture delivery.
         self.gen += 1
         self.dismissed_gen = None
         self._begin_in_flight()
@@ -238,17 +253,31 @@ class App:
                 GLib.timeout_add(120, self._start_screen_scan, self.gen, time.monotonic())
             else:
                 self._start_screen_scan(self.gen, time.monotonic())
-        else:
-            target = (
-                self._run_price_check
-                if shortcut_id == "price-check"
-                else self._run_arb_check
+        elif shortcut_id in {"arb-check", "arb-add"}:
+            # Currency Exchange reads the screen, so its own side panel must
+            # disappear for one compositor frame before capture. Always wait
+            # for the Alt modifier too: while held, the game can replace the
+            # headline ratio with its expanded market-detail overlay.
+            self.arb_check.sync_config(self.cfg)
+            self.arb_check.prepare_capture()
+            GLib.timeout_add(
+                120,
+                self._start_arb_capture,
+                self.gen,
+                {
+                    "arb-check": "start",
+                    "arb-add": "add",
+                }[shortcut_id],
             )
+        elif shortcut_id == "price-check":
             threading.Thread(
-                target=target,
+                target=self._run_price_check,
                 args=(self.gen,),
                 daemon=True,
             ).start()
+        else:
+            _LOG.warning("unknown shortcut ignored: %s", shortcut_id)
+            self._end_in_flight(self.gen)
 
     def _run_price_check(self, gen: int) -> None:
         try:
@@ -256,9 +285,12 @@ class App:
         finally:
             self._end_in_flight(gen)
 
-    def _run_arb_check(self, gen: int) -> None:
+    def _run_arb_capture(self, gen: int, action: str) -> None:
         try:
-            self.arb_check.run(gen, self._is_current_gen)
+            if action == "add":
+                self.arb_check.add(gen, self._is_current_gen)
+            else:
+                self.arb_check.start(gen, self._is_current_gen)
         finally:
             self._end_in_flight(gen)
 
@@ -647,6 +679,7 @@ class App:
         _LOG.info("exit: %s, quitting.", label)
         debug_io.flush(timeout=5.0)
         screen_scan.stop()
+        self.arb_check.stop()
         if self._shortcuts is not None:
             self._shortcuts.stop()
         self.desktop.stop()
@@ -700,6 +733,8 @@ def main():
         # otherwise the final manifest updates are lost with the daemon writer.
         debug_io.flush(timeout=5.0)
         screen_scan.stop()
+        if app_obj is not None:
+            app_obj.arb_check.stop()
         brain.stop()
         desktop.stop()
         if not os.environ.get("XDG_RUNTIME_DIR"):

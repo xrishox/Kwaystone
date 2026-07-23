@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { Http429, Scheduler } from "../src/scheduler";
+import { Http429, retryAfterMs, Scheduler } from "../src/scheduler";
 
 function tick(): Scheduler {
   // 1ms lane intervals: ordering is deterministic, wall-clock stays fast.
@@ -47,6 +47,39 @@ it("runs tasks in priority order, not arrival order", async () => {
   await Promise.all([slow, a, b]);
   // The first task starts immediately; the rest follow priority (2 before 5).
   expect(order).toEqual(["slow-first-priority", "mid-high-priority", "late-low-priority"]);
+});
+
+it("promotes a deduped queued task when an interactive caller joins", async () => {
+  const sched = tick();
+  const order: string[] = [];
+  let release!: () => void;
+  const blocker = sched.schedule("blocker", 0, "scout", async () => {
+    order.push("blocker");
+    await new Promise<void>((resolve) => { release = resolve; });
+  });
+  const background = sched.schedule("same", 50, "scout", async () => {
+    order.push("promoted");
+    return 1;
+  });
+  const middle = sched.schedule("middle", 10, "scout", async () => {
+    order.push("middle");
+  });
+  const interactive = sched.schedule("same", 0, "scout", async () => 2);
+  expect(interactive).toBe(background);
+  release();
+
+  await Promise.all([blocker, background, middle]);
+  expect(order).toEqual(["blocker", "promoted", "middle"]);
+});
+
+it("parses both numeric and HTTP-date Retry-After values", () => {
+  expect(retryAfterMs(new Headers({ "retry-after": "2.5" }))).toBe(2_500);
+  const now = Date.now();
+  const at = new Date(now + 5_000).toUTCString();
+  const delay = retryAfterMs(new Headers({ "retry-after": at }));
+  expect(delay).not.toBeNull();
+  expect(delay!).toBeGreaterThanOrEqual(3_900);
+  expect(delay!).toBeLessThanOrEqual(5_000);
 });
 
 it("429 pauses the lane and requeues the task at the front", async () => {

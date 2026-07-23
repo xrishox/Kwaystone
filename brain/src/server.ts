@@ -76,27 +76,47 @@ const handlers: Record<string, Handler> = {
     const { leagueList } = await import("./poe2scout");
     return leagueList({ force: req.force === true });
   },
-  arbquote: async (req) => {
-    const { arbQuote } = await import("./arbitrage");
-    return arbQuote({
-      clipboard: String(req.clipboard ?? ""),
+  arbpair: async (req) => {
+    const { arbPair } = await import("./arbitrage");
+    return arbPair({
       league: requestLeague(req),
-      accountName: String(req.accountName ?? process.env.POE2_ACCOUNT ?? ""),
-      sessionId: String(req.sessionId ?? process.env.POE2_SESSID ?? ""),
+      wantText: String(req.wantText ?? ""),
+      haveText: String(req.haveText ?? ""),
+      wantAmount: Number(req.wantAmount),
+      haveAmount: Number(req.haveAmount),
+      observedAt: Number(req.observedAt ?? Date.now()),
+      forceRates: req.forceRates === true,
+      knownItems: Array.isArray(req.knownItems) ? req.knownItems : [],
     });
   },
-  arbstate: async (req) => {
-    const { arbState } = await import("./arbitrage");
-    const refreshId = Number(req.refreshId ?? 0);
-    return (
-      arbState(refreshId) ?? {
-        refreshId,
-        done: true,
-        matrix: [],
-        itemRows: [],
-        missing: true,
-      }
-    );
+  arbresolvelive: async (req) => {
+    const { arbResolveLive } = await import("./arbitrage");
+    return arbResolveLive({
+      league: requestLeague(req),
+      allowedApiIds: Array.isArray(req.allowedApiIds)
+        ? req.allowedApiIds.map(String)
+        : [],
+      wantText: String(req.wantText ?? ""),
+      haveText: String(req.haveText ?? ""),
+      wantAmount: Number(req.wantAmount),
+      haveAmount: Number(req.haveAmount),
+      observedAt: Number(req.observedAt ?? Date.now()),
+      knownItems: Array.isArray(req.knownItems) ? req.knownItems : [],
+    });
+  },
+  arbanalyze: async (req) => {
+    const { arbAnalyze } = await import("./arbitrage");
+    return arbAnalyze({
+      league: requestLeague(req),
+      targetApiId: String(req.targetApiId ?? ""),
+      observations: Array.isArray(req.observations) ? req.observations : [],
+      minPercent: Number(req.minPercent ?? 5),
+      captureMaxAgeMs: Number(req.captureMaxAgeMs ?? 120_000),
+      safetyBufferBps: Number(req.safetyBufferBps ?? 500),
+      executionConcessionBps: Number(req.executionConcessionBps ?? 500),
+      forceRates: req.forceRates === true,
+      reuseRates: req.reuseRates === true,
+    });
   },
 };
 

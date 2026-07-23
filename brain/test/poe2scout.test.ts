@@ -9,11 +9,13 @@ vi.mock("../src/stubs/IPC", () => ({
 
 import {
   divinePrice,
+  exchangePairSnapshot,
   priceMap,
   priceMapDetailed,
   refreshPriceMap,
   refreshUniquePriceMap,
   scoutPrice,
+  snapshotPairsRaw,
   uniquePriceMap,
   uniquePriceMapDetailed,
   SCOUT_RETRY_TTL_MS,
@@ -21,7 +23,9 @@ import {
   _clearCache,
   _clearUniqueCache,
   _setRetryBaseMs,
+  _setScoutScheduler,
 } from "../src/poe2scout";
+import { Scheduler } from "../src/scheduler";
 
 const LEAGUE = "Runes of Aldur";
 
@@ -30,6 +34,17 @@ function json(body: unknown, status = 200): Response {
     status,
     headers: { "content-type": "application/json" },
   });
+}
+
+function snapshotPair(snapshotId: number, one = "chaos", two = "exalted") {
+  return {
+    CurrencyExchangeSnapshotId: snapshotId,
+    Volume: 20_000,
+    CurrencyOne: { ApiId: one, Text: one, CategoryApiId: "currency" },
+    CurrencyTwo: { ApiId: two, Text: two, CategoryApiId: "currency" },
+    CurrencyOneData: { VolumeTraded: 1_000, HighestStock: 10 },
+    CurrencyTwoData: { VolumeTraded: 200, HighestStock: 10 },
+  };
 }
 
 // A minimal poe2scout response set: a Leagues array, a Categories doc with a
@@ -76,6 +91,7 @@ beforeEach(() => {
   _clearCache();
   _clearUniqueCache();
   proxy.mockReset();
+  _setScoutScheduler(new Scheduler(Date.now, { scout: 0, ggg: 0 }));
   // Keep transient-failure retries fast in tests.
   _setRetryBaseMs(1);
 });
@@ -92,9 +108,9 @@ it("divinePrice: exact Value match", async () => {
   expect(await divinePrice("Runes of Aldur")).toBe(100.2);
 });
 
-it("divinePrice: IsCurrent fallback when no exact match", async () => {
+it("divinePrice: never falls back to a different current league", async () => {
   wireHappyPath();
-  expect(await divinePrice("Nonexistent League")).toBe(100.2);
+  expect(await divinePrice("Nonexistent League")).toBeNull();
 });
 
 it("divinePrice: null when the leagues fetch fails", async () => {
@@ -102,6 +118,75 @@ it("divinePrice: null when the leagues fetch fails", async () => {
     throw new Error("network down");
   });
   expect(await divinePrice(LEAGUE)).toBeNull();
+});
+
+it("uses the canonical API host and isolates caches by league", async () => {
+  proxy.mockImplementation(async (url: string) => {
+    const u = String(url);
+    expect(u.startsWith("api.poe2scout.com/poe2/")).toBe(true);
+    if (u.includes("/Items/Categories")) {
+      return json({ CurrencyCategories: [{ ApiId: "currency" }], UniqueCategories: [] });
+    }
+    if (u.endsWith("/SnapshotPairs")) return json([]);
+    if (u.includes("/Currencies/ByCategory")) {
+      const price = u.includes("League%20A") ? 11 : 22;
+      return json({
+        CurrentPage: 1,
+        Pages: 1,
+        Total: 1,
+        Items: [{ ApiId: "chaos", CurrentPrice: price, CurrentQuantity: 100 }],
+      });
+    }
+    if (u.endsWith("/Leagues")) {
+      return json([
+        { Value: "League A", DivinePrice: 100 },
+        { Value: "League B", DivinePrice: 200 },
+      ]);
+    }
+    throw new Error(`unexpected url: ${u}`);
+  });
+
+  const a = await priceMap("League A");
+  const b = await priceMap("League B");
+  const calls = proxy.mock.calls.length;
+  expect(a.get("chaos")?.price).toBe(11);
+  expect(b.get("chaos")?.price).toBe(22);
+  expect(await priceMap("League A")).toBe(a);
+  expect(proxy.mock.calls.length).toBe(calls);
+});
+
+it("rejects malformed or mixed SnapshotPairs instead of caching partial truth", async () => {
+  proxy.mockResolvedValueOnce(json([
+    snapshotPair(10),
+    snapshotPair(11, "divine", "annul"),
+  ]));
+  await expect(snapshotPairsRaw(LEAGUE, { force: true })).rejects.toThrow(
+    /mixes snapshot ids/,
+  );
+
+  proxy.mockResolvedValueOnce(json([{ CurrencyExchangeSnapshotId: 12 }]));
+  await expect(snapshotPairsRaw(LEAGUE, { force: true })).rejects.toThrow(
+    /malformed row/,
+  );
+});
+
+it("retries a rollover and returns one internally consistent exchange snapshot", async () => {
+  const epochs = [100, 101, 101, 101];
+  let pairPull = 0;
+  proxy.mockImplementation(async (url: string) => {
+    const u = String(url);
+    if (u.endsWith("/ExchangeSnapshot")) return json({ Epoch: epochs.shift() });
+    if (u.endsWith("/SnapshotPairs")) {
+      pairPull += 1;
+      return json([snapshotPair(pairPull === 1 ? 20 : 21)]);
+    }
+    throw new Error(`unexpected url: ${u}`);
+  });
+
+  const result = await exchangePairSnapshot(LEAGUE, { force: true });
+  expect(result.epoch).toBe("101");
+  expect(result.snapshotId).toBe(21);
+  expect(pairPull).toBe(2);
 });
 
 it("priceMap: warms once within TTL (dedupes/caches)", async () => {
@@ -244,6 +329,8 @@ function wireUniques() {
         Items: [{
           Name: "Mageblood",
           IconUrl: "https://web.poecdn.com/gen/image/MB.png",
+          CurrentPrice: 70000,
+          CurrentQuantity: 1386,
           // newest-first, as the live API returns them
           PriceLogs: [
             { Price: 67305.6, Time: "2026-06-11T00:00:00", Quantity: 1386 },
@@ -283,7 +370,7 @@ function wireUniques() {
   });
 }
 
-it("uniquePriceMap: pulls all unique categories, keys by Name, newest price", async () => {
+it("uniquePriceMap: uses current fields and marks historical fallbacks", async () => {
   wireUniques();
   const m = await uniquePriceMap(LEAGUE);
   expect(m.size).toBe(3);
@@ -292,18 +379,21 @@ it("uniquePriceMap: pulls all unique categories, keys by Name, newest price", as
     quantity: 62,
     iconUrl: "https://web.poecdn.com/gen/image/LC.png",
     trend: null,
+    priceSource: "current",
   });
   expect(m.has("Ghost Item")).toBe(false);
   expect(m.get("Mageblood")).toEqual({
-    price: 67305.6,
+    price: 70000,
     quantity: 1386,
     iconUrl: "https://web.poecdn.com/gen/image/MB.png",
-    // newest 67305.6 vs oldest 62712.5 -> +7.3%
-    trend: expect.closeTo(0.0732, 3),
+    // CurrentPrice, not the newest historical PriceLog, is the headline.
+    trend: expect.closeTo((70000 - 62712.5) / 62712.5, 3),
+    priceSource: "current",
   });
   expect(m.get("Splinter of Loratta")!.price).toBe(12.5);
   // single log entry -> no trend
   expect(m.get("Splinter of Loratta")!.trend).toBeNull();
+  expect(m.get("Splinter of Loratta")!.priceSource).toBe("history");
 });
 
 it("uniquePriceMap: caches within TTL, no second fetch", async () => {
@@ -392,7 +482,7 @@ it("priceMap: retains live metadata for items newer than vendored data", async (
   });
 });
 
-it("priceMap: universally prefers an active liquid native-currency quote", async () => {
+it("priceMap: keeps CurrentPrice primary and attaches reliable hourly context", async () => {
   proxy.mockImplementation(async (url: string) => {
     const u = String(url);
     if (u.includes("/Leagues/") && u.includes("/Items/Categories")) {
@@ -404,26 +494,27 @@ it("priceMap: universally prefers an active liquid native-currency quote", async
     if (u.endsWith("/SnapshotPairs")) {
       return json([
         {
+          CurrencyExchangeSnapshotId: 123,
           BaseCurrencyApiId: "exalted",
+          Volume: 15_000,
           CurrencyOne: {
             ApiId: "sample-item",
             CategoryApiId: "items",
           },
           CurrencyTwo: { ApiId: "exalted", CategoryApiId: "currency" },
           CurrencyOneData: {
-            RelativePrice: "2.54545455",
-            VolumeTraded: 33,
+            VolumeTraded: 200,
             HighestStock: 780,
           },
           CurrencyTwoData: {
-            RelativePrice: "1.147",
-            VolumeTraded: 84,
+            VolumeTraded: 500,
             HighestStock: 0,
           },
         },
         {
+          CurrencyExchangeSnapshotId: 123,
           BaseCurrencyApiId: "exalted",
-          Volume: "21.176",
+          Volume: 21_000,
           CurrencyOne: {
             ApiId: "chaos",
             Text: "Chaos Orb",
@@ -434,19 +525,18 @@ it("priceMap: universally prefers an active liquid native-currency quote", async
             CategoryApiId: "items",
           },
           CurrencyOneData: {
-            RelativePrice: "21.176",
-            VolumeTraded: 1,
+            VolumeTraded: 1_200,
             HighestStock: 20,
           },
           CurrencyTwoData: {
-            RelativePrice: "7.05880206",
-            VolumeTraded: 3,
+            VolumeTraded: 300,
             HighestStock: 57,
           },
         },
         {
+          CurrencyExchangeSnapshotId: 123,
           BaseCurrencyApiId: "exalted",
-          Volume: "50",
+          Volume: 20_000,
           CurrencyOne: {
             ApiId: "swift-alloy",
             CategoryApiId: "items",
@@ -457,13 +547,11 @@ it("priceMap: universally prefers an active liquid native-currency quote", async
             CategoryApiId: "currency",
           },
           CurrencyOneData: {
-            RelativePrice: "5",
-            VolumeTraded: 10,
+            VolumeTraded: 200,
             HighestStock: 100,
           },
           CurrencyTwoData: {
-            RelativePrice: "1",
-            VolumeTraded: 50,
+            VolumeTraded: 1_000,
             HighestStock: 0,
           },
         },
@@ -499,24 +587,22 @@ it("priceMap: universally prefers an active liquid native-currency quote", async
   const prices = await priceMap(LEAGUE);
 
   expect(prices.get("sample-item")).toMatchObject({
-    price: 7.05880206,
-    quoteAmount: 1 / 3,
+    price: 21.595,
+    quoteAmount: 4,
     quoteCurrency: "chaos",
     quoteCurrencyText: "Chaos Orb",
-    quoteLiquidity: 21.176,
-    quoteBuyerStock: 20,
-    quoteAvailable: true,
+    quoteLiquidity: 21_000,
+    quoteMaxStock: 20,
     category: "items",
   });
   expect(prices.get("swift-alloy")).toMatchObject({
-    price: 5,
+    price: 99,
     quantity: 20,
     quoteAmount: 5,
     quoteCurrency: "exalted",
     quoteCurrencyText: "Exalted Orb",
-    quoteLiquidity: 50,
-    quoteBuyerStock: 0,
-    quoteAvailable: false,
+    quoteLiquidity: 20_000,
+    quoteMaxStock: 0,
   });
 });
 
@@ -624,7 +710,7 @@ it("degraded pulls backfill from last-good and recover on the retry TTL", async 
   expect(proxy.mock.calls.length).toBe(calls);
 
   // Warm 3 (past only the SHORT retry TTL): breach recovered — fresh prices
-  // long before the normal 15-minute window.
+  // long before the normal hourly window.
   vi.setSystemTime(Date.now() + SCOUT_RETRY_TTL_MS + 1000);
   wireCategories(new Set(), { exalted: 3, "breach-splinter": 0.75 });
   const recovered = await priceMapDetailed(LEAGUE);
@@ -658,7 +744,7 @@ it("unique categories are independently best-effort and backfill last-good", asy
   wireUniques();
   const first = await uniquePriceMapDetailed(LEAGUE);
   expect(first.complete).toBe(true);
-  expect(first.map.get("Mageblood")!.price).toBe(67305.6);
+  expect(first.map.get("Mageblood")!.price).toBe(70000);
 
   // Past the full TTL, the weapon category goes down: accessory data flows,
   // weapon uniques survive from the last good pull, snapshot marked degraded.
@@ -672,6 +758,6 @@ it("unique categories are independently best-effort and backfill last-good", asy
   });
   const degraded = await uniquePriceMapDetailed(LEAGUE);
   expect(degraded.complete).toBe(false);
-  expect(degraded.map.get("Mageblood")!.price).toBe(67305.6);
+  expect(degraded.map.get("Mageblood")!.price).toBe(70000);
   expect(degraded.map.get("Lightning Coil")!.price).toBe(1618.5); // backfilled
 });

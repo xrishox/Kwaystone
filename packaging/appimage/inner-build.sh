@@ -11,23 +11,26 @@ if [[ "$RUNTIME" != cpu && "$RUNTIME" != nvidia ]]; then
   echo "runtime must be cpu or nvidia" >&2
   exit 2
 fi
+BUILD_VENV="${BUILD_VENV:-/opt/waystone-build-venv}"
+MODEL_ROOT="${MODEL_ROOT:-/tmp/waystone-models}"
 
-uv python install "$PYTHON_VERSION"
 PYTHON="$(uv python find "$PYTHON_VERSION")"
 PYTHON_ROOT="$(cd "$(dirname "$PYTHON")/.." && pwd)"
-BUILD_VENV="${BUILD_VENV:-/opt/waystone-build-venv}"
-rm -rf "$BUILD_VENV"
-uv venv --python "$PYTHON" "$BUILD_VENV"
-uv pip sync --python "$BUILD_VENV/bin/python" "$ROOT/requirements/$RUNTIME.lock"
+if [[ ! -x "$BUILD_VENV/bin/python" ]]; then
+  echo "cached build environment is missing; run the dependencies stage" >&2
+  exit 1
+fi
+if [[ ! -d "$ROOT/brain/node_modules" || \
+      ! -d "$ROOT/brain/vendor/ee2/renderer/node_modules" ]]; then
+  echo "cached Node dependencies are missing; run the dependencies stage" >&2
+  exit 1
+fi
 uv pip install --python "$BUILD_VENV/bin/python" --no-deps "$ROOT/poed"
 
-npm ci --prefix "$ROOT/brain"
-npm ci --prefix "$ROOT/brain/vendor/ee2/renderer"
 npm run make-index-files --prefix "$ROOT/brain"
 npm run build --prefix "$ROOT/brain/vendor/ee2/renderer"
 npm run build --prefix "$ROOT/brain"
 
-MODEL_ROOT="${MODEL_ROOT:-/tmp/waystone-models}"
 WAYSTONE_OCR_MODEL_ROOT="$MODEL_ROOT" "$ROOT/scripts/fetch-ocr-models"
 
 BUILD_DIR="${BUILD_DIR:-/tmp/waystone-appimage}"
@@ -39,6 +42,8 @@ mkdir -p \
   "$APPDIR/usr/lib/waystone/brain/vendor/ee2" \
   "$APPDIR/usr/lib/waystone/brain/vendor/ee2/renderer" \
   "$APPDIR/usr/lib/girepository-1.0" \
+  "$APPDIR/usr/lib/gstreamer-1.0" \
+  "$APPDIR/usr/libexec/gstreamer-1.0" \
   "$APPDIR/usr/share/applications" \
   "$APPDIR/usr/share/doc/waystone" \
   "$APPDIR/usr/share/glib-2.0/schemas" \
@@ -92,6 +97,15 @@ glib-compile-schemas "$APPDIR/usr/share/glib-2.0/schemas"
 if [[ -d /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0 ]]; then
   rsync -a /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/ \
     "$APPDIR/usr/lib/gdk-pixbuf-2.0/"
+fi
+if [[ -d /usr/lib/x86_64-linux-gnu/gstreamer-1.0 ]]; then
+  rsync -a /usr/lib/x86_64-linux-gnu/gstreamer-1.0/ \
+    "$APPDIR/usr/lib/gstreamer-1.0/"
+fi
+gst_scanner=/usr/lib/x86_64-linux-gnu/gstreamer1.0/gstreamer-1.0/gst-plugin-scanner
+if [[ -x "$gst_scanner" ]]; then
+  install -Dm755 "$gst_scanner" \
+    "$APPDIR/usr/libexec/gstreamer-1.0/gst-plugin-scanner"
 fi
 if [[ -d /usr/share/icons/Adwaita ]]; then
   rsync -a /usr/share/icons/Adwaita/ "$APPDIR/usr/share/icons/Adwaita/"
@@ -160,6 +174,9 @@ export PYTHONDONTWRITEBYTECODE=1
 export PYTHONHOME="\$APPDIR/usr/python"
 export PATH="\$APPDIR/usr/bin:\$APPDIR/usr/python/bin:\$PATH"
 export GI_TYPELIB_PATH="\$APPDIR/usr/lib/girepository-1.0\${GI_TYPELIB_PATH:+:\$GI_TYPELIB_PATH}"
+export GST_PLUGIN_PATH="\$APPDIR/usr/lib/gstreamer-1.0\${GST_PLUGIN_PATH:+:\$GST_PLUGIN_PATH}"
+export GST_PLUGIN_SYSTEM_PATH="\$APPDIR/usr/lib/gstreamer-1.0"
+export GST_PLUGIN_SCANNER="\$APPDIR/usr/libexec/gstreamer-1.0/gst-plugin-scanner"
 export GSETTINGS_SCHEMA_DIR="\$APPDIR/usr/share/glib-2.0/schemas"
 export XDG_DATA_DIRS="\$APPDIR/usr/share:\${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 export GDK_BACKEND="\${GDK_BACKEND:-wayland}"
@@ -206,7 +223,7 @@ fi
 case "\${WAYSTONE_APPIMAGE_TEST:-}" in
   imports)
     exec "\$APPDIR/usr/python/bin/python\$PYTHON_MINOR" -c \
-      'import cv2, gi, numpy, poed; gi.require_version("Gtk", "4.0"); gi.require_version("Gtk4LayerShell", "1.0"); gi.require_version("WebKit", "6.0"); from gi.repository import Gtk, Gtk4LayerShell, WebKit; print("imports ok", Gtk.MAJOR_VERSION, cv2.__version__, numpy.__version__, WebKit.MAJOR_VERSION)'
+      'import cv2, gi, numpy, poed; gi.require_version("Gtk", "4.0"); gi.require_version("Gtk4LayerShell", "1.0"); gi.require_version("WebKit", "6.0"); gi.require_version("Gst", "1.0"); gi.require_version("GstApp", "1.0"); from gi.repository import Gtk, Gtk4LayerShell, WebKit, Gst, GstApp; Gst.init(None); required = ("pipewiresrc", "videorate", "videoconvert", "appsink"); missing = [name for name in required if Gst.ElementFactory.find(name) is None]; assert not missing, missing; print("imports ok", Gtk.MAJOR_VERSION, cv2.__version__, numpy.__version__, WebKit.MAJOR_VERSION, Gst.version_string())'
     ;;
   webkit)
     exec "\$APPDIR/usr/python/bin/python\$PYTHON_MINOR" -c \

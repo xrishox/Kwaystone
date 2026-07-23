@@ -53,7 +53,14 @@ def test_hyprland_backend_uses_configured_price_hotkey():
         "CTRL+d",
     )
     ids = [shortcut[0] for shortcut in backend.portal_shortcuts()]
-    assert ids == ["price-check", "unique-scan", "arb-check", "panel-close"]
+    assert ids == [
+        "price-check",
+        "unique-scan",
+        "arb-check",
+        "arb-add",
+        "arb-bridge",
+        "panel-close",
+    ]
 
 
 def test_kwin_portal_shortcuts_excludes_esc_and_uses_configured_price_key():
@@ -69,6 +76,8 @@ def test_kwin_portal_shortcuts_excludes_esc_and_uses_configured_price_key():
         ("price-check", "PoE2 price check", "CTRL+d"),
         ("unique-scan", "Scan current PoE2 screen", "ALT+x"),
         ("arb-check", "Currency arbitrage", "CTRL+s"),
+        ("arb-add", "Capture Currency Exchange pair", "ALT+a"),
+        ("arb-bridge", "Monitor selected arbitrage loop", "ALT+d"),
     ]
 
 

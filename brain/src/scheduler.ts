@@ -1,9 +1,9 @@
 /**
- * Rate-limit-aware request scheduler for the arbitrage feature.
+ * Rate-limit-aware request scheduler for shared arbitrage data sources.
  *
  * Every outbound request to a shared source (GGG trade API, poe2scout) goes
  * through a per-source lane with a minimum interval between starts, so a burst
- * of Alt+S presses coalesces in the queue instead of slamming the API. A 429
+ * of Alt+S/Alt+A presses coalesces in the queue instead of slamming the API. A 429
  * (or Retry-After) pauses the lane and requeues the task — staying out of the
  * ban path by construction. Tasks dedupe by key: a pending identical request
  * shares one promise.
@@ -12,6 +12,7 @@
 export type SourceLane = "ggg" | "scout";
 
 type Task = {
+  dedupeKey: string;
   key: string;
   priority: number;
   lane: SourceLane;
@@ -25,8 +26,9 @@ const LANE_INTERVAL_MS: Record<SourceLane, number> = {
   // GGG trade endpoints are the strict ones (search/fetch/exchange); ~30/min
   // sustained with natural coalescing keeps us far from the documented limits.
   ggg: 2_000,
-  // poe2scout is an aggregator, not GGG — still kept polite.
-  scout: 3_000,
+  // A session refresh is an epoch probe followed by at most one bulk pull.
+  // Half-second spacing keeps the interactive cold path short without bursts.
+  scout: 500,
 };
 const DEFAULT_RETRY_PAUSE_MS = 30_000;
 
@@ -42,7 +44,9 @@ export function retryAfterMs(headers: Headers): number | null {
   const raw = headers.get("retry-after");
   if (!raw) return null;
   const seconds = Number(raw);
-  return Number.isFinite(seconds) ? Math.max(1_000, seconds * 1000) : null;
+  if (Number.isFinite(seconds)) return Math.max(1_000, seconds * 1000);
+  const at = Date.parse(raw);
+  return Number.isFinite(at) ? Math.max(1_000, at - Date.now()) : null;
 }
 
 export class Scheduler {
@@ -71,16 +75,27 @@ export class Scheduler {
     lane: SourceLane,
     run: () => Promise<T>,
   ): Promise<T> {
-    const pending = this.pendingKeys.get(key);
-    if (pending) return pending as Promise<T>;
+    const dedupeKey = `${lane}:${key}`;
+    const pending = this.pendingKeys.get(dedupeKey);
+    if (pending) {
+      const queued = this.queues[lane].find((task) => task.dedupeKey === dedupeKey);
+      if (queued && priority < queued.priority) {
+        queued.priority = priority;
+        this.queues[lane].sort(
+          (left, right) => left.priority - right.priority,
+        );
+      }
+      return pending as Promise<T>;
+    }
     let resolveRef!: (value: unknown) => void;
     let rejectRef!: (error: unknown) => void;
     const promise = new Promise<T>((resolve, reject) => {
       resolveRef = resolve as (value: unknown) => void;
       rejectRef = reject;
     });
-    this.pendingKeys.set(key, promise);
+    this.pendingKeys.set(dedupeKey, promise);
     const task: Task = {
+      dedupeKey,
       key,
       priority,
       lane,
@@ -117,7 +132,7 @@ export class Scheduler {
         this.laneIdleAt[lane] = this.now() + this.intervals[lane];
         try {
           const value = await task.run();
-          this.pendingKeys.delete(task.key);
+          this.pendingKeys.delete(task.dedupeKey);
           task.resolve(value);
         } catch (error) {
           if (error instanceof Http429) {
@@ -127,7 +142,7 @@ export class Scheduler {
             queue.unshift(task);
             continue;
           }
-          this.pendingKeys.delete(task.key);
+          this.pendingKeys.delete(task.dedupeKey);
           task.reject(error);
         }
       }

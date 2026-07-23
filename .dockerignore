@@ -2,7 +2,7 @@
 .github
 .cache
 .venv
-brain/node_modules
+**/node_modules
 brain/dist
 poed/.pytest_cache
 poed/dist

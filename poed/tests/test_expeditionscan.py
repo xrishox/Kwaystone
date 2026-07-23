@@ -129,8 +129,7 @@ def test_scan_image_carries_universal_market_quote_metadata():
             "quoteCurrency": "chaos",
             "quoteCurrencyText": "Chaos Orb",
             "quoteLiquidity": 21.2,
-            "quoteBuyerStock": 20,
-            "quoteAvailable": True,
+            "quoteMaxStock": 20,
             "exaltedPerChaos": 0.25,
             "exaltedPerDivine": 333,
         }
@@ -140,7 +139,7 @@ def test_scan_image_carries_universal_market_quote_metadata():
 
     assert matches[0]["quoteAmount"] == 1 / 3
     assert matches[0]["quoteCurrency"] == "chaos"
-    assert matches[0]["quoteAvailable"] is True
+    assert matches[0]["quoteMaxStock"] == 20
     assert matches[0]["exaltedPerChaos"] == 0.25
     assert matches[0]["exaltedPerDivine"] == 333
 

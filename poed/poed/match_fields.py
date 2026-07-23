@@ -3,7 +3,7 @@
 Every scanner emits match dicts carrying the same market fields from a
 brain price row (or a template built from one).  Before this module each
 scanner hand-copied the ~15 fields, and they drifted: the runeshape
-scanner was missing quoteLiquidity/quoteBuyerStock.  Add new row fields
+scanner was missing quoteLiquidity/quoteMaxStock.  Add new row fields
 here and every scanner picks them up.
 """
 
@@ -28,8 +28,7 @@ def match_row_fields(row: dict | None, *, kind_default: str = "tagged") -> dict:
         "quoteCurrency": row.get("quoteCurrency"),
         "quoteCurrencyText": row.get("quoteCurrencyText"),
         "quoteLiquidity": row.get("quoteLiquidity"),
-        "quoteBuyerStock": row.get("quoteBuyerStock"),
-        "quoteAvailable": row.get("quoteAvailable"),
+        "quoteMaxStock": row.get("quoteMaxStock"),
         "exaltedPerChaos": row.get("exaltedPerChaos"),
         "exaltedPerDivine": row.get("exaltedPerDivine"),
         "sourceTag": row.get("sourceTag"),

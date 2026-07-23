@@ -1,5 +1,4 @@
 import {
-  divinePrice,
   priceMapDetailed,
   uniquePriceMapDetailed,
 } from "./poe2scout";
@@ -18,12 +17,11 @@ export interface ScanCorpusRow {
   quoteCurrency?: string;
   quoteCurrencyText?: string;
   quoteLiquidity?: number;
-  quoteBuyerStock?: number;
+  quoteMaxStock?: number;
   quoteItemVolume?: number;
   // "low" when a non-trivial price rests on thin traded volume; scanners
   // surface these as estimates instead of confident prices.
   priceConfidence?: "low" | "ok";
-  quoteAvailable?: boolean;
   exaltedPerChaos?: number;
   exaltedPerDivine?: number;
   sourceTag?: string;
@@ -52,18 +50,22 @@ function slotsFromUrl(url: string): { w: number; h: number } {
 // confident when real volume stands behind it — item-side traded units for
 // exchange rows, listing count for trade-priced uniques.
 const CONFIDENT_PRICE_EX = 40;
-function taggedConfidence(priceEx: number, itemVolume: number | undefined, quantity: number): "low" | "ok" {
+function taggedConfidence(priceEx: number, quantity: number): "low" | "ok" {
   if (priceEx < CONFIDENT_PRICE_EX) return "ok";
-  const volume = itemVolume ?? quantity;
-  return volume >= 1000 ? "ok" : "low";
+  return quantity >= 1000 ? "ok" : "low";
 }
-function uniqueConfidence(priceEx: number, listings: number): "low" | "ok" {
+function uniqueConfidence(
+  priceEx: number,
+  listings: number,
+  source: "current" | "history",
+): "low" | "ok" {
+  if (source === "history") return "low";
   if (priceEx < CONFIDENT_PRICE_EX) return "ok";
   return listings >= 10 ? "ok" : "low";
 }
 
 const ICON_CONCURRENCY = 16;
-const CORPUS_TTL_MS = 15 * 60 * 1000;
+const CORPUS_TTL_MS = 60 * 60 * 1000;
 // A corpus assembled while poe2scout was failing (missing/partial price data)
 // is served — stale prices beat "no market price" — but only on this short
 // TTL so the next scan rebuilds it as soon as the market data recovers.
@@ -76,7 +78,7 @@ interface CorpusSnapshot {
   version: number;
 }
 
-let corpusCache: CorpusSnapshot | null = null;
+const corpusCaches = new Map<string, CorpusSnapshot>();
 // Seeded per process so versions never collide across brain restarts: a poed
 // cache holding version N from a dead process must not match the new
 // process's version N, or `ifVersion` short-circuits ("unchanged") and poed
@@ -85,9 +87,11 @@ let corpusCache: CorpusSnapshot | null = null;
 // millisecond, so a random sub-millisecond component makes the seed
 // collision-proof. Rebuilds still increment by 1.
 let corpusVersion = Date.now() * 1000 + Math.floor(Math.random() * 1000);
-let corpusInflight:
-  | { league: string; promise: Promise<CorpusSnapshot> }
-  | null = null;
+const corpusInflights = new Map<
+  string,
+  { forced: boolean; promise: Promise<CorpusSnapshot> }
+>();
+const corpusQueuedForced = new Map<string, Promise<CorpusSnapshot>>();
 
 async function mapLimit<T, R>(
   items: T[],
@@ -143,8 +147,8 @@ async function buildScanCorpus(
   const uniques = uniqueData.map;
   const currencies = currencyData.map;
   const marketComplete = uniqueData.complete && currencyData.complete;
-  const divine = await divinePrice(league);
   const chaos = currencies.get("chaos")?.price;
+  const divine = currencies.get("divine")?.price;
   const conversionRates = {
     ...(typeof chaos === "number" && Number.isFinite(chaos) && chaos > 0
       ? { exaltedPerChaos: chaos }
@@ -184,7 +188,7 @@ async function buildScanCorpus(
         price: u.price, quantity: u.quantity, kind: "unique",
         priceAvailable: true,
         trend: u.trend, ...slotsFromUrl(u.iconUrl),
-        priceConfidence: uniqueConfidence(u.price, u.quantity),
+        priceConfidence: uniqueConfidence(u.price, u.quantity, u.priceSource),
         ...conversionRates,
       },
     });
@@ -228,18 +232,14 @@ async function buildScanCorpus(
         ...(scout.quoteLiquidity !== undefined
           ? { quoteLiquidity: scout.quoteLiquidity }
           : {}),
-        ...(scout.quoteBuyerStock !== undefined
-          ? { quoteBuyerStock: scout.quoteBuyerStock }
-          : {}),
-        ...(scout.quoteAvailable !== undefined
-          ? { quoteAvailable: scout.quoteAvailable }
+        ...(scout.quoteMaxStock !== undefined
+          ? { quoteMaxStock: scout.quoteMaxStock }
           : {}),
         ...(scout.quoteItemVolume !== undefined
           ? { quoteItemVolume: scout.quoteItemVolume }
           : {}),
         priceConfidence: taggedConfidence(
           scout.price,
-          scout.quoteItemVolume,
           scout.quantity,
         ),
         ...slotsFromUrl(icon),
@@ -265,24 +265,15 @@ async function buildScanCorpus(
 }
 
 function freshCorpus(league: string): CorpusSnapshot | null {
-  if (
-    corpusCache &&
-    corpusCache.league === league &&
-    corpusCache.expires > Date.now()
-  ) {
-    return corpusCache;
-  }
+  const cached = corpusCaches.get(league);
+  if (cached && cached.expires > Date.now()) return cached;
   return null;
 }
 
-function startCorpusRefresh(
+function pullCorpus(
   league: string,
   options: { forceMarketRefresh?: boolean } = {},
 ): Promise<CorpusSnapshot> {
-  if (corpusInflight && corpusInflight.league === league) {
-    return corpusInflight.promise;
-  }
-
   const promise = (async () => {
     if (options.forceMarketRefresh) {
       const { refreshPriceMap, refreshUniquePriceMap } = await import("./poe2scout");
@@ -302,23 +293,46 @@ function startCorpusRefresh(
     };
   })()
     .then((snapshot) => {
-      corpusCache = snapshot;
+      corpusCaches.set(league, snapshot);
       return snapshot;
     })
     .catch((error) => {
-      if (corpusCache && corpusCache.league === league) {
-        return corpusCache;
-      }
+      const cached = corpusCaches.get(league);
+      if (cached) return cached;
       throw error;
     })
     .finally(() => {
-      if (corpusInflight?.promise === promise) {
-        corpusInflight = null;
+      if (corpusInflights.get(league)?.promise === promise) {
+        corpusInflights.delete(league);
       }
     });
 
-  corpusInflight = { league, promise };
+  corpusInflights.set(league, {
+    forced: Boolean(options.forceMarketRefresh),
+    promise,
+  });
   return promise;
+}
+
+function startCorpusRefresh(
+  league: string,
+  options: { forceMarketRefresh?: boolean } = {},
+): Promise<CorpusSnapshot> {
+  const active = corpusInflights.get(league);
+  if (!active) return pullCorpus(league, options);
+  if (!options.forceMarketRefresh || active.forced) return active.promise;
+  const queued = corpusQueuedForced.get(league);
+  if (queued) return queued;
+  const forced = active.promise
+    .catch(() => null)
+    .then(() => pullCorpus(league, { forceMarketRefresh: true }))
+    .finally(() => {
+      if (corpusQueuedForced.get(league) === forced) {
+        corpusQueuedForced.delete(league);
+      }
+    });
+  corpusQueuedForced.set(league, forced);
+  return forced;
 }
 
 export async function scanCorpus(
@@ -351,6 +365,7 @@ export async function refreshScanCorpus(
 
 /** Test seam: clear the assembled scan-corpus cache. */
 export function _clearCorpusCache(): void {
-  corpusCache = null;
-  corpusInflight = null;
+  corpusCaches.clear();
+  corpusInflights.clear();
+  corpusQueuedForced.clear();
 }

@@ -12,8 +12,8 @@ const { MB_URL, scout } = vi.hoisted(() => {
     Buffer.from('[25,14,{"f":"Mageblood","w":2,"h":1,"scale":1}]').toString("base64") +
     "/abc123/Mageblood.png";
   const uniquesMap = () => new Map([
-    ["Mageblood", { price: 67305.6, quantity: 1386, iconUrl: MB_URL, trend: 0.073 }],
-    ["Splinter of Loratta", { price: 12.5, quantity: 50, iconUrl: "https://web.poecdn.com/gen/image/SL.png", trend: null }],
+    ["Mageblood", { price: 67305.6, quantity: 1386, iconUrl: MB_URL, trend: 0.073, priceSource: "current" as const }],
+    ["Splinter of Loratta", { price: 12.5, quantity: 50, iconUrl: "https://web.poecdn.com/gen/image/SL.png", trend: null, priceSource: "current" as const }],
   ]);
   const currenciesMap = () => new Map([
     // chronological history 300 -> 333: +11%
@@ -27,8 +27,7 @@ const { MB_URL, scout } = vi.hoisted(() => {
       quoteCurrency: "chaos",
       quoteCurrencyText: "Chaos Orb",
       quoteLiquidity: 200,
-      quoteBuyerStock: 50,
-      quoteAvailable: true,
+      quoteMaxStock: 50,
     }],
     ["swift-alloy", {
       price: 4.5, quantity: 455, history: [3.2, 4.5], category: "verisium",
@@ -51,11 +50,14 @@ vi.mock("../src/poe2scout", () => ({
     map: scout.currenciesMap(),
     complete: scout.complete,
   })),
+  refreshPriceMap: vi.fn(async () => scout.currenciesMap()),
+  refreshUniquePriceMap: vi.fn(async () => scout.uniquesMap()),
 }));
 
 beforeAll(initBrainData);
 
 beforeEach(() => {
+  vi.clearAllMocks();
   process.env.POE2_ICON_CACHE = "/tmp/poed-icons-uniques-test";
   scout.complete = true;
   // No network: icon resolution degrades to null, never rejects.
@@ -78,6 +80,27 @@ it("scanCorpusVersioned reports a stable version until the snapshot rebuilds", a
   _clearCorpusCache();
   const rebuilt = await scanCorpusVersioned("L");
   expect(rebuilt.version).toBeGreaterThan(first.version);
+});
+
+it("keeps assembled corpus snapshots isolated by league", async () => {
+  const { scanCorpusVersioned } = await import("../src/uniques");
+  const a = await scanCorpusVersioned("League A");
+  await scanCorpusVersioned("League B");
+  const aAgain = await scanCorpusVersioned("League A");
+
+  expect(aAgain.version).toBe(a.version);
+  expect(aAgain.rows).toBe(a.rows);
+});
+
+it("queues a forced market refresh behind an ordinary in-flight build", async () => {
+  const { refreshPriceMap, refreshUniquePriceMap } = await import("../src/poe2scout");
+  const { refreshScanCorpus, scanCorpusVersioned } = await import("../src/uniques");
+  const ordinary = scanCorpusVersioned("L");
+  const forced = refreshScanCorpus("L");
+  await Promise.all([ordinary, forced]);
+
+  expect(refreshPriceMap).toHaveBeenCalledTimes(1);
+  expect(refreshUniquePriceMap).toHaveBeenCalledTimes(1);
 });
 
 it("corpus versions never collide across brain restarts", async () => {
@@ -113,7 +136,7 @@ it("a corpus built from degraded market data expires on the short retry TTL", as
   expect((await scanCorpusVersioned("L")).version).toBe(degraded.version);
 
   // Once the market recovers, the corpus rebuilds long before the normal
-  // 15-minute TTL would have let it.
+  // hourly TTL would have let it.
   scout.complete = true;
   vi.setSystemTime(Date.now() + 45_000);
   const rebuilt = await scanCorpusVersioned("L");
@@ -159,8 +182,7 @@ it("scanCorpus merges uniques and scout-priced tagged items", async () => {
     quoteCurrency: "chaos",
     quoteCurrencyText: "Chaos Orb",
     quoteLiquidity: 200,
-    quoteBuyerStock: 50,
-    quoteAvailable: true,
+    quoteMaxStock: 50,
     sourceTag: "atziris-allure",
     sourceCategory: "lineagesupportgems",
   });

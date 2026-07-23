@@ -155,10 +155,40 @@ def brain_lock_problems() -> list[str]:
     return problems
 
 
+def appimage_build_context_problems() -> list[str]:
+    """Keep local dependencies out and heavyweight installs ahead of source."""
+    problems = []
+    ignore_path = ROOT / ".dockerignore"
+    ignored = {
+        line.strip()
+        for line in ignore_path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    }
+    if "**/node_modules" not in ignored:
+        problems.append(".dockerignore must exclude **/node_modules")
+
+    containerfile = (ROOT / "packaging/appimage/Containerfile").read_text(
+        encoding="utf-8"
+    )
+    dependency_stage = 'RUN packaging/appimage/install-dependencies.sh "$RUNTIME"'
+    source_copy = "COPY . ."
+    if dependency_stage not in containerfile:
+        problems.append("AppImage Containerfile has no cached dependency stage")
+    elif source_copy not in containerfile:
+        problems.append("AppImage Containerfile has no application source copy")
+    elif containerfile.index(dependency_stage) > containerfile.index(source_copy):
+        problems.append("AppImage dependencies must be installed before COPY . .")
+    return problems
+
+
 PYTHON_PIN_SOURCES = (
     ("scripts/bootstrap", re.compile(r'^PYTHON_VERSION="?([0-9]+\.[0-9]+\.[0-9]+)"?', re.M)),
     (
         "packaging/appimage/inner-build.sh",
+        re.compile(r'^PYTHON_VERSION="?([0-9]+\.[0-9]+\.[0-9]+)"?', re.M),
+    ),
+    (
+        "packaging/appimage/install-dependencies.sh",
         re.compile(r'^PYTHON_VERSION="?([0-9]+\.[0-9]+\.[0-9]+)"?', re.M),
     ),
     (
@@ -220,6 +250,7 @@ def main() -> int:
         ("mirrored file problems", mirrored_file_problems()),
         ("README screenshot problems", readme_screenshot_problems()),
         ("brain lockfile problems", brain_lock_problems()),
+        ("AppImage build-context problems", appimage_build_context_problems()),
         ("Python pin problems", python_pin_problems()),
     )
 

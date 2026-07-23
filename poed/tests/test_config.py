@@ -40,6 +40,25 @@ def test_load_existing_file_not_overwritten(tmp_path):
     assert p.read_text() == 'league = "Standard"\n'
 
 
+def test_load_migrates_legacy_arb_hotkeys_to_alt_d_monitor(tmp_path):
+    p = tmp_path / "config.toml"
+    p.write_text(
+        "# keep this comment\n"
+        'hotkey_arb_bridge = "ALT+d"\n'
+        'hotkey_arb_monitor = "ALT+f"\n'
+    )
+
+    cfg = config.load(p)
+
+    assert cfg["hotkey_arb_monitor"] == "ALT+d"
+    assert "hotkey_arb_bridge" not in cfg
+    assert p.read_text() == (
+        "# keep this comment\n"
+        'hotkey_arb_monitor = "ALT+d"\n'
+    )
+    assert (p.stat().st_mode & 0o777) == 0o600
+
+
 def test_default_path_is_waystone(tmp_path, monkeypatch):
     monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
     monkeypatch.setattr(config.pathlib.Path, "home", lambda: tmp_path)
@@ -182,6 +201,34 @@ def test_config_keeps_mapping_compatibility_and_validates_mutation():
         cfg["unique_scan_min_price"] = -1
 
 
+def test_arbitrage_safety_buffer_is_bounded_and_quantized():
+    cfg = config.AppConfig.from_mapping({"arb_safety_buffer_percent": 7.4})
+    assert cfg.arb_safety_buffer_percent == 7.5
+
+    with pytest.raises(ValueError, match="must not exceed 15"):
+        config.AppConfig.from_mapping({"arb_safety_buffer_percent": 15.5})
+
+
+def test_arbitrage_execution_concession_is_bounded_and_quantized():
+    cfg = config.AppConfig.from_mapping(
+        {"arb_execution_concession_percent": 7.4}
+    )
+    assert cfg.arb_execution_concession_percent == 7.5
+
+    with pytest.raises(ValueError, match="must not exceed 15"):
+        config.AppConfig.from_mapping(
+            {"arb_execution_concession_percent": 15.5}
+        )
+
+
+def test_arbitrage_losing_candidate_filter_requires_a_boolean():
+    cfg = config.AppConfig.from_mapping({"arb_show_losing_candidates": True})
+    assert cfg.arb_show_losing_candidates is True
+
+    with pytest.raises(ValueError, match="must be a boolean"):
+        config.AppConfig.from_mapping({"arb_show_losing_candidates": "true"})
+
+
 def test_save_league_normalizes_single_quoted_value(tmp_path):
     p = tmp_path / "config.toml"
     p.write_text("league = 'Standard'\n# keep me\n", encoding="utf-8")
@@ -204,6 +251,15 @@ def test_save_values_writes_atomically_and_privately(tmp_path):
     assert not (tmp_path / "config.toml.tmp").exists()
     assert (p.stat().st_mode & 0o777) == 0o600
     assert config.load(p)["poesessid"] == "secret"
+
+
+def test_save_values_preserves_numeric_types(tmp_path):
+    p = tmp_path / "config.toml"
+    p.write_text("arb_execution_concession_percent = 5.0\n")
+
+    config.save_values(p, {"arb_execution_concession_percent": 7.5})
+
+    assert tomllib.loads(p.read_text())["arb_execution_concession_percent"] == 7.5
 
 
 def test_load_repairs_loose_permissions_when_sessid_present(tmp_path):

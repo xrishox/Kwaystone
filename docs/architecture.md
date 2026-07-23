@@ -60,35 +60,106 @@ that cannot be handled by the vendored EE2 UI/library.
 
 ## Currency arbitrage (Alt+S)
 
-Alt+S is a two-stage freshness pipeline, split the usual way: poed owns
-clipboard capture, hotkey dispatch, and the panel; the brain owns all rate
-math. Stage 1 is instant: a forced refresh of the poe2scout exchange-pairs
-feed becomes the exchange matrix (exalted/chaos/divine + cross-rates) and,
-for bulk-commodity items, the item priced in every major currency against
-its most-liquid market pair. Stage 2 refines those rows live: official
-exchange and trade search/fetch queries verify the shown pairs, flowing
-through `brain/src/scheduler.ts` — a priority queue with per-source minimum
-intervals, key-based coalescing, and 429/Retry-After pausing — so repeated
-presses can never burst into a ban. poed polls `arbstate` from a worker
-thread and flips rows from aggregate to live-verified as answers land.
+Alt+S is a screen-driven session and only accepts Ange's visible Currency
+Exchange. poed owns output capture, scale-relative panel localization,
+batched recognition-only OCR, hotkey/session lifecycle, and the docked GTK
+panel. The specialized reader is `poed.currency_exchange_scan`; it is not an
+Alt+X scanner route. It structurally gates the exchange before OCR, then reads
+the title, both item names, and the headline `I WANT:I HAVE` market ratio in
+one batch. The observed directed edge is always `I HAVE -> I WANT`.
 
-The absolute scale is per-item, not exalted-by-default: each item is
-anchored to its most-liquid quote pair (liquidity and buyer stock are
-shown), and conversions chain item → anchor → each currency. Equipment
-(non-bulk items) uses one budgeted trade search+fetch per press; listings
-group by ask currency, each median is normalized at the current chain rate,
-and spreads of 5%+ versus the cheapest currency are flagged. Every row
-carries its data source (aggregate vs live) and age so freshness is always
-explicit. The brain commands are `arbquote` (stage 1) and `arbstate`
-(stage 2); the panel is `poed.arb_check` + `poed.arb_panel`.
+Alt+S asks which of the two canonical exchange items is the target and stores
+the visible pair as the first observation. Alt+A is the only one-shot market
+capture. A pair containing the target adds or updates its currency;
+a pair without the target is accepted only when both currencies were already
+added against the target, then overrides that Poe2Scout bridge direction.
+A repeated direction replaces its previous value while exact opposite
+directions coexist. Alt+S clears all Alt+A observations when it replaces the
+session.
+The panel is hidden for one compositor frame before each capture, but the
+session remains active while the user works in the game. Esc/close archives
+the current in-memory session before clearing it; an inactive Alt+S restores
+that last session without capturing; the restored observations are
+reanalyzed so freshness and candidate data are not frozen. The archive does not
+survive an application restart.
 
-Panel layout: verdict banner (explicit buy-with call over direct pairs,
-5% threshold), liquid-pair line, per-currency price table with anchor
-conversions and exact deltas (color-coded), then the exchange matrix at the
-bottom — real currency-category items only (never omens/idols/lineage
-gems), top 8 by liquidity. Clicking a matrix row force-selects that
-currency as the session anchor; re-anchoring is pure client-side division
-against the cached answer, so it never touches the brain.
+The brain commands are stateless: `arbpair` resolves OCR text against the
+poe2scout Currency Exchange catalog, and `arbanalyze` evaluates the complete
+observation list. Each observation supplies only its displayed `I HAVE -> I
+WANT` direction as an exact market. Its reverse is never inferred because the
+opposite Currency Exchange market has an independent spread.
+
+Only items classified by Poe2Scout as `CategoryApiId: "currency"` and captured
+against the target enter the graph. This includes every ordinary, Greater,
+Perfect, and special orb in that category, while essences, supports, omens,
+fragments, and other exchange commodities remain ineligible as bridge nodes.
+Poe2Scout supplies a direct completed-hour estimate between each pair of
+captured currencies unless Alt+A supplied that direction live. Currencies the
+user has not captured are never intermediate routes. A loop containing a
+Poe2Scout leg is a theoretical candidate only and can never be actionable.
+Only three exact, fresh directed captures can produce a buffered result.
+After every add, the brain evaluates only item-arbitrage loops shaped target →
+currency A → currency B → target and sorts them by the adverse-buffered exact
+rational product. With `n` captured currencies there are at most
+`n × (n - 1)` directed loops, so a result never hides currency-only arbitrage
+inside a longer path.
+Alt+S forces a fresh `SnapshotPairs` pull through the scheduler before showing
+the visible pair's `I WANT` and `I HAVE` target choices. When a saved session
+exists, the same chooser offers an explicit restore action that preserves its
+captured graph and reuses the fresh snapshot. Choosing a new target archives
+the active session before replacing it. Later analysis checks
+`ExchangeSnapshot` and refreshes the bulk feed when its epoch changes. The
+brain first applies the configured faster-fill concession independently to the
+output of each directed leg, then distributes the separate configured
+total-loop adverse move across all three legs. It calculates market,
+faster-fill, and safety-buffered whole-unit outcomes for quantities 1–100 using
+exact rational rates and sequential floors. The default 5% per-market
+concession compounds to 14.2625% over a three-leg loop before the safety buffer.
+A leg that would yield zero is unplaceable: its input is
+reported as retained intermediate currency rather than a completed 100% loss.
+Actionability is quantity-specific and requires a complete buffered return to
+clear the configured minimum. The panel ranks loops and low-budget notches by
+the final safety-buffered faster-fill return, falls back to the fractional
+signal when no route can complete at that quantity, retains manual loop
+selection, and shows all three projections. By default it filters out loops
+whose fractional buffered return is not positive; the persisted `Show losing
+candidates` setting reveals them. Filtering remains a presentation concern so
+diagnostics retain every evaluated loop, and an active monitored loop remains
+visible if live data makes it negative. Estimated outcomes remain
+theoretical even after stress testing. The faster-fill concession expresses a
+deliberate offer-price strategy; without order-book or fill-time data it cannot
+prove higher velocity. The system does not model order-book depth, gold cost,
+website listings, or equipment prices.
+
+### Live loop monitor (Alt+D)
+
+Alt+D locks the panel's selected three-item loop and selected whole-unit
+quantity. `poed.screencast` creates one persistent XDG ScreenCast monitor
+session with `persist_mode=2`, stores the returned restore token under the XDG
+state directory with mode 0600, and consumes the PipeWire node through a
+four-frame-per-second GStreamer pipeline. It never loops through the one-shot
+screenshot portal. Losing game focus invalidates pending evidence; returning to
+the game requires fresh confirmation.
+
+`poed.arb_monitor` processes only the newest pending frame and caps OCR work to
+roughly two reads per second. The existing scale-relative exchange localizer
+first establishes one unambiguous panel. A live read requires confident title
+and side-name OCR plus two independently preprocessed ratio reads from the same
+frame that agree numerically. The brain command `arbresolvelive` performs no
+network work and resolves both names only against the three items in the locked
+loop. A changed ordered pair must appear in two consecutive visually consistent
+frames; an apparent loop-rate improvement above 15% needs three consistent
+frames, while adverse changes are admitted immediately once pair identity is
+established. Rejected or ambiguous frames never update the graph.
+
+An accepted market replaces only the same displayed direction before analysis;
+an independently captured opposite direction remains available. Unchanged
+ratios refresh periodically rather than rerendering on
+every stream frame. The panel remains neutral while starting, paused,
+verifying, or recalculating; green is shown only when the locked quantity is
+actionable on a fully live directed loop. A safe-to-unsafe transition produces
+both a red state and the desktop alert sound. Monitoring validates displayed
+ratios only; it does not infer order depth or completed fills.
 
 ## Screen scanning
 

@@ -1,279 +1,1141 @@
-import { afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
-import { readFileSync } from "node:fs";
-import { initBrainData } from "../src/bootstrap";
+import { describe, expect, it } from "vitest";
+import {
+  analyzeLoops,
+  buildRateBook,
+  isCurrencyCategory,
+  resolveExchangeItem,
+  resolveClosedSetItem,
+  resolveObservation,
+} from "../src/arbitrage";
 
-beforeAll(initBrainData);
+type Side = { ApiId: string; Text: string; CategoryApiId: string };
 
-// Mock the poe2scout data layer: no live API in tests.
-vi.mock("../src/poe2scout", () => ({
-  divinePrice: vi.fn(async () => 237),
-  snapshotPairsRaw: vi.fn(async () => PAIRS),
-  SCOUT_TTL_MS: 900_000,
-}));
-
-import { arbQuote, arbState, _clearArbStates, _setScheduler } from "../src/arbitrage";
-import { Scheduler } from "../src/scheduler";
-
-const PAIRS = [
-  {
-    BaseCurrencyApiId: "exalted",
-    Volume: 100,
-    CurrencyOne: { ApiId: "chaos", Text: "Chaos Orb", CategoryApiId: "currency" },
-    CurrencyOneData: { RelativePrice: 0.04, StockValue: 100, VolumeTraded: 1000, HighestStock: 500 },
-    CurrencyTwo: { ApiId: "exalted", Text: "Exalted Orb", CategoryApiId: "currency" },
-    CurrencyTwoData: { RelativePrice: 1, StockValue: 100, VolumeTraded: 1000, HighestStock: 500 },
-  },
-  {
-    BaseCurrencyApiId: "exalted",
-    Volume: 90,
-    CurrencyOne: { ApiId: "divine", Text: "Divine Orb", CategoryApiId: "currency" },
-    CurrencyOneData: { RelativePrice: 237, StockValue: 90, VolumeTraded: 47, HighestStock: 100 },
-    CurrencyTwo: { ApiId: "chaos", Text: "Chaos Orb", CategoryApiId: "currency" },
-    CurrencyTwoData: { RelativePrice: 0.04, StockValue: 80, VolumeTraded: 278525, HighestStock: 400 },
-  },
-  {
-    // A second direct divine pair at a worse rate: the 5%+ spread the
-    // verdict must flag as an opportunity.
-    BaseCurrencyApiId: "exalted",
-    Volume: 80,
-    CurrencyOne: { ApiId: "divine", Text: "Divine Orb", CategoryApiId: "currency" },
-    CurrencyOneData: { RelativePrice: 250, StockValue: 80, VolumeTraded: 40, HighestStock: 90 },
-    CurrencyTwo: { ApiId: "exalted", Text: "Exalted Orb", CategoryApiId: "currency" },
-    CurrencyTwoData: { RelativePrice: 1, StockValue: 80, VolumeTraded: 10000, HighestStock: 500 },
-  },
-  {
-    BaseCurrencyApiId: "exalted",
-    Volume: 50,
-    CurrencyOne: { ApiId: "vaal", Text: "Vaal Orb", CategoryApiId: "currency" },
-    CurrencyOneData: { RelativePrice: 21.6, StockValue: 50, VolumeTraded: 500, HighestStock: 12000 },
-    CurrencyTwo: { ApiId: "divine", Text: "Divine Orb", CategoryApiId: "currency" },
-    CurrencyTwoData: { RelativePrice: 237, StockValue: 40, VolumeTraded: 400, HighestStock: 90 },
-  },
-  {
-    // Not a currency: must never appear in the exchange matrix. Kept below
-    // the divine<->chaos pair's liquidity so the liquid-anchor test resolves
-    // to chaos as intended.
-    BaseCurrencyApiId: "exalted",
-    Volume: 50,
-    CurrencyOne: { ApiId: "rakiatas-flow", Text: "Rakiata's Flow", CategoryApiId: "lineagesupportgems" },
-    CurrencyOneData: { RelativePrice: 1191, StockValue: 50000, VolumeTraded: 5000, HighestStock: 9000 },
-    CurrencyTwo: { ApiId: "divine", Text: "Divine Orb", CategoryApiId: "currency" },
-    CurrencyTwoData: { RelativePrice: 237, StockValue: 40000, VolumeTraded: 20, HighestStock: 90 },
-  },
-];
-
-const DIVINE_TEXT = `Item Class: Currency
-Rarity: Currency
-Divine Orb
---------
-Stack Size: 5/20
-`;
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
-  });
-}
-
-function exchangeOffer(amount: number, currency: string, stock = 10) {
+function pair(
+  one: Side,
+  two: Side,
+  oneVolume: number,
+  twoVolume: number,
+  volume = 100,
+) {
   return {
-    result: {
-      offer1: {
-        listing: {
-          offers: [
-            {
-              exchange: { amount, currency },
-              item: { amount: 1, stock },
-            },
-          ],
-          indexed: "2026-07-21T00:00:00Z",
-        },
-      },
-    },
+    CurrencyOne: one,
+    CurrencyTwo: two,
+    CurrencyOneData: { VolumeTraded: oneVolume },
+    CurrencyTwoData: { VolumeTraded: twoVolume },
+    Volume: volume,
   };
 }
 
-async function waitDone(refreshId: number): Promise<void> {
-  const deadline = Date.now() + 5000;
-  for (;;) {
-    const state = arbState(refreshId);
-    if (state?.done) return;
-    if (Date.now() > deadline) throw new Error("refinement never finished");
-    await new Promise((resolve) => setTimeout(resolve, 10));
-  }
+const chaos = { ApiId: "chaos", Text: "Chaos Orb", CategoryApiId: "currency" };
+const exalted = { ApiId: "exalted", Text: "Exalted Orb", CategoryApiId: "currency" };
+const divine = { ApiId: "divine", Text: "Divine Orb", CategoryApiId: "currency" };
+const annul = { ApiId: "annul", Text: "Orb of Annulment", CategoryApiId: "currency" };
+const greaterChaos = {
+  ApiId: "greater-chaos-orb",
+  Text: "Greater Chaos Orb",
+  CategoryApiId: "currency",
+};
+const greaterExalted = {
+  ApiId: "greater-exalted-orb",
+  Text: "Greater Exalted Orb",
+  CategoryApiId: "currency",
+};
+const perfectExalted = {
+  ApiId: "perfect-exalted-orb",
+  Text: "Perfect Exalted Orb",
+  CategoryApiId: "currency",
+};
+const fracturing = {
+  ApiId: "fracturing-orb",
+  Text: "Fracturing Orb",
+  CategoryApiId: "currency",
+};
+const alchemy = {
+  ApiId: "alch",
+  Text: "Orb of Alchemy",
+  CategoryApiId: "currency",
+};
+const omen = { ApiId: "omen-whittling", Text: "Omen of Whittling", CategoryApiId: "omens" };
+const kulemak = {
+  ApiId: "kulemaks-invitation",
+  Text: "Kulemak's Invitation",
+  CategoryApiId: "fragments",
+};
+
+function book() {
+  return buildRateBook(
+    [
+      pair(chaos, exalted, 1500, 100, 10_000),
+      pair(omen, chaos, 1, 81, 80),
+      pair(omen, exalted, 1, 5, 70),
+    ],
+    { league: "Test", epoch: "2099-07-21T20:00:00Z", fetchedAt: 1_000 },
+  );
 }
 
-beforeEach(() => {
-  _clearArbStates();
-  _setScheduler(new Scheduler(() => Date.now(), { ggg: 1, scout: 1 }));
-  vi.stubGlobal("fetch", vi.fn(async () => json({ result: {} })));
-});
+function observations(now = 10_000) {
+  const rates = book();
+  return [
+    resolveObservation(
+      {
+        wantText: "Chaos Orb",
+        haveText: "Omen of Whittling",
+        wantAmount: 81,
+        haveAmount: 1,
+        observedAt: now,
+      },
+      rates,
+    ),
+    resolveObservation(
+      {
+        wantText: "Omen of Whittling",
+        haveText: "Exalted Orb",
+        wantAmount: 1,
+        haveAmount: 5,
+        observedAt: now,
+      },
+      rates,
+    ),
+  ];
+}
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
-
-it("matrix-only mode without an item shows the exchange matrix", async () => {
-  const answer = await arbQuote({ clipboard: "", league: "Standard" });
-
-  expect(answer.mode).toBe("matrix-only");
-  const labels = answer.matrix.map((r) => r.label);
-  expect(labels).toContain("Exalted Orb");
-  expect(labels).toContain("Chaos Orb");
-  expect(labels).toContain("Divine Orb");
-  expect(labels).toContain("Divine ↔ Chaos");
-  const divine = answer.matrix.find((r) => r.key === "pair:divine");
-  expect(divine?.priceText).toBe("237 ex");
-  const cross = answer.matrix.find((r) => r.key === "pair:divine:chaos");
-  expect(cross?.priceText).toContain("5,925");
-});
-
-it("commodity mode prices the hovered item in every major currency", async () => {
-  const answer = await arbQuote({ clipboard: DIVINE_TEXT, league: "Standard" });
-
-  expect(answer.mode).toBe("commodity");
-  expect(answer.itemName).toBe("Divine Orb");
-  const rows = Object.fromEntries(answer.itemRows.map((r) => [r.key, r]));
-  expect(rows["item:divine:exalted"].priceText).toBe("250 exalted");
-  expect(rows["item:divine:chaos"].priceText).toContain("5,925");
-  expect(rows["item:divine:divine"].priceText).toBe("1 divine");
-});
-
-it("the matrix lists real currencies only — never omens or lineage gems", async () => {
-  const answer = await arbQuote({ clipboard: "", league: "Standard" });
-
-  const labels = answer.matrix.map((r) => r.label);
-  expect(labels).toContain("Exalted Orb");
-  expect(labels).toContain("Chaos Orb");
-  expect(labels).toContain("Divine Orb");
-  expect(labels).toContain("Vaal Orb");
-  expect(labels).not.toContain("Rakiata's Flow");
-});
-
-it("a >=5% direct-pair spread becomes an explicit buy-with verdict", async () => {
-  const answer = await arbQuote({ clipboard: DIVINE_TEXT, league: "Standard" });
-
-  expect(answer.verdict?.kind).toBe("opportunity");
-  expect(answer.verdict?.buyWith).toBe("chaos");
-  expect(answer.verdict?.savingsPct).toBeCloseTo(5.2, 0);
-  expect(answer.verdict?.text).toContain("chaos");
-});
-
-it("per-currency rows mark direct pairs vs derived conversions", async () => {
-  const answer = await arbQuote({ clipboard: DIVINE_TEXT, league: "Standard" });
-  const rows = Object.fromEntries(
-    (answer.perCurrency ?? []).map((r) => [r.currency, r]),
-  );
-
-  expect(rows["exalted"].direct).toBe(true);
-  expect(rows["exalted"].exaltedPrice).toBe(250);
-  expect(rows["chaos"].direct).toBe(true);
-  expect(rows["chaos"].exaltedPrice).toBe(237);
-  // No divine<->divine market exists: derived, priced as 1.
-  expect(rows["divine"].direct).toBe(false);
-  expect(rows["divine"].amount).toBe(1);
-});
-
-it("the liquid pair reports the most-liquid market and its real rate", async () => {
-  const answer = await arbQuote({ clipboard: DIVINE_TEXT, league: "Standard" });
-
-  expect(answer.liquidPair?.currency).toBe("chaos");
-  expect(answer.liquidPair?.liquidity).toBe(90);
-  expect(answer.liquidPair?.stock).toBe(400);
-  // The pair's actual traded rate: 278525 chaos / 47 divine.
-  expect(answer.liquidPair?.price).toBeCloseTo(5926, 0);
-});
-
-it("stage 2 marks big-three rows live from official exchange answers", async () => {
-  const fetchMock = vi.fn(async (input: unknown) => {
-    const url = String(input);
-    if (url.includes("want")) throw new Error("unexpected GET");
-    return json(exchangeOffer(250, "exalted", 7));
+describe("Currency Exchange pair resolution", () => {
+  it("preserves I HAVE to I WANT direction", () => {
+    const result = resolveObservation(
+      {
+        wantText: "Chaos Orb",
+        haveText: "Omen of Whittling",
+        wantAmount: 81,
+        haveAmount: 1,
+        observedAt: 123,
+      },
+      book(),
+    );
+    expect(result.id).toBe("omen-whittling->chaos");
+    expect(result.rate).toBe(81);
+    expect(result.observedAt).toBe(123);
   });
-  vi.stubGlobal("fetch", fetchMock);
 
-  const answer = await arbQuote({ clipboard: "", league: "Standard" });
-  await waitDone(answer.refreshId);
+  it("recovers a small OCR error but rejects ambiguous text", () => {
+    expect(resolveExchangeItem("Omen of WhittIing", book().catalog).apiId).toBe(
+      "omen-whittling",
+    );
+    expect(resolveExchangeItem("Omen of hittling", book().catalog).apiId).toBe(
+      "omen-whittling",
+    );
+    expect(() => resolveExchangeItem("Orb", book().catalog)).toThrow(/ambiguous/);
+  });
 
-  const state = arbState(answer.refreshId);
-  const divine = state?.matrix.find((r) => r.key === "pair:divine");
-  expect(divine?.source).toBe("live");
-  expect(divine?.priceText).toBe("250 ex");
+  it("rejects invalid ratios and self-pairs", () => {
+    expect(() =>
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Exalted Orb", wantAmount: 0, haveAmount: 1 },
+        book(),
+      ),
+    ).toThrow(/ratio/);
+    expect(() =>
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 1 },
+        book(),
+      ),
+    ).toThrow(/identical/);
+    expect(() =>
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Exalted Orb", wantAmount: Infinity, haveAmount: 1 },
+        book(),
+      ),
+    ).toThrow(/ratio/);
+  });
+
+  it("resolves live OCR only inside the selected loop", () => {
+    const rates = book();
+    expect(
+      resolveClosedSetItem(
+        "Omen of WhittIing",
+        rates.catalog,
+        ["omen-whittling", "chaos", "exalted"],
+      ).item.apiId,
+    ).toBe("omen-whittling");
+    expect(() =>
+      resolveClosedSetItem("Divine Orb", rates.catalog, ["chaos", "exalted"]),
+    ).toThrow(/ambiguous/);
+  });
 });
 
-it("listings mode normalizes per-currency medians and flags the spread", async () => {
-  const uniqueText = readFileSync(
-    new URL("./fixtures/unique.txt", import.meta.url),
-    "utf8",
-  );
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async (input: unknown, init?: RequestInit) => {
-      const url = String(input);
-      const body = String(init?.body ?? "");
-      if (url.includes("/api/trade2/search/")) {
-        return json({ id: "q1", result: ["i1", "i2", "i3"] });
-      }
-      if (url.includes("/api/trade2/fetch/")) {
-        return json({
-          result: [
-            { listing: { price: { amount: 10, currency: "divine" } } },
-            { listing: { price: { amount: 9.5, currency: "divine" } } },
-            { listing: { price: { amount: 2500, currency: "exalted" } } },
-          ],
-        });
-      }
-      if (url.includes("/api/trade2/exchange/")) {
-        return json(exchangeOffer(237, "exalted"));
-      }
-      throw new Error(`unexpected fetch ${url} ${body}`);
-    }),
-  );
+describe("currency bridge extraction", () => {
+  it("tracks every catalog currency pair rather than a fixed allowlist", () => {
+    const sides = [
+      chaos,
+      exalted,
+      divine,
+      annul,
+      greaterChaos,
+      greaterExalted,
+      perfectExalted,
+      fracturing,
+      alchemy,
+    ];
+    const pairs = sides.flatMap((one, index) =>
+      sides.slice(index + 1).map((two, offset) =>
+        pair(one, two, 10 + index, 20 + offset, 100 + offset),
+      ),
+    );
+    const rates = buildRateBook(pairs).rates;
+    expect(pairs).toHaveLength(36);
+    expect(rates.size).toBe(72);
+    for (const side of sides) expect(rates.has(`${side.ApiId}->${side.ApiId}`)).toBe(false);
+  });
 
-  const answer = await arbQuote({ clipboard: uniqueText, league: "Standard" });
-  expect(answer.mode).toBe("listings-pending");
-  await waitDone(answer.refreshId);
+  it("accepts only the currency category and excludes other exchange commodities", () => {
+    const essence = {
+      ApiId: "essence-of-opulence",
+      Text: "Essence of Opulence",
+      CategoryApiId: "essences",
+    };
+    const lineage = {
+      ApiId: "lineage-support",
+      Text: "Lineage Support",
+      CategoryApiId: "lineage-support-gems",
+    };
+    const rates = buildRateBook([
+      pair(fracturing, perfectExalted, 10, 2, 50_000),
+      pair(essence, fracturing, 10, 2, 50_000),
+      pair(lineage, fracturing, 10, 2, 50_000),
+    ]);
 
-  const state = arbState(answer.refreshId);
-  expect(state?.listings).toBeDefined();
-  const [cheapest, ...rest] = state!.listings!;
-  // divine median 9.75 * 237 = 2310.75 ex — cheapest; exalted 2500 lags by >5%.
-  expect(cheapest.currency).toBe("divine");
-  expect(cheapest.exaltedMedian).toBeCloseTo(2310.75, 1);
-  expect(rest[0].currency).toBe("exalted");
-  expect(rest[0].flagged).toBe(true);
-  expect(rest[0].deltaVsBest).toBeGreaterThan(0.05);
+    expect(isCurrencyCategory("currency")).toBe(true);
+    expect(isCurrencyCategory(" Currency ")).toBe(true);
+    expect(isCurrencyCategory("essences")).toBe(false);
+    expect(rates.rates.has("fracturing-orb->perfect-exalted-orb")).toBe(true);
+    expect(rates.rates.has("essence-of-opulence->fracturing-orb")).toBe(false);
+    expect(rates.rates.has("lineage-support->fracturing-orb")).toBe(false);
+    expect(rates.catalog.get("essence-of-opulence")?.isCurrency).toBe(false);
+    expect(rates.catalog.get("lineage-support")?.isCurrency).toBe(false);
+  });
+
+  it("stores one direct pair as two reciprocal directions and no self market", () => {
+    const rates = book().rates;
+    expect(rates.get("chaos->exalted")?.rate).toBeCloseTo(1 / 15);
+    expect(rates.get("exalted->chaos")?.rate).toBeCloseTo(15);
+    expect(rates.has("exalted->exalted")).toBe(false);
+  });
+
+  it("drops non-finite pair volumes before they can poison loop math", () => {
+    const rates = buildRateBook([
+      pair(chaos, exalted, Infinity, 1, 10_000),
+      pair(divine, exalted, 100, Number.NaN, 10_000),
+    ]).rates;
+    expect(rates.size).toBe(0);
+  });
+
+  it("keeps the most-liquid duplicate direct pair", () => {
+    const rates = buildRateBook([
+      pair(chaos, exalted, 10, 1, 5),
+      pair(chaos, exalted, 20, 1, 50),
+    ]).rates;
+    expect(rates.get("chaos->exalted")?.rate).toBeCloseTo(0.05);
+  });
 });
 
-it("a failed listings search leaves a note instead of crashing", async () => {
-  const uniqueText = readFileSync(
-    new URL("./fixtures/unique.txt", import.meta.url),
-    "utf8",
-  );
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async () => json({ error: { message: "nope" } }, 500)),
-  );
+describe("loop analysis", () => {
+  it("ranks a Poe2Scout bridge as an unverified candidate", () => {
+    const result = analyzeLoops("omen-whittling", observations(), book(), {
+      now: 10_500,
+      minPercent: 5,
+    });
+    expect(result.bestCandidateLoop?.path.map((item) => item.name)).toEqual([
+      "Omen of Whittling",
+      "Chaos Orb",
+      "Exalted Orb",
+      "Omen of Whittling",
+    ]);
+    expect(result.bestCandidateLoop?.multiplier).toBeCloseTo(1.08);
+    expect(result.bestCandidateLoop?.percent).toBeCloseTo(8);
+    expect(result.bestCandidateLoop?.status).toBe("estimate");
+    expect(result.bestCandidateLoop?.actionable).toBe(false);
+    expect(result.bestCandidateLoop?.legs.map((leg) => leg.source)).toEqual([
+      "capture",
+      "poe2scout",
+      "capture",
+    ]);
+  });
 
-  const answer = await arbQuote({ clipboard: uniqueText, league: "Standard" });
-  await waitDone(answer.refreshId);
+  it("keeps thin Poe2Scout bridges visible but never selects them as best", () => {
+    const rates = buildRateBook(
+      [
+        pair(chaos, exalted, 1500, 100, 9_999),
+        pair(omen, chaos, 1, 81),
+        pair(omen, exalted, 1, 5),
+      ],
+      { epoch: "2099-01-01T00:00:00Z" },
+    );
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Omen of Whittling", wantAmount: 81, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Omen of Whittling", wantAmount: 5, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Omen of Whittling", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 81 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Omen of Whittling", haveText: "Exalted Orb", wantAmount: 1, haveAmount: 5 },
+        rates,
+      ),
+    ];
 
-  const state = arbState(answer.refreshId);
-  expect(state?.listings).toBeUndefined();
-  expect(state?.listingsNote).toContain("unavailable");
-});
+    const result = analyzeLoops("omen-whittling", seen, rates);
+    expect(result.loops).toHaveLength(2);
+    expect(result.loops.every((loop) => loop.estimateConfidence === "thin")).toBe(true);
+    expect(result.bestCandidateLoop).toBeUndefined();
+    expect(result.verificationNeeded.some((need) => need.reason === "poe2scout")).toBe(true);
+  });
 
-it("refresh ids are distinct and old states are evicted", async () => {
-  const first = await arbQuote({ clipboard: "", league: "Standard" });
-  const second = await arbQuote({ clipboard: "", league: "Standard" });
-  const third = await arbQuote({ clipboard: "", league: "Standard" });
-  const fourth = await arbQuote({ clipboard: "", league: "Standard" });
-  const fifth = await arbQuote({ clipboard: "", league: "Standard" });
+  it("disables stale Poe2Scout bridges instead of extrapolating them", () => {
+    const rates = buildRateBook(
+      [
+        pair(chaos, exalted, 1500, 100, 10_000),
+        pair(omen, chaos, 1, 81),
+        pair(omen, exalted, 1, 5),
+      ],
+      { epoch: "100" },
+    );
+    const now = 100_000 + 4 * 60 * 60 * 1000 + 1;
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Omen of Whittling", wantAmount: 81, haveAmount: 1, observedAt: now },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Omen of Whittling", wantAmount: 5, haveAmount: 1, observedAt: now },
+        rates,
+      ),
+    ];
 
-  expect(second.refreshId).toBe(first.refreshId + 1);
-  expect(arbState(first.refreshId)).toBeNull();
-  expect(arbState(fifth.refreshId)).not.toBeNull();
-  void third;
-  void fourth;
+    const result = analyzeLoops("omen-whittling", seen, rates, { now });
+    expect(result.ratesStatus).toBe("stale");
+    expect(result.loops).toHaveLength(0);
+    expect(result.bestCandidateLoop).toBeUndefined();
+  });
+
+  it("makes a loop verified only when every executable direction was captured", () => {
+    const rates = book();
+    const forward = resolveObservation(
+      {
+        wantText: "Exalted Orb",
+        haveText: "Chaos Orb",
+        wantAmount: 1,
+        haveAmount: 10,
+        observedAt: 10_400,
+      },
+      rates,
+    );
+    const reverse = resolveObservation(
+      {
+        wantText: "Chaos Orb",
+        haveText: "Exalted Orb",
+        wantAmount: 10,
+        haveAmount: 1,
+        observedAt: 10_400,
+      },
+      rates,
+    );
+    const fromForward = analyzeLoops("omen-whittling", [...observations(), forward], rates, {
+      now: 10_500,
+    });
+    const fromReverse = analyzeLoops("omen-whittling", [...observations(), reverse], rates, {
+      now: 10_500,
+    });
+
+    expect(fromForward.bridges).toHaveLength(1);
+    expect(fromForward.bestVerifiedLoop?.percent).toBeCloseTo(62);
+    expect(fromForward.bestVerifiedLoop?.actionable).toBe(true);
+    expect(fromForward.bestCandidateLoop).toBeUndefined();
+    expect(fromReverse.bestVerifiedLoop).toBeUndefined();
+    expect(fromReverse.loops).toHaveLength(1);
+    expect(fromReverse.bestCandidateLoop?.legs[1].source).toBe("poe2scout");
+  });
+
+  it("keeps both live bridge directions independently", () => {
+    const rates = book();
+    const oldBridge = resolveObservation(
+      {
+        wantText: "Exalted Orb",
+        haveText: "Chaos Orb",
+        wantAmount: 1,
+        haveAmount: 10,
+        observedAt: 10_100,
+      },
+      rates,
+    );
+    const newBridge = resolveObservation(
+      {
+        wantText: "Chaos Orb",
+        haveText: "Exalted Orb",
+        wantAmount: 20,
+        haveAmount: 1,
+        observedAt: 10_400,
+      },
+      rates,
+    );
+    const result = analyzeLoops(
+      "omen-whittling",
+      [...observations(), oldBridge, newBridge],
+      rates,
+      { now: 10_500 },
+    );
+
+    expect(result.bridges.map((bridge) => bridge.id).sort()).toEqual([
+      "chaos->exalted",
+      "exalted->chaos",
+    ]);
+    expect(result.bestVerifiedLoop?.legs[1].rate).toBeCloseTo(0.1);
+  });
+
+  it("uses only exact target directions", () => {
+    const rates = book();
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Omen of Whittling", wantAmount: 100, haveAmount: 1, observedAt: 1_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Omen of Whittling", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 50, observedAt: 1_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Omen of Whittling", wantAmount: 5, haveAmount: 1, observedAt: 1_000 },
+        rates,
+      ),
+    ];
+    const loop = analyzeLoops("omen-whittling", seen, rates, { now: 1_100 }).loops[0];
+    expect(loop.path.map((item) => item.apiId)).toEqual([
+      "omen-whittling",
+      "exalted",
+      "chaos",
+      "omen-whittling",
+    ]);
+    expect(loop.legs.map((leg) => leg.source)).toEqual([
+      "capture",
+      "poe2scout",
+      "capture",
+    ]);
+    expect(loop.percent).toBeCloseTo(50);
+    expect(loop.status).toBe("estimate");
+  });
+
+  it("does not infer reverse markets from one-sided Alt+A captures", () => {
+    const rates = book();
+    const seen = [
+      resolveObservation(
+        {
+          wantText: "Chaos Orb",
+          haveText: "Omen of Whittling",
+          wantAmount: 100,
+          haveAmount: 1,
+          observedAt: 1_000,
+        },
+        rates,
+      ),
+      resolveObservation(
+        {
+          wantText: "Exalted Orb",
+          haveText: "Omen of Whittling",
+          wantAmount: 5,
+          haveAmount: 1,
+          observedAt: 1_000,
+        },
+        rates,
+      ),
+    ];
+    const result = analyzeLoops("omen-whittling", seen, rates, { now: 1_100 });
+    expect(result.loops).toHaveLength(0);
+    expect(result.bestVerifiedLoop).toBeUndefined();
+    expect(result.bestCandidateLoop).toBeUndefined();
+    expect(result.unavailable).toEqual([
+      "Chaos Orb → Omen of Whittling",
+      "Exalted Orb → Omen of Whittling",
+    ]);
+  });
+
+  it("keeps a 1:20 Raven market distinct from its independently captured 1:3 reverse", () => {
+    const raven = {
+      ApiId: "ravens-reflection",
+      Text: "Raven's Reflection",
+      CategoryApiId: "omens",
+    };
+    const rates = buildRateBook([
+      pair(raven, greaterChaos, 20, 1, 10_000),
+      pair(raven, chaos, 1, 10, 10_000),
+      pair(greaterChaos, chaos, 1, 10, 10_000),
+    ]);
+    const oneSided = [
+      resolveObservation(
+        { wantText: "Greater Chaos Orb", haveText: "Raven's Reflection", wantAmount: 1, haveAmount: 20 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Raven's Reflection", wantAmount: 10, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Raven's Reflection", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 10 },
+        rates,
+      ),
+    ];
+    const withoutReverse = analyzeLoops("ravens-reflection", oneSided, rates);
+
+    expect(
+      withoutReverse.loops.find(
+        (loop) => loop.path[1].apiId === "chaos" && loop.path[2].apiId === "greater-chaos-orb",
+      ),
+    ).toBeUndefined();
+    expect(withoutReverse.unavailable).toContain(
+      "Greater Chaos Orb → Raven's Reflection",
+    );
+
+    const reverse = resolveObservation(
+      { wantText: "Raven's Reflection", haveText: "Greater Chaos Orb", wantAmount: 3, haveAmount: 1 },
+      rates,
+    );
+    const withReverse = analyzeLoops("ravens-reflection", [...oneSided, reverse], rates);
+    const loop = withReverse.loops.find(
+      (candidate) =>
+        candidate.path[1].apiId === "chaos" &&
+        candidate.path[2].apiId === "greater-chaos-orb",
+    );
+
+    expect(loop?.legs[2].source).toBe("capture");
+    expect(loop?.legs[2].rate).toBe(3);
+    expect(loop?.legs[2].rate).not.toBe(20);
+  });
+
+  it("waits for a second captured currency before evaluating item arbitrage", () => {
+    const result = analyzeLoops("omen-whittling", observations().slice(0, 1), book());
+    expect(result.capturedCurrencyCount).toBe(1);
+    expect(result.loopsEvaluated).toBe(0);
+    expect(result.bestVerifiedLoop).toBeUndefined();
+    expect(result.bestCandidateLoop).toBeUndefined();
+  });
+
+  it("marks old observations stale and non-actionable", () => {
+    const result = analyzeLoops("omen-whittling", observations(1_000), book(), {
+      now: 200_000,
+      minPercent: 5,
+      captureMaxAgeMs: 120_000,
+    });
+    expect(result.loops[0].stale).toBe(true);
+    expect(result.loops[0].actionable).toBe(false);
+    expect(result.bestVerifiedLoop).toBeUndefined();
+    expect(result.bestCandidateLoop).toBeUndefined();
+  });
+
+  it("reports snapshot age from the exchange epoch rather than HTTP fetch time", () => {
+    const rates = buildRateBook(
+      [pair(chaos, exalted, 15, 1), pair(omen, chaos, 1, 81), pair(omen, exalted, 1, 5)],
+      { epoch: "100", fetchedAt: 199_000 },
+    );
+    const result = analyzeLoops("omen-whittling", observations(199_000), rates, {
+      now: 200_000,
+    });
+    expect(result.ratesAgeMs).toBe(100_000);
+    expect(result.analyzedAt).toBe(200_000);
+  });
+
+  it("does not synthesize a missing bridge through another currency", () => {
+    const rates = buildRateBook([
+      pair(chaos, divine, 1000, 1),
+      pair(divine, exalted, 1, 200),
+      pair(omen, chaos, 1, 81),
+      pair(omen, exalted, 1, 5),
+    ]);
+    const result = analyzeLoops("omen-whittling", observations(), rates, { now: 10_500 });
+    expect(result.loops).toHaveLength(0);
+    expect(result.unavailable).toEqual([
+      "Chaos Orb → Exalted Orb",
+      "Omen of Whittling → Exalted Orb",
+    ]);
+  });
+
+  it("rejects the reported Kulemak 300 percent loop without its return market", () => {
+    const rates = buildRateBook([
+      pair(kulemak, divine, 1, 3.43),
+      pair(kulemak, annul, 1, 1.5),
+      pair(divine, annul, 4, 7),
+    ]);
+    const seen = [
+      resolveObservation(
+        {
+          wantText: "Divine Orb",
+          haveText: "Kulemak's Invitation",
+          wantAmount: 3.43,
+          haveAmount: 1,
+          observedAt: 10_000,
+        },
+        rates,
+      ),
+      resolveObservation(
+        {
+          wantText: "Orb of Annulment",
+          haveText: "Kulemak's Invitation",
+          wantAmount: 1.5,
+          haveAmount: 1,
+          observedAt: 10_000,
+        },
+        rates,
+      ),
+      resolveObservation(
+        {
+          wantText: "Orb of Annulment",
+          haveText: "Divine Orb",
+          wantAmount: 1.75,
+          haveAmount: 1,
+          observedAt: 10_000,
+        },
+        rates,
+      ),
+    ];
+    const result = analyzeLoops("kulemaks-invitation", seen, rates, { now: 10_100 });
+    const suspicious = result.loops.find(
+      (loop) => loop.path[1].apiId === "divine" && loop.path[2].apiId === "annul",
+    );
+    expect(suspicious).toBeUndefined();
+    expect(result.loops).toHaveLength(0);
+    expect(result.bestVerifiedLoop).toBeUndefined();
+    expect(result.unavailable).toEqual(expect.arrayContaining([
+      "Divine Orb → Kulemak's Invitation",
+      "Orb of Annulment → Kulemak's Invitation",
+    ]));
+  });
+
+  it("computes the Kulemak loop from a separately captured return market", () => {
+    const rates = buildRateBook([
+      pair(kulemak, divine, 1, 3.43),
+      pair(kulemak, annul, 10, 59),
+      pair(divine, annul, 4, 7),
+    ]);
+    const seen = [
+      resolveObservation(
+        { wantText: "Divine Orb", haveText: "Kulemak's Invitation", wantAmount: 3.43, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Orb of Annulment", haveText: "Divine Orb", wantAmount: 1.75, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Kulemak's Invitation", haveText: "Orb of Annulment", wantAmount: 10, haveAmount: 59 },
+        rates,
+      ),
+    ];
+    const result = analyzeLoops("kulemaks-invitation", seen, rates);
+    expect(result.bestVerifiedLoop?.multiplier).toBeCloseTo(3.43 * 1.75 * (10 / 59));
+    expect(result.bestVerifiedLoop?.percent).toBeLessThan(2);
+    expect(result.bestVerifiedLoop?.percent).toBeGreaterThan(1);
+    expect(result.bestVerifiedLoop?.actionable).toBe(false);
+  });
+
+  it("recomputes the complete finite search as captured currencies are added", () => {
+    const rates = buildRateBook([
+      pair(kulemak, chaos, 1, 10),
+      pair(kulemak, exalted, 1, 20),
+      pair(kulemak, divine, 1, 30),
+      pair(chaos, exalted, 10, 20),
+      pair(chaos, divine, 10, 30),
+      pair(exalted, divine, 20, 30),
+    ]);
+    const byCurrency = [chaos, exalted, divine].flatMap((currency, index) => [
+      resolveObservation(
+        { wantText: currency.Text, haveText: "Kulemak's Invitation", wantAmount: (index + 1) * 10, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Kulemak's Invitation", haveText: currency.Text, wantAmount: 1, haveAmount: (index + 1) * 10 },
+        rates,
+      ),
+    ]);
+    const seen = byCurrency;
+    expect(analyzeLoops("kulemaks-invitation", byCurrency.slice(0, 2), rates).loopsEvaluated).toBe(0);
+    expect(analyzeLoops("kulemaks-invitation", byCurrency.slice(0, 4), rates).loopsEvaluated).toBe(2);
+    expect(analyzeLoops("kulemaks-invitation", seen, rates).loopsEvaluated).toBe(6);
+  });
+
+  it("never routes through a currency that was not captured", () => {
+    const rates = buildRateBook([
+      pair(kulemak, chaos, 1, 10),
+      pair(kulemak, exalted, 1, 20),
+      pair(chaos, exalted, 10, 20),
+      pair(chaos, annul, 10, 2),
+      pair(annul, exalted, 2, 20),
+    ]);
+    const seen = [chaos, exalted].flatMap((currency, index) => [
+      resolveObservation(
+        { wantText: currency.Text, haveText: "Kulemak's Invitation", wantAmount: (index + 1) * 10, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Kulemak's Invitation", haveText: currency.Text, wantAmount: 1, haveAmount: (index + 1) * 10 },
+        rates,
+      ),
+    ]);
+    const result = analyzeLoops("kulemaks-invitation", seen, rates);
+    expect(result.loopsEvaluated).toBe(2);
+    expect(result.loops.every((loop) => loop.path.every((item) => item.apiId !== "annul"))).toBe(true);
+  });
+
+  it("enumerates exactly twenty directed pairwise loops for five captured currencies", () => {
+    const majors = [chaos, exalted, divine, annul, greaterChaos];
+    const raw = [
+      ...majors.map((currency, index) => pair(kulemak, currency, 1, index + 2)),
+      ...majors.flatMap((one, index) =>
+        majors.slice(index + 1).map((two, offset) =>
+          pair(one, two, index + 2, index + offset + 3),
+        ),
+      ),
+    ];
+    const rates = buildRateBook(raw);
+    const seen = majors.flatMap((currency, index) => [
+      resolveObservation(
+        { wantText: currency.Text, haveText: "Kulemak's Invitation", wantAmount: index + 2, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Kulemak's Invitation", haveText: currency.Text, wantAmount: 1, haveAmount: index + 2 },
+        rates,
+      ),
+    ]);
+    const result = analyzeLoops("kulemaks-invitation", seen, rates);
+    expect(result.capturedCurrencyCount).toBe(5);
+    expect(result.loopsEvaluated).toBe(20);
+    expect(result.loops).toHaveLength(20);
+    expect(result.loops.every((loop) => loop.path.length === 4)).toBe(true);
+    expect(JSON.stringify(result).length).toBeLessThan(4 * 1024 * 1024);
+  });
+
+  it("requires exact return markets after two one-sided Alt+A captures", () => {
+    const rates = book();
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Omen of Whittling", wantAmount: 81, haveAmount: 1, observedAt: 10_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Omen of Whittling", wantAmount: 5, haveAmount: 1, observedAt: 10_000 },
+        rates,
+      ),
+    ];
+    const result = analyzeLoops("omen-whittling", seen, rates, { now: 10_100 });
+
+    expect(result.loops).toHaveLength(0);
+    expect(result.bestCandidateLoop).toBeUndefined();
+    expect(result.unavailable).toEqual([
+      "Chaos Orb → Omen of Whittling",
+      "Exalted Orb → Omen of Whittling",
+    ]);
+  });
+
+  it("does not certify a loop when Alt+A refined only its currency bridge", () => {
+    const rates = book();
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Omen of Whittling", wantAmount: 81, haveAmount: 1, observedAt: 10_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Omen of Whittling", wantAmount: 5, haveAmount: 1, observedAt: 10_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 15, observedAt: 10_050 },
+        rates,
+      ),
+    ];
+    const result = analyzeLoops("omen-whittling", seen, rates, { now: 10_100 });
+    const loop = result.loops.find((candidate) => candidate.path[1].apiId === "chaos");
+
+    expect(loop).toBeUndefined();
+    expect(result.loops).toHaveLength(0);
+    expect(result.bestVerifiedLoop).toBeUndefined();
+  });
+
+  it("completes a loop only after an exact reverse target capture", () => {
+    const rates = book();
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Omen of Whittling", wantAmount: 81, haveAmount: 1, observedAt: 10_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Omen of Whittling", wantAmount: 5, haveAmount: 1, observedAt: 10_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Omen of Whittling", haveText: "Exalted Orb", wantAmount: 10, haveAmount: 59, observedAt: 10_050 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 15, observedAt: 10_050 },
+        rates,
+      ),
+    ];
+    const result = analyzeLoops("omen-whittling", seen, rates, { now: 10_100 });
+    const loop = result.loops.find((candidate) => candidate.path[1].apiId === "chaos");
+
+    expect(loop?.legs[2].source).toBe("capture");
+    expect(loop?.legs[2].rate).toBeCloseTo(10 / 59);
+    expect(loop?.status).toBe("verified");
+  });
+
+  it("keeps every enumerated loop connected and its percentage equal to the leg product", () => {
+    const rates = buildRateBook([
+      pair(kulemak, chaos, 1, 17),
+      pair(kulemak, exalted, 1, 31),
+      pair(kulemak, divine, 1, 2.7),
+      pair(chaos, exalted, 170, 31),
+      pair(chaos, divine, 170, 2.7),
+      pair(exalted, divine, 31, 2.7),
+    ]);
+    const seen = [chaos, exalted, divine].flatMap((currency, index) => [
+      resolveObservation(
+        { wantText: currency.Text, haveText: "Kulemak's Invitation", wantAmount: [17, 31, 2.7][index], haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Kulemak's Invitation", haveText: currency.Text, wantAmount: 1, haveAmount: [17, 31, 2.7][index] },
+        rates,
+      ),
+    ]);
+    const result = analyzeLoops("kulemaks-invitation", seen, rates);
+
+    expect(result.loops).toHaveLength(6);
+    for (const loop of result.loops) {
+      expect(loop.legs).toHaveLength(3);
+      for (let index = 0; index < loop.legs.length; index += 1) {
+        expect(loop.legs[index].from.apiId).toBe(loop.path[index].apiId);
+        expect(loop.legs[index].to.apiId).toBe(loop.path[index + 1].apiId);
+      }
+      const product = loop.legs.reduce((value, leg) => value * leg.rate, 1);
+      expect(loop.multiplier).toBeCloseTo(product, 12);
+      expect(loop.percent).toBeCloseTo((product - 1) * 100, 10);
+      expect(loop.actionable).toBe(false);
+    }
+  });
+
+  it("deduplicates verification work across all exploratory loops", () => {
+    const rates = book();
+    const result = analyzeLoops(
+      "omen-whittling",
+      [
+        resolveObservation(
+          { wantText: "Chaos Orb", haveText: "Omen of Whittling", wantAmount: 81, haveAmount: 1 },
+          rates,
+        ),
+        resolveObservation(
+          { wantText: "Exalted Orb", haveText: "Omen of Whittling", wantAmount: 5, haveAmount: 1 },
+          rates,
+        ),
+        resolveObservation(
+          { wantText: "Omen of Whittling", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 81 },
+          rates,
+        ),
+        resolveObservation(
+          { wantText: "Omen of Whittling", haveText: "Exalted Orb", wantAmount: 1, haveAmount: 5 },
+          rates,
+        ),
+      ],
+      rates,
+    );
+    const keys = result.verificationNeeded.map(
+      (need) => `${need.from.apiId}->${need.to.apiId}`,
+    );
+
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys).toEqual([
+      "chaos->exalted",
+      "exalted->chaos",
+    ]);
+    expect(result.verificationNeeded.every((need) => need.hotkey === "Alt+A")).toBe(true);
+  });
+
+  it("returns buffered whole-unit outcomes for every supported slider quantity", () => {
+    const result = analyzeLoops("omen-whittling", observations(), book(), {
+      now: 10_500,
+      executionConcessionBps: 0,
+    });
+    expect(result.loops[0].quantityOutcomes).toHaveLength(100);
+    expect(result.loops[0].quantityOutcomes[0].quantity).toBe(1);
+    expect(result.loops[0].quantityOutcomes[99].quantity).toBe(100);
+    expect(result.loops[0].bufferedMultiplier).toBeCloseTo(
+      result.loops[0].nominalMultiplier * 0.95,
+    );
+    expect(result.perLegSafetyBufferBps).toBeCloseTo(169.5, 1);
+  });
+
+  it("distributes one total loop buffer across legs before whole-unit flooring", () => {
+    const rates = buildRateBook([
+      pair(kulemak, chaos, 1, 1.01),
+      pair(chaos, exalted, 1, 1),
+    ]);
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Kulemak's Invitation", wantAmount: 1.01, haveAmount: 1, observedAt: 1_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 1, observedAt: 1_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Kulemak's Invitation", haveText: "Exalted Orb", wantAmount: 1, haveAmount: 1, observedAt: 1_000 },
+        rates,
+      ),
+    ];
+    const loop = analyzeLoops("kulemaks-invitation", seen, rates, {
+      now: 1_100,
+      safetyBufferBps: 500,
+      executionConcessionBps: 0,
+    }).bestVerifiedLoop;
+
+    expect(loop?.nominalPercent).toBeCloseTo(1);
+    expect(loop?.bufferedPercent).toBeCloseTo((1.01 * 0.95 - 1) * 100);
+    expect(loop?.quantityOutcomes[0].nominalFinalUnits).toBe(1);
+    expect(loop?.quantityOutcomes[0].bufferedFinalUnits).toBe(0);
+    expect(loop?.quantityOutcomes[0].nominalComplete).toBe(true);
+    expect(loop?.quantityOutcomes[0].bufferedComplete).toBe(false);
+    expect(loop?.quantityOutcomes[0].bufferedReturnPercent).toBeNull();
+    expect(loop?.quantityOutcomes[0].bufferedBlockedStep).toBe(0);
+    expect(loop?.quantityOutcomes[0].bufferedBlockedUnits).toBe(1);
+    expect(loop?.quantityOutcomes[0].steps[0].boundaryHeadroomPercent).toBeCloseTo(
+      100 * (1 - 1 / 1.01),
+    );
+    expect(loop?.quantityOutcomes[0].actionable).toBe(false);
+  });
+
+  it("makes actionability quantity-specific and preserves zero-buffer behavior", () => {
+    const rates = buildRateBook([
+      pair(kulemak, chaos, 10, 1),
+      pair(chaos, exalted, 1, 20),
+    ]);
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Kulemak's Invitation", wantAmount: 0.1, haveAmount: 1, observedAt: 1_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Chaos Orb", wantAmount: 20, haveAmount: 1, observedAt: 1_000 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Kulemak's Invitation", haveText: "Exalted Orb", wantAmount: 0.6, haveAmount: 1, observedAt: 1_000 },
+        rates,
+      ),
+    ];
+    const unbuffered = analyzeLoops("kulemaks-invitation", seen, rates, {
+      now: 1_100,
+      safetyBufferBps: 0,
+      executionConcessionBps: 0,
+    }).bestVerifiedLoop;
+    const buffered = analyzeLoops("kulemaks-invitation", seen, rates, {
+      now: 1_100,
+      safetyBufferBps: 500,
+      executionConcessionBps: 0,
+    }).bestVerifiedLoop;
+
+    expect(unbuffered?.nominalPercent).toBeCloseTo(20);
+    expect(unbuffered?.quantityOutcomes.slice(0, 9).every((point) => !point.actionable)).toBe(true);
+    expect(unbuffered?.quantityOutcomes[9].nominalFinalUnits).toBe(12);
+    expect(unbuffered?.quantityOutcomes[9].bufferedFinalUnits).toBe(12);
+    expect(unbuffered?.quantityOutcomes[9].actionable).toBe(true);
+    expect(buffered?.quantityOutcomes[9].bufferedFinalUnits).toBe(0);
+    expect(buffered?.quantityOutcomes[9].bufferedComplete).toBe(false);
+    expect(buffered?.quantityOutcomes[9].bufferedReturnPercent).toBeNull();
+    expect(buffered?.quantityOutcomes.slice(0, 10).every((point) => !point.budgetBest)).toBe(true);
+    expect(buffered?.quantityOutcomes[20].bufferedComplete).toBe(true);
+    expect(buffered?.quantityOutcomes[20].bufferedFinalUnits).toBe(23);
+    expect(buffered?.quantityOutcomes[20].actionable).toBe(true);
+  });
+
+  it("never describes an unplaceable zero-output leg as a total loss", () => {
+    const rates = buildRateBook([
+      pair(kulemak, chaos, 1, 3),
+      pair(chaos, exalted, 10, 1),
+    ]);
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Kulemak's Invitation", wantAmount: 3, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 10 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Kulemak's Invitation", haveText: "Exalted Orb", wantAmount: 4, haveAmount: 1 },
+        rates,
+      ),
+    ];
+    const point = analyzeLoops("kulemaks-invitation", seen, rates, {
+      safetyBufferBps: 0,
+      executionConcessionBps: 0,
+    }).bestVerifiedLoop?.quantityOutcomes[0];
+
+    expect(point?.nominalComplete).toBe(false);
+    expect(point?.nominalBlockedStep).toBe(1);
+    expect(point?.nominalBlockedUnits).toBe(3);
+    expect(point?.nominalFinalUnits).toBe(0);
+    expect(point?.nominalReturnPercent).toBeNull();
+    expect(point?.actionable).toBe(false);
+  });
+
+  it("preserves whole-unit and buffer invariants across adversarial rate combinations", () => {
+    const rates = buildRateBook([
+      pair(kulemak, chaos, 1, 1),
+      pair(chaos, exalted, 1, 1),
+    ]);
+    let seed = 0x5eed1234;
+    const randomRate = () => {
+      seed = (Math.imul(seed, 1_664_525) + 1_013_904_223) >>> 0;
+      return (5 + seed % 19_996) / 100;
+    };
+
+    for (let trial = 0; trial < 200; trial += 1) {
+      const legRates = [randomRate(), randomRate(), randomRate()];
+      const seen = [
+        resolveObservation(
+          {
+            wantText: "Chaos Orb",
+            haveText: "Kulemak's Invitation",
+            wantAmount: legRates[0],
+            haveAmount: 1,
+          },
+          rates,
+        ),
+        resolveObservation(
+          {
+            wantText: "Exalted Orb",
+            haveText: "Chaos Orb",
+            wantAmount: legRates[1],
+            haveAmount: 1,
+          },
+          rates,
+        ),
+        resolveObservation(
+          {
+            wantText: "Kulemak's Invitation",
+            haveText: "Exalted Orb",
+            wantAmount: legRates[2],
+            haveAmount: 1,
+          },
+          rates,
+        ),
+      ];
+      const result = analyzeLoops("kulemaks-invitation", seen, rates, {
+        safetyBufferBps: 750,
+        executionConcessionBps: 0,
+        minPercent: 0,
+      });
+      const loop = result.bestVerifiedLoop;
+      expect(loop).toBeDefined();
+      expect(
+        (loop?.bufferedMultiplier ?? 0) / (loop?.nominalMultiplier ?? 1),
+      ).toBeCloseTo(0.925, 12);
+
+      for (const point of loop?.quantityOutcomes ?? []) {
+        let nominal = point.quantity;
+        let nominalComplete = true;
+        for (const rate of legRates) {
+          nominal = Number(
+            BigInt(nominal) * BigInt(Math.round(rate * 100)) / 100n,
+          );
+          if (nominal === 0) {
+            nominalComplete = false;
+            break;
+          }
+        }
+        expect(point.nominalComplete).toBe(nominalComplete);
+        expect(point.nominalReturnPercent === null).toBe(!nominalComplete);
+        if (nominalComplete) expect(point.nominalFinalUnits).toBe(nominal);
+        if (point.bufferedComplete) {
+          expect(point.bufferedFinalUnits).toBeLessThanOrEqual(point.nominalFinalUnits);
+          expect(point.bufferedReturnPercent).not.toBeNull();
+        } else {
+          expect(point.bufferedReturnPercent).toBeNull();
+          expect(point.actionable).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("models a faster-fill concession independently on every directed leg", () => {
+    const result = analyzeLoops("omen-whittling", observations(), book(), {
+      now: 10_500,
+      executionConcessionBps: 500,
+      safetyBufferBps: 500,
+    });
+    const loop = result.loops[0];
+
+    expect(result.executionConcessionBps).toBe(500);
+    expect(result.executionConcessionLoopPercent).toBeCloseTo(14.2625, 8);
+    expect(loop.executionMultiplier / loop.nominalMultiplier).toBeCloseTo(
+      0.95 ** 3,
+      12,
+    );
+    expect(loop.bufferedMultiplier / loop.executionMultiplier).toBeCloseTo(
+      0.95,
+      12,
+    );
+    for (const leg of loop.legs) {
+      expect(leg.executionRate).toBeCloseTo(leg.rate * 0.95, 12);
+    }
+  });
+
+  it("scores quantities and notches from the faster-fill safety outcome", () => {
+    const rates = buildRateBook([
+      pair(kulemak, chaos, 1, 3),
+      pair(chaos, exalted, 1, 1),
+    ]);
+    const seen = [
+      resolveObservation(
+        { wantText: "Chaos Orb", haveText: "Kulemak's Invitation", wantAmount: 3, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Exalted Orb", haveText: "Chaos Orb", wantAmount: 1, haveAmount: 1 },
+        rates,
+      ),
+      resolveObservation(
+        { wantText: "Kulemak's Invitation", haveText: "Exalted Orb", wantAmount: 0.5, haveAmount: 1 },
+        rates,
+      ),
+    ];
+    const loop = analyzeLoops("kulemaks-invitation", seen, rates, {
+      executionConcessionBps: 500,
+      safetyBufferBps: 500,
+      minPercent: 0,
+    }).bestVerifiedLoop;
+
+    expect(loop).toBeDefined();
+    for (const point of loop?.quantityOutcomes ?? []) {
+      if (point.executionComplete) {
+        expect(point.executionFinalUnits).toBeLessThanOrEqual(point.nominalFinalUnits);
+      }
+      if (point.bufferedComplete) {
+        expect(point.bufferedFinalUnits).toBeLessThanOrEqual(point.executionFinalUnits);
+        expect(point.actionable).toBe(
+          (point.bufferedReturnPercent ?? -Infinity) >= 0,
+        );
+      } else {
+        expect(point.actionable).toBe(false);
+      }
+    }
+    const ranked = (loop?.quantityOutcomes ?? []).filter(
+      (point) => point.localPeak || point.budgetBest,
+    );
+    expect(ranked.length).toBeGreaterThan(0);
+    expect(ranked.every((point) => point.bufferedComplete)).toBe(true);
+  });
 });

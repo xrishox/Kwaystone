@@ -45,6 +45,11 @@ class HyprlandBackend:
             Shortcut("price-check", "PoE2 price check", cfg["hotkey_price"]),
             Shortcut("unique-scan", "Scan current PoE2 screen", "ALT+x"),
             Shortcut("arb-check", "Currency arbitrage", cfg["hotkey_arb"]),
+            Shortcut("arb-add", "Capture Currency Exchange pair", cfg["hotkey_arb_add"]),
+            Shortcut(
+                # Keep the portal id so existing Alt+D grants migrate silently.
+                "arb-bridge", "Monitor selected arbitrage loop", cfg["hotkey_arb_monitor"]
+            ),
             Shortcut("panel-close", "Close PoE2 overlay panel", "ESC"),
         ]
 
@@ -61,12 +66,16 @@ class HyprlandBackend:
         price_mods, price_key = hypr_bind(self.cfg["hotkey_price"])
         unique_mods, unique_key = hypr_bind("ALT+x")
         arb_mods, arb_key = hypr_bind(self.cfg["hotkey_arb"])
+        add_mods, add_key = hypr_bind(self.cfg["hotkey_arb_add"])
+        monitor_mods, monitor_key = hypr_bind(self.cfg["hotkey_arb_monitor"])
         bind_mgr = MultiBindManager.create(
             self.cfg["game_window_class"],
             [
                 (price_mods, price_key, "price-check"),
                 (unique_mods, unique_key, "unique-scan"),
                 (arb_mods, arb_key, "arb-check"),
+                (add_mods, add_key, "arb-add"),
+                (monitor_mods, monitor_key, "arb-bridge"),
             ],
         )
         self._bind_mgr = bind_mgr

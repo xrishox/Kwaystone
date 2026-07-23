@@ -63,12 +63,12 @@ it("schedules repeated refreshes on its interval until stopped", async () => {
   expect(refresh).toHaveBeenCalledTimes(4);
 });
 
-it("defaults its interval to 80% of the scout TTL", async () => {
+it("defaults its interval to the scout TTL", async () => {
   const { DEFAULT_BACKGROUND_REFRESH_MS, startBackgroundRefresh } =
     await import("../src/backgroundRefresh");
   const refresh = await refreshMock();
 
-  expect(DEFAULT_BACKGROUND_REFRESH_MS).toBe(Math.floor(SCOUT_TTL_MS * 0.8));
+  expect(DEFAULT_BACKGROUND_REFRESH_MS).toBe(SCOUT_TTL_MS);
 
   const stop = startBackgroundRefresh(() => "L");
   await vi.advanceTimersByTimeAsync(0);
